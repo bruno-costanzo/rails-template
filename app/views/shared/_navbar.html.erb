@@ -3,5 +3,10 @@
     <%= link_to "CharcoTemplate", root_path, class: "btn btn-ghost text-xl" %>
   </div>
   <div class="flex-none gap-2">
+    <% if authenticated? %>
+      <%= button_to "Sign out", session_path, method: :delete, class: "btn btn-ghost" %>
+    <% else %>
+      <%= link_to "Sign in", new_session_path, class: "btn btn-ghost" %>
+    <% end %>
   </div>
 </div>
