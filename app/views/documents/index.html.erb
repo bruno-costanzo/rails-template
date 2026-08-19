@@ -1,0 +1,20 @@
+<% content_for :title, "Documents" %>
+
+<div class="p-6 max-w-3xl mx-auto w-full">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="font-bold text-4xl">Documents</h1>
+    <%= link_to "New document", new_document_path, class: "btn btn-primary" %>
+  </div>
+
+  <% if @documents.any? %>
+    <ul class="list bg-base-100 rounded-box shadow">
+      <% @documents.each do |document| %>
+        <li class="list-row items-center">
+          <%= link_to document.title, document, class: "flex-1" %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="text-center my-10">No documents found.</p>
+  <% end %>
+</div>

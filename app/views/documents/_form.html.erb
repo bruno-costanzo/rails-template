@@ -1,0 +1,17 @@
+<div class="flex justify-center py-16">
+  <div class="card bg-base-100 shadow w-full max-w-2xl">
+    <div class="card-body">
+      <h1 class="card-title"><%= document.new_record? ? "New document" : "Edit document" %></h1>
+      <%= form_with model: document do |form| %>
+        <% if document.errors.any? %>
+          <div class="alert alert-error mb-4"><%= document.errors.full_messages.to_sentence %></div>
+        <% end %>
+        <%= form.label :title, class: "label" %>
+        <%= form.text_field :title, class: "input input-bordered w-full", required: true %>
+        <%= form.label :content, class: "label" %>
+        <%= form.rich_text_area :content %>
+        <%= form.submit document.new_record? ? "Create document" : "Update document", class: "btn btn-primary w-full mt-4" %>
+      <% end %>
+    </div>
+  </div>
+</div>

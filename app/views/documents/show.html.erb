@@ -1,0 +1,15 @@
+<% content_for :title, @document.title %>
+
+<div class="p-6 max-w-3xl mx-auto w-full">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="font-bold text-4xl"><%= @document.title %></h1>
+    <div class="flex gap-2">
+      <%= link_to "Edit", edit_document_path(@document), class: "btn btn-ghost" %>
+      <%= button_to "Delete", @document, method: :delete, class: "btn btn-ghost", data: { turbo_confirm: "Delete this document?" } %>
+    </div>
+  </div>
+
+  <%= @document.content %>
+
+  <%= link_to "Back to documents", documents_path, class: "btn btn-ghost mt-6" %>
+</div>
