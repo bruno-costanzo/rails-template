@@ -1,0 +1,44 @@
+module Template
+  class Renamer
+    SKIP_DIRS = %w[.git log node_modules storage tmp vendor].freeze
+    OLD_MODULE = "CharcoTemplate".freeze
+    OLD_SNAKE = "charco_template".freeze
+    OLD_DASHED = "charco-template".freeze
+
+    def initialize(root:, new_name:)
+      @root = Pathname.new(root)
+      @new_snake = new_name.underscore
+    end
+
+    def run
+      text_files.each { |path| rewrite(path) }
+    end
+
+    private
+
+    def new_module = @new_snake.camelize
+
+    def new_dashed = @new_snake.dasherize
+
+    def text_files
+      Dir.glob(@root.join("**", "*"), File::FNM_DOTMATCH)
+        .select { |path| File.file?(path) && !skip?(path) && text?(path) }
+    end
+
+    def skip?(path)
+      relative = Pathname.new(path).relative_path_from(@root).to_s
+      relative.end_with?(".mjs") || SKIP_DIRS.any? { |dir| relative == dir || relative.start_with?("#{dir}/") }
+    end
+
+    def text?(path)
+      chunk = File.binread(path, 8192)
+      chunk.nil? || !chunk.include?("\x00")
+    end
+
+    def rewrite(path)
+      original = File.read(path)
+      updated = original.gsub(OLD_MODULE, new_module).gsub(OLD_SNAKE, @new_snake).gsub(OLD_DASHED, new_dashed)
+      File.write(path, updated) if updated != original
+    end
+  end
+end
