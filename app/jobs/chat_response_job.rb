@@ -8,5 +8,7 @@ class ChatResponseJob < ApplicationJob
         message.broadcast_append_chunk(chunk.content)
       end
     end
+
+    GenerateChatTitleJob.perform_later(chat)
   end
 end

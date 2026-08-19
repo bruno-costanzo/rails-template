@@ -16,7 +16,6 @@ class ChatsController < ApplicationController
     if prompt.present?
       @chat = Current.user.chats.create!(model: params.dig(:chat, :model).presence)
       ChatResponseJob.perform_later(@chat.id, prompt)
-      GenerateChatTitleJob.perform_later(@chat)
 
       redirect_to @chat, notice: "Chat was successfully created."
     end
