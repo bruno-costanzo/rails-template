@@ -11,7 +11,8 @@ class ChatsControllerTest < ActionDispatch::IntegrationTest
   test "does not show another user's chat" do
     sign_in_as users(:one)
     other_chat = users(:two).chats.create!(model: "gpt-4o-mini")
-    assert_raises(ActiveRecord::RecordNotFound) { get chat_url(other_chat) }
+    get chat_url(other_chat)
+    assert_response :not_found
   end
 
   test "lists own chats" do
