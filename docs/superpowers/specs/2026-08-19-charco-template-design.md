@@ -60,6 +60,10 @@ Added on top (all TDD):
 
 - **Kamal** — `config/deploy.yml` documented with placeholders (server, registry) and `.kamal/secrets` for keys. A **persistent volume mounts `storage/`** (SQLite databases + Active Storage files survive deploys). Thruster ships in the Rails 8 Dockerfile.
 
+## Production console auditing
+
+- **console1984** — Basecamp's audited Rails console. Gem installed, its migrations run (console session/command trail tables), default protection (production only). Requires Active Record encryption: the template runs `bin/rails db:encryption:init` and stores the keys in credentials. Because `config/master.key` never travels with the repo, the README instructs each new app to regenerate credentials (`rm config/credentials.yml.enc && bin/rails credentials:edit`) and re-run `db:encryption:init`, pasting the fresh keys. Companion tool `audits1984` is documented as optional, not installed.
+
 ## Testing and CI
 
 - Minitest + fixtures; system tests with headless Capybara; WebMock for AI.

@@ -1500,7 +1500,7 @@ Rails starter template. This repo is both a working app and the template new app
 ln -s CLAUDE.md AGENTS.md
 ```
 
-README.md sections (English): What is this / Features list / Requirements (mise, Ruby 4.0.6, libvips) / Quickstart (`clone → bin/rename → bin/setup → bin/dev`) / Configuration (`.env` from `.env.example`) / Testing (`bin/rails test test:system`, WebMock policy) / Deployment (Kamal: replace UPPERCASE placeholders, `kamal setup`) / Adding 2FA later (rotp over the owned auth controllers, 3-4 line sketch) / Updating this template (bump `.ruby-version` + Gemfile, re-download DaisyUI `.mjs` files, run `ruby_llm:upgrade_to_*` generators, run the suite).
+README.md sections (English): What is this / Features list / Requirements (mise, Ruby 4.0.6, libvips) / Quickstart (`clone → bin/rename → bin/setup → bin/dev`, INCLUDING regenerating credentials: `rm config/credentials.yml.enc && bin/rails credentials:edit`, then `bin/rails db:encryption:init` and paste the keys into credentials — required because master.key never travels with the repo and console1984 depends on Active Record encryption) / Configuration (`.env` from `.env.example`) / Testing (`bin/rails test test:system`, WebMock policy) / Console auditing (console1984 protects the production console; sessions/commands are recorded; `audits1984` optional companion) / Deployment (Kamal: replace UPPERCASE placeholders, `kamal setup`) / Adding 2FA later (rotp over the owned auth controllers, 3-4 line sketch) / Updating this template (bump `.ruby-version` + Gemfile, re-download DaisyUI `.mjs` files, run `ruby_llm:upgrade_to_*` generators, run the suite).
 
 - [ ] **Step 3: Commit**
 
@@ -1541,3 +1541,61 @@ git add -A && git commit -m "Final template polish"
 ```
 
 Tell Bruno: create the GitHub repo, push `main`, then Settings → check "Template repository". New apps: "Use this template" → clone → `bin/rename`.
+
+---
+
+### Task 16: console1984 audited console
+
+Execution order note: run this task after Task 11 and BEFORE Task 14 (docs reference it). Task 15 stays last.
+
+**Files:**
+- Modify: `Gemfile`, `config/application.rb` (only if changing protected environments — default production-only is kept, so likely no change), `db/schema.rb` (via migrations)
+- Create: console1984 migrations (via `rails console1984:install:migrations`), Active Record encryption keys in credentials
+- Test: `test/integration/console1984_test.rb`
+
+**Interfaces:**
+- Produces: console session/command audit tables; AR encryption configured (credentials hold `active_record_encryption` keys). Task 14's README documents the regenerate-credentials flow for new apps.
+
+- [ ] **Step 1: Install**
+
+```bash
+bundle add console1984
+bin/rails console1984:install:migrations
+bin/rails db:migrate
+```
+
+- [ ] **Step 2: Configure Active Record encryption**
+
+```bash
+bin/rails db:encryption:init
+```
+
+Copy the printed keys into credentials (`bin/rails credentials:edit` opens $EDITOR; in non-interactive shells use `EDITOR="true" ...` tricks or write via `bin/rails runner` with `Rails.application.credentials` — if editing credentials non-interactively proves brittle, document the keys requirement and add them via `EDITOR='code --wait'`-free approach: `bin/rails credentials:edit` with EDITOR set to a script that appends the YAML block).
+
+- [ ] **Step 3: Write the smoke test**
+
+`test/integration/console1984_test.rb`:
+
+```ruby
+require "test_helper"
+
+class Console1984Test < ActiveSupport::TestCase
+  test "audit tables exist" do
+    assert ActiveRecord::Base.connection.table_exists?("console1984_sessions")
+    assert ActiveRecord::Base.connection.table_exists?("console1984_commands")
+  end
+
+  test "console protection targets production by default" do
+    assert_includes Console1984.protected_environments.map(&:to_sym), :production
+  end
+end
+```
+
+Adapt table names/config reader to what the installed gem actually creates (inspect the migrations it copied); document adaptations.
+
+- [ ] **Step 4: Run suite, commit**
+
+```bash
+bin/rails test test:system
+git add -A && git commit -m "Add console1984 audited production console"
+```
