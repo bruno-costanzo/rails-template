@@ -7,6 +7,7 @@
       <%= button_to "Sign out", session_path, method: :delete, class: "btn btn-ghost" %>
     <% else %>
       <%= link_to "Sign in", new_session_path, class: "btn btn-ghost" %>
+      <%= link_to "Sign up", new_registration_path, class: "btn btn-primary" %>
     <% end %>
   </div>
 </div>

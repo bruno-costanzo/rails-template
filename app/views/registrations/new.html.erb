@@ -1,0 +1,22 @@
+<% set_meta_tags title: "Sign up" %>
+<div class="flex justify-center py-16">
+  <div class="card bg-base-100 shadow w-full max-w-md">
+    <div class="card-body">
+      <h1 class="card-title">Create your account</h1>
+      <%= form_with model: @user, url: registration_path do |form| %>
+        <% if @user.errors.any? %>
+          <div class="alert alert-error mb-4"><%= @user.errors.full_messages.to_sentence %></div>
+        <% end %>
+        <%= form.label :name, class: "label" %>
+        <%= form.text_field :name, class: "input input-bordered w-full", required: true %>
+        <%= form.label :email_address, class: "label" %>
+        <%= form.email_field :email_address, class: "input input-bordered w-full", required: true %>
+        <%= form.label :password, class: "label" %>
+        <%= form.password_field :password, class: "input input-bordered w-full", required: true %>
+        <%= form.label :password_confirmation, class: "label" %>
+        <%= form.password_field :password_confirmation, class: "input input-bordered w-full", required: true %>
+        <%= form.submit "Sign up", class: "btn btn-primary w-full mt-4" %>
+      <% end %>
+    </div>
+  </div>
+</div>

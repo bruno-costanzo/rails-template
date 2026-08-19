@@ -1,7 +1,9 @@
 one:
+  name: Ada Lovelace
   email_address: ada@example.com
   password_digest: <%= BCrypt::Password.create("password") %>
 
 two:
+  name: Grace Hopper
   email_address: grace@example.com
   password_digest: <%= BCrypt::Password.create("password") %>
