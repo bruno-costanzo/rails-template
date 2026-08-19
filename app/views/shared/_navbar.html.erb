@@ -4,7 +4,15 @@
   </div>
   <div class="flex-none gap-2">
     <% if authenticated? %>
-      <%= button_to "Sign out", session_path, method: :delete, class: "btn btn-ghost" %>
+      <div class="dropdown dropdown-end">
+        <div tabindex="0" role="button" class="btn btn-ghost btn-circle">
+          <%= render "users/avatar", user: Current.user %>
+        </div>
+        <ul tabindex="0" class="menu dropdown-content bg-base-100 rounded-box z-10 mt-3 w-52 p-2 shadow">
+          <li><%= link_to "Profile", edit_profile_path %></li>
+          <li><%= button_to "Sign out", session_path, method: :delete %></li>
+        </ul>
+      </div>
     <% else %>
       <%= link_to "Sign in", new_session_path, class: "btn btn-ghost" %>
       <%= link_to "Sign up", new_registration_path, class: "btn btn-primary" %>

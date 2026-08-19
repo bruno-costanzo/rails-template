@@ -66,3 +66,5 @@ group :test do
 end
 
 gem "meta-tags", "~> 2.23"
+
+gem "active_storage_validations", "~> 4.1"
