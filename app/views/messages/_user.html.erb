@@ -1,0 +1,8 @@
+<% user ||= local_assigns[:message] %>
+<div id="message_<%= user.id %>" class="chat chat-end">
+  <div class="chat-header">
+    User
+    <time class="text-xs opacity-50"><%= user.created_at&.strftime("%I:%M %p") %></time>
+  </div>
+  <div id="message_<%= user.id %>_content" class="chat-bubble chat-bubble-primary whitespace-pre-wrap"><%= user.content %></div>
+</div>

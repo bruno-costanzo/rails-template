@@ -9,6 +9,7 @@
           <%= render "users/avatar", user: Current.user %>
         </div>
         <ul tabindex="0" class="menu dropdown-content bg-base-100 rounded-box z-10 mt-3 w-52 p-2 shadow">
+          <li><%= link_to "Chats", chats_path %></li>
           <li><%= link_to "Profile", edit_profile_path %></li>
           <li><%= button_to "Sign out", session_path, method: :delete %></li>
         </ul>
