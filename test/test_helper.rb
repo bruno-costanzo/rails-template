@@ -1,6 +1,10 @@
 ENV["RAILS_ENV"] ||= "test"
+ENV["OPENAI_API_KEY"] ||= "test-key"
 require_relative "../config/environment"
 require "rails/test_help"
+require "webmock/minitest"
+
+WebMock.disable_net_connect!(allow_localhost: true)
 
 Dir[Rails.root.join("test/test_helpers/**/*.rb")].each { |f| require f }
 
