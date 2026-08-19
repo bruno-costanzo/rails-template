@@ -74,3 +74,5 @@ gem "ruby_llm", "~> 1.16"
 gem "dotenv-rails", "~> 3.2", groups: [:development, :test]
 
 gem "webmock", "~> 3.26", group: :test
+
+gem "schematist", "~> 1.1"
