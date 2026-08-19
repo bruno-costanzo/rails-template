@@ -82,3 +82,5 @@ gem "lexxy", "~> 0.9.30"
 gem "neighbor", "~> 1.2"
 
 gem "sqlite-vec", "~> 0.1.9"
+
+gem "console1984", "~> 0.2.4"
