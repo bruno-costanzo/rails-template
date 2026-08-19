@@ -3,4 +3,24 @@ class Document < ApplicationRecord
   has_rich_text :content
 
   validates :title, presence: true
+
+  EMBEDDING_DIMENSIONS = 1536
+
+  has_neighbors :embedding, dimensions: EMBEDDING_DIMENSIONS
+  after_save_commit :refresh_embedding_later, unless: :saved_change_to_embedding?
+
+  def self.semantic_search(query, limit: 5)
+    query_embedding = RubyLLM.embed(query).vectors
+    where.not(embedding: nil).nearest_neighbors(:embedding, query_embedding, distance: "cosine").first(limit)
+  end
+
+  def embedding_source_text
+    [ title, content.to_plain_text ].join("\n").strip
+  end
+
+  private
+
+  def refresh_embedding_later
+    GenerateDocumentEmbeddingJob.perform_later(self)
+  end
 end

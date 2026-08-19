@@ -1,6 +1,10 @@
 class DocumentsController < ApplicationController
   def index
-    @documents = Current.user.documents.order(updated_at: :desc)
+    @documents = if params[:q].present?
+      Document.where(user: Current.user).semantic_search(params[:q])
+    else
+      Current.user.documents.order(updated_at: :desc)
+    end
   end
 
   def show

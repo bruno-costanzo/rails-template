@@ -6,6 +6,11 @@
     <%= link_to "New document", new_document_path, class: "btn btn-primary" %>
   </div>
 
+  <%= form_with url: documents_path, method: :get, class: "join w-full mb-6" do |form| %>
+    <%= form.text_field :q, value: params[:q], placeholder: "Semantic search…", class: "input input-bordered join-item w-full" %>
+    <%= form.submit "Search", class: "btn btn-primary join-item" %>
+  <% end %>
+
   <% if @documents.any? %>
     <ul class="list bg-base-100 rounded-box shadow">
       <% @documents.each do |document| %>
