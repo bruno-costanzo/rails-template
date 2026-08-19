@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><%= content_for(:title) || "Charco Template" %></title>
+    <%= display_meta_tags site: "CharcoTemplate", reverse: true %>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="application-name" content="Charco Template">
@@ -24,6 +24,10 @@
   </head>
 
   <body>
+    <%= render "shared/navbar" %>
+    <% flash.each do |type, message| %>
+      <div class="alert <%= type == "alert" ? "alert-error" : "alert-info" %> m-4"><%= message %></div>
+    <% end %>
     <main class="container mx-auto mt-28 px-5 flex">
       <%= yield %>
     </main>
