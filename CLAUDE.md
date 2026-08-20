@@ -14,7 +14,7 @@ Rails starter template. This repo is both a working app and the template new app
 ## Commands
 - `bin/setup` — install and prepare everything
 - `bin/dev` — run app + Tailwind watcher
-- `bin/ci` — the pre-commit gate; run it before every commit, it is exactly what CI runs (rubocop, brakeman, `bin/rails test`, `bin/rails test:system`)
+- `bin/ci` — the pre-commit gate; run it before every commit, it is exactly what CI runs. It's Rails' native CI runner (`ActiveSupport::ContinuousIntegration`), configured in `config/ci.rb` with four steps: rubocop, brakeman, `bin/rails test`, `bin/rails test:system`
 - `bin/rename <name>` — turn the template into a new app
 
 All Ruby/Rails commands run under `mise exec ruby@4.0.6 -- <command>` in non-mise-shimmed shells (e.g. `mise exec ruby@4.0.6 -- bin/rails test`).

@@ -72,7 +72,7 @@ OPENAI_API_KEY=sk-your-key-here
 
 ## Testing
 
-Run `bin/ci` before every commit — it is the pre-commit gate and exactly what CI runs: rubocop, brakeman, then `bin/rails test` and `bin/rails test:system`.
+Run `bin/ci` before every commit — it is the pre-commit gate and exactly what CI runs. It's Rails' native CI runner, configured in `config/ci.rb`: rubocop, brakeman, then `bin/rails test` and `bin/rails test:system`.
 
 ```bash
 bin/ci
