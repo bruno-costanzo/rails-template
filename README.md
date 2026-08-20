@@ -22,6 +22,8 @@ CharcoTemplate is a Rails 8.1.3.1 starter template. It is a fully working app on
 - libvips (used by Active Storage's `image_processing` gem for avatar variants)
 - An OpenAI API key (for the AI chat and semantic search features)
 
+All Ruby/Rails commands below run under `mise exec ruby@4.0.6 --` in non-mise-shimmed shells (e.g. `mise exec ruby@4.0.6 -- bin/rails test`); the examples show bare commands for readability.
+
 ## Quickstart
 
 ```bash
@@ -35,13 +37,13 @@ New apps need their own credentials — `config/master.key` is gitignored on pur
 
 ```bash
 rm config/credentials.yml.enc
-mise exec ruby@4.0.6 -- bin/rails credentials:edit
+bin/rails credentials:edit
 ```
 
 This creates a fresh `master.key` and an empty encrypted credentials file, and opens it in your editor. Then generate new Active Record encryption keys:
 
 ```bash
-mise exec ruby@4.0.6 -- bin/rails db:encryption:init
+bin/rails db:encryption:init
 ```
 
 Copy the three printed keys (`primary_key`, `deterministic_key`, `key_derivation_salt`) into an `active_record_encryption:` block inside the credentials file (`bin/rails credentials:edit` again), then save.
@@ -70,9 +72,10 @@ OPENAI_API_KEY=sk-your-key-here
 
 ## Testing
 
+Run `bin/ci` before every commit — it is the pre-commit gate and exactly what CI runs: rubocop, brakeman, then `bin/rails test` and `bin/rails test:system`.
+
 ```bash
-mise exec ruby@4.0.6 -- bin/rails test
-mise exec ruby@4.0.6 -- bin/rails test:system
+bin/ci
 ```
 
 Tests never hit the network. `test/test_helper.rb` calls `WebMock.disable_net_connect!(allow_localhost: true)`, so any real HTTP call from a test fails loudly instead of silently reaching OpenAI. Stub RubyLLM calls with the helpers in `test/test_helpers/openai_stubs.rb`:
@@ -118,6 +121,6 @@ Since this repo doubles as a living app, keeping it current means:
 1. Bump `.ruby-version` and the `rails` constraint in the `Gemfile`, then `bundle update rails`.
 2. Re-download the vendored DaisyUI files (`app/assets/tailwind/daisyui.mjs`, `app/assets/tailwind/daisyui-theme.mjs`) from the DaisyUI release you're targeting.
 3. Run any `ruby_llm:upgrade_to_*` generators RubyLLM ships when you bump its version, to pick up new migrations/config.
-4. Run the full suite (`mise exec ruby@4.0.6 -- bin/rails test` and `mise exec ruby@4.0.6 -- bin/rails test:system`) before committing the upgrade.
+4. Run `bin/ci` before committing the upgrade.
 
 Also worth re-checking after a Rails upgrade: whether Lexxy still needs to monkey-patch `rich_text_area` (see `CLAUDE.md`'s Subsystem map) — a new Rails version may ship the official `ActionText::Editor` adapter API Lexxy prefers.

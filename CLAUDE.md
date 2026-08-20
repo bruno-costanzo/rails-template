@@ -14,7 +14,7 @@ Rails starter template. This repo is both a working app and the template new app
 ## Commands
 - `bin/setup` — install and prepare everything
 - `bin/dev` — run app + Tailwind watcher
-- `bin/rails test` and `bin/rails test:system` — full suite (run both before every commit)
+- `bin/ci` — the pre-commit gate; run it before every commit, it is exactly what CI runs (rubocop, brakeman, `bin/rails test`, `bin/rails test:system`)
 - `bin/rename <name>` — turn the template into a new app
 
 All Ruby/Rails commands run under `mise exec ruby@4.0.6 -- <command>` in non-mise-shimmed shells (e.g. `mise exec ruby@4.0.6 -- bin/rails test`).
@@ -31,7 +31,7 @@ All Ruby/Rails commands run under `mise exec ruby@4.0.6 -- <command>` in non-mis
 ## Subsystem map
 - Auth: `app/controllers/concerns/authentication.rb`, `SessionsController`, `RegistrationsController`, `ProfilesController`. Avatars via Active Storage variants (`User#avatar`, `thumb`/`medium`) with an initials fallback (`User#initials`). No 2FA out of the box — see README's "Adding 2FA later" for the rotp path.
 - AI chat: RubyLLM `acts_as_chat`-generated models (`Chat`, `Message`, `ToolCall`, `Model`), scoped per user through `Current.user`. `ChatResponseJob` streams the assistant response and, only after it persists, enqueues `GenerateChatTitleJob` (event-driven, race-safe — it never runs before the first message exists). Titling uses `RubyLLM.chat.with_schema(ChatTitleSchema)` (`app/schemas/chat_title_schema.rb`, a Schematist schema).
-- Semantic search: `Document` (`semantic_search`, `EMBEDDING_DIMENSIONS = 1536`), `GenerateDocumentEmbeddingJob` (guarded by `saved_change_to_embedding?` to avoid re-embedding loops), `config/initializers/neighbor.rb` calling `Neighbor::SQLite.initialize!` (sqlite-vec extension).
+- Semantic search: `Document` (`semantic_search`, `EMBEDDING_DIMENSIONS = 1536`) enqueues `GenerateDocumentEmbeddingJob` from an `after_save_commit` callback guarded by `saved_change_to_embedding?` (avoids re-embedding loops), `config/initializers/neighbor.rb` calling `Neighbor::SQLite.initialize!` (sqlite-vec extension).
 - Rich text: Action Text + Lexxy (`import "lexxy"` in `app/javascript/application.js`, manual `pin "lexxy"` in `config/importmap.rb`, `stylesheet_link_tag "lexxy"` in the layout). On Rails 8.1, Lexxy falls back to monkey-patching `rich_text_area`/`rich_textarea` instead of using the official `ActionText::Editor` adapter API (merged later in Rails). Re-verify `Lexxy.supports_editor_adapter?` after any Rails upgrade — the rendered `<lexxy-editor>` tag should stay the same either way, but re-run the Lexxy system test to confirm.
 - Console auditing: console1984 records production console sessions/commands and requires Active Record encryption (keys live in `config/credentials.yml.enc`, generated via `bin/rails db:encryption:init`). See README's Console auditing and Quickstart sections — new apps must regenerate their own credentials, since `config/master.key` never travels with the repo.
 - Deploy: `config/deploy.yml` (placeholders in UPPERCASE; `storage/` volume is mandatory for SQLite + Active Storage).
