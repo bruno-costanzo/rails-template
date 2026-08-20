@@ -1515,12 +1515,10 @@ git add -A && git commit -m "Add CLAUDE.md, AGENTS.md and README"
 - [ ] **Step 1: Full quality gate**
 
 ```bash
-bin/rails test test:system
-bin/rubocop
-bin/brakeman --no-pager
+bin/ci
 ```
 
-Expected: all green. Fix any offense in OUR files (generated code may need `# rubocop:disable` never — prefer fixing or excluding paths in `.rubocop.yml` only for generated RubyLLM files if they violate omakase).
+Expected: all four stages green (RuboCop, Brakeman, tests with 100% line+branch coverage, system tests). Fix any offense in OUR files.
 
 - [ ] **Step 2: Fresh-clone smoke test**
 
@@ -1598,4 +1596,118 @@ Adapt table names/config reader to what the installed gem actually creates (insp
 ```bash
 bin/rails test test:system
 git add -A && git commit -m "Add console1984 audited production console"
+```
+
+---
+
+### Task 17: bin/ci quality gate
+
+Execution order note: run after Task 14, before Task 18. Note: `bin/rails test test:system` as ONE invocation is invalid in this Rails version — always two separate commands.
+
+**Files:**
+- Create: `bin/ci`
+- Modify: `.github/workflows/ci.yml`, `CLAUDE.md`, `README.md`
+
+**Interfaces:**
+- Produces: `bin/ci` (executable) — the single quality gate; CI runs it verbatim. Task 18 extends the test step with coverage enforcement without touching bin/ci.
+
+- [ ] **Step 1: Write bin/ci**
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")/.."
+bin/rubocop
+bin/brakeman --no-pager
+bin/rails test
+bin/rails test:system
+```
+
+`chmod +x bin/ci`.
+
+- [ ] **Step 2: CI parity**
+
+Rewrite `.github/workflows/ci.yml` to a single `ci` job that checks out, installs Ruby (`ruby/setup-ruby` with `bundler-cache: true`), installs Chrome for system tests (keep whatever the generated workflow used, e.g. the default runner Chrome), and runs `bin/ci`. Keep the `screenshots` artifact upload step (`if: failure()`) from the generated workflow. Keep the workflow's triggers as generated (PRs + pushes).
+
+- [ ] **Step 3: Verify locally**
+
+Run: `bin/ci` — Expected: all four stages pass end-to-end.
+
+- [ ] **Step 4: Document**
+
+CLAUDE.md Commands section: add `bin/ci` as THE pre-commit gate ("run bin/ci before every commit; it is exactly what CI runs"). README Testing section: same, replacing any listing of individual commands as the primary flow.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add -A && git commit -m "Add bin/ci quality gate mirrored in CI"
+```
+
+---
+
+### Task 18: 100% line and branch coverage
+
+Execution order note: run after Task 17. Task 15 (final verification) stays last and uses `bin/ci`.
+
+**Files:**
+- Modify: `Gemfile` (simplecov, group :test, require: false), `test/test_helper.rb`, `CLAUDE.md`, `README.md`
+- Create: whatever test files are needed to reach 100% (discovered from the coverage report)
+
+**Interfaces:**
+- Consumes: `bin/ci` from Task 17 (unchanged).
+- Produces: `bin/rails test` fails below 100% line or 100% branch coverage over `app/` and `lib/`.
+
+- [ ] **Step 1: Wire SimpleCov**
+
+`bundle add simplecov --group test --require false`. At the VERY TOP of `test/test_helper.rb` (before the ENV line and environment require):
+
+```ruby
+unless ENV["SKIP_COVERAGE"]
+  require "simplecov"
+  SimpleCov.start "rails" do
+    enable_coverage :branch
+    minimum_coverage line: 100, branch: 100
+    add_filter "app/channels"
+  end
+end
+```
+
+(Adjust filters ONLY for directories that genuinely cannot execute under the unit/integration suite — each filter must be argued in the report; the default target is NO filters beyond SimpleCov's rails profile defaults.) Parallel workers: use the Rails-documented pattern —
+
+```ruby
+parallelize_setup do |worker|
+  SimpleCov.command_name "#{SimpleCov.command_name}-#{worker}" if defined?(SimpleCov)
+end
+
+parallelize_teardown do |worker|
+  SimpleCov.result if defined?(SimpleCov)
+end
+```
+
+System tests: `test:system` runs with `SKIP_COVERAGE=1` (set it in bin/ci's test:system line: `SKIP_COVERAGE=1 bin/rails test:system`) — measurement happens on the unit/integration run only.
+
+- [ ] **Step 2: Run and enumerate gaps**
+
+Run: `bin/rails test` — Expected initially: FAIL with coverage below 100. Read `coverage/index.html`'s JSON sibling (`coverage/.last_run.json` + `coverage/coverage.json` if present) or the console summary; list every file with uncovered lines/branches in the report.
+
+- [ ] **Step 3: Close the gaps test-first**
+
+For each uncovered file: write meaningful tests that exercise the uncovered lines AND branches (error paths, guard clauses, blank-param branches, mailers, generated controllers like passwords/models/messages). Rules:
+- Tests must assert real behavior — a test that merely executes a line without asserting its effect is a defect.
+- Genuinely unreachable code (dead branches in generated code) is DELETED, not excluded. Document every deletion.
+- `# :nocov:` markers are forbidden without controller approval — report the case instead.
+
+- [ ] **Step 4: Verify the gate both ways**
+
+Run: `bin/rails test` — Expected: green with "Line Coverage: 100.0%" and "Branch Coverage: 100.0%". Then temporarily append an uncovered dummy method to any app file, run again, confirm the suite FAILS on coverage, and remove the dummy (proves the gate bites). Show both outputs in the report.
+
+- [ ] **Step 5: Document the rule**
+
+CLAUDE.md Conventions: add "100% line and branch coverage is enforced by SimpleCov; bin/rails test fails below 100%. Write the test first; never delete a failing coverage gate." README Testing: document the rule and the SKIP_COVERAGE escape hatch for system tests only.
+
+- [ ] **Step 6: Full gate, commit**
+
+```bash
+bin/ci
+git add -A && git commit -m "Enforce 100% line and branch coverage"
 ```

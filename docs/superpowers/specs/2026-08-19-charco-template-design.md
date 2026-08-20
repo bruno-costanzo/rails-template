@@ -67,8 +67,13 @@ Added on top (all TDD):
 ## Testing and CI
 
 - Minitest + fixtures; system tests with headless Capybara; WebMock for AI.
-- The Rails-generated GitHub Actions CI is kept: RuboCop (rails-omakase), Brakeman, tests.
 - The template is built test-first, and the README declares TDD as the convention for child apps.
+
+## Quality gate: bin/ci and 100% coverage
+
+- **`bin/ci`** is the single quality gate: RuboCop → Brakeman → `bin/rails test` (with coverage enforcement) → `bin/rails test:system`. The GitHub Actions workflow runs `bin/ci`, so local and CI verification are identical and CI must pass.
+- **Coverage rule:** SimpleCov with branch coverage enabled enforces **100% line AND 100% branch coverage** over `app/` and `lib/`, failing the test run below that. Coverage is measured on the unit/integration run; system tests run in `bin/ci` but are excluded from measurement. Unreachable code is deleted rather than excluded; `# :nocov:` markers are not used.
+- **Binding conventions, documented:** CLAUDE.md and README state the rules any human or AI working on a child app must follow: TDD always, 100% line+branch coverage, `bin/ci` green before commit/push.
 
 ## AI-assistant files
 
