@@ -1,0 +1,37 @@
+# CharcoTemplate
+
+Rails starter template. This repo is both a working app and the template new apps are born from (`bin/rename <new_app_name>` after cloning).
+
+## Stack
+- Ruby 4.0.6, Rails 8.1.3.1, SQLite everywhere (Solid Queue/Cache/Cable on SQLite)
+- Propshaft + Importmap (no Node), Tailwind v4 + DaisyUI 5 (vendored `app/assets/tailwind/daisyui.mjs`, `app/assets/tailwind/daisyui-theme.mjs`)
+- Hotwire (Turbo + Stimulus), Lexxy for Action Text rich text
+- RubyLLM (OpenAI only: gpt-4o-mini / text-embedding-3-small), Schematist for structured output, Neighbor + sqlite-vec for vector search
+- Native Rails authentication (+ custom registration/profile), Active Storage avatars
+- console1984 for audited production console access (depends on Active Record encryption)
+- Minitest + fixtures + WebMock (tests NEVER hit the network), Kamal deploys
+
+## Commands
+- `bin/setup` — install and prepare everything
+- `bin/dev` — run app + Tailwind watcher
+- `bin/rails test` and `bin/rails test:system` — full suite (run both before every commit)
+- `bin/rename <name>` — turn the template into a new app
+
+All Ruby/Rails commands run under `mise exec ruby@4.0.6 -- <command>` in non-mise-shimmed shells (e.g. `mise exec ruby@4.0.6 -- bin/rails test`).
+
+## Conventions
+- TDD always: failing test first, minimal implementation second.
+- English-only code and copy. No code comments. No inline styles.
+- DaisyUI component classes before custom CSS.
+- Controllers scope data through `Current.user` (see `ChatsController`, `DocumentsController`).
+- LLM calls in tests use `stub_openai_chat` / `stub_openai_embedding` (test/test_helpers/openai_stubs.rb).
+- Background work goes to Solid Queue jobs (see `GenerateDocumentEmbeddingJob`).
+- Commits: short imperative messages, no co-author trailers.
+
+## Subsystem map
+- Auth: `app/controllers/concerns/authentication.rb`, `SessionsController`, `RegistrationsController`, `ProfilesController`. Avatars via Active Storage variants (`User#avatar`, `thumb`/`medium`) with an initials fallback (`User#initials`). No 2FA out of the box — see README's "Adding 2FA later" for the rotp path.
+- AI chat: RubyLLM `acts_as_chat`-generated models (`Chat`, `Message`, `ToolCall`, `Model`), scoped per user through `Current.user`. `ChatResponseJob` streams the assistant response and, only after it persists, enqueues `GenerateChatTitleJob` (event-driven, race-safe — it never runs before the first message exists). Titling uses `RubyLLM.chat.with_schema(ChatTitleSchema)` (`app/schemas/chat_title_schema.rb`, a Schematist schema).
+- Semantic search: `Document` (`semantic_search`, `EMBEDDING_DIMENSIONS = 1536`), `GenerateDocumentEmbeddingJob` (guarded by `saved_change_to_embedding?` to avoid re-embedding loops), `config/initializers/neighbor.rb` calling `Neighbor::SQLite.initialize!` (sqlite-vec extension).
+- Rich text: Action Text + Lexxy (`import "lexxy"` in `app/javascript/application.js`, manual `pin "lexxy"` in `config/importmap.rb`, `stylesheet_link_tag "lexxy"` in the layout). On Rails 8.1, Lexxy falls back to monkey-patching `rich_text_area`/`rich_textarea` instead of using the official `ActionText::Editor` adapter API (merged later in Rails). Re-verify `Lexxy.supports_editor_adapter?` after any Rails upgrade — the rendered `<lexxy-editor>` tag should stay the same either way, but re-run the Lexxy system test to confirm.
+- Console auditing: console1984 records production console sessions/commands and requires Active Record encryption (keys live in `config/credentials.yml.enc`, generated via `bin/rails db:encryption:init`). See README's Console auditing and Quickstart sections — new apps must regenerate their own credentials, since `config/master.key` never travels with the repo.
+- Deploy: `config/deploy.yml` (placeholders in UPPERCASE; `storage/` volume is mandatory for SQLite + Active Storage).
