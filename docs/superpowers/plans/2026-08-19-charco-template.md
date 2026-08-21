@@ -1746,3 +1746,34 @@ Run: `bin/rails test` — Expected: green, coverage still 100/100 (views/JS are 
 bin/ci
 git add -A && git commit -m "Replace native confirm and flash with DaisyUI modal and toasts"
 ```
+
+### Task 20: money-rails by default
+
+Execution order note: run after Task 19. Task 15 (final verification) stays last.
+
+**Files:**
+- Modify: `Gemfile`, `Gemfile.lock`, `CLAUDE.md`, `README.md`
+- Create: `config/initializers/money.rb` (via official generator), `test/lib/money_configuration_test.rb`
+
+**Interfaces:**
+- Consumes: nothing app-side — no monetized column ships.
+- Produces: `Money` fully configured (default currency USD); apps opt in per-model with `monetize :price_cents`.
+
+- [ ] **Step 1: Install and configure (TDD)**
+
+RED: write `test/lib/money_configuration_test.rb` asserting real behavior: `Money.default_currency.iso_code == "USD"` and `Money.from_amount(19.99).format == "$19.99"`. Run it — fails (NameError, gem absent).
+
+GREEN: `bundle add money-rails`, then `bin/rails g money_rails:initializer`; in `config/initializers/money.rb` set `config.default_currency = :usd` (keep the rest of the generated file as-is — generated files are exempt from the no-comments rule). Run the test — green.
+
+- [ ] **Step 2: Document**
+
+CLAUDE.md Stack: add money-rails (default currency USD, no monetized model shipped). README: short "Money" section — default currency lives in `config/initializers/money.rb`; to monetize a column: migration `t.monetize :price` (creates `price_cents` + `price_currency`), model `monetize :price_cents`.
+
+- [ ] **Step 3: Full gate, commit**
+
+Coverage note: the initializer lives in `config/` (excluded from SimpleCov measurement); no `app/`/`lib/` code is added, so 100/100 must hold unchanged.
+
+```bash
+bin/ci
+git add -A && git commit -m "Add money-rails with USD default currency"
+```

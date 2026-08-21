@@ -62,6 +62,10 @@ Added on top (all TDD):
 - **Flash messages** — rendered as DaisyUI toasts from a single `shared/_flash` partial in the layout: responsive positioning, dismiss button, and auto-dismiss (~5 seconds) via a small Stimulus controller. The duplicated inline flash rendering in the auth views (sessions/passwords) is removed.
 - Both flows are covered by system tests (confirm/cancel on a destroy action; flash toast on a failed login).
 
+## Money
+
+- **money-rails** installed by default with its official initializer (`config/initializers/money.rb`), `default_currency = :usd`. No monetized example model ships — apps add `monetize :price_cents` when they need it (README documents the `t.monetize` migration pattern). A small behavior test verifies the wiring (default currency and formatting), so a broken initializer or missing gem fails the suite.
+
 ## Deployment
 
 - **Kamal** — `config/deploy.yml` documented with placeholders (server, registry) and `.kamal/secrets` for keys. A **persistent volume mounts `storage/`** (SQLite databases + Active Storage files survive deploys). Thruster ships in the Rails 8 Dockerfile.
