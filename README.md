@@ -40,7 +40,7 @@ rm config/credentials.yml.enc
 bin/rails credentials:edit
 ```
 
-This creates a fresh `master.key` and an empty encrypted credentials file, and opens it in your editor. Then generate new Active Record encryption keys:
+This creates a fresh `master.key` and a new encrypted credentials file (Rails' default scaffold, with a freshly generated `secret_key_base`), and opens it in your editor. Then generate new Active Record encryption keys:
 
 ```bash
 bin/rails db:encryption:init
