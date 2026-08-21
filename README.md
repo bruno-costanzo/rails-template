@@ -29,6 +29,7 @@ All Ruby/Rails commands below run under `mise exec ruby@4.0.6 --` in non-mise-sh
 ```bash
 git clone <this-repo> my_app
 cd my_app
+bundle install
 bin/rename my_app
 bin/setup
 ```

@@ -44,7 +44,7 @@ Added on top (all TDD):
 
 ## AI layer
 
-- **RubyLLM** — installed with `ruby_llm:install` (models `Chat`, `Message`, `ToolCall`, `Model` + initializer). Configured for **OpenAI only** (`OPENAI_API_KEY` via ENV; dotenv-rails in development). Chat UI generated with `ruby_llm:chat_ui` (Turbo streaming, model selector, markdown, attachments), then restyled with DaisyUI and scoped to the signed-in user (`Chat belongs_to :user`).
+- **RubyLLM** — installed with `ruby_llm:install` (models `Chat`, `Message`, `ToolCall`, `Model` + initializer). Configured for **OpenAI only** (`OPENAI_API_KEY` via ENV; dotenv-rails in development). Chat UI generated with `ruby_llm:chat_ui` (Turbo streaming, model selector), then restyled with DaisyUI and scoped to the signed-in user (`Chat belongs_to :user`).
 - **Schematist** — one structured-output example: `ChatTitleSchema` in `app/schemas/` (title + tags), used with `chat.with_schema(...)` to auto-name conversations.
 - **Neighbor + SQLite** — the `sqlite-vec` extension loaded through `database.yml` `extensions:` (Rails 8 native support, per Neighbor's SQLite docs). Example model `Document` with an `embedding` column generated in a Solid Queue job calling `RubyLLM.embed` on save. `Document.semantic_search(query)` uses `nearest_neighbors`. A minimal search screen demonstrates it.
 - **Lexxy** — Action Text installed; Lexxy replaces Trix. `Document#content` is rich text edited with Lexxy. One model demonstrates Lexxy + Active Storage attachments + `to_plain_text` extraction feeding Neighbor embeddings.
