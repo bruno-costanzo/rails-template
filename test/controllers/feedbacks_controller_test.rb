@@ -41,4 +41,16 @@ class FeedbacksControllerTest < ActionDispatch::IntegrationTest
     end
     assert_response :unprocessable_entity
   end
+
+  test "does not create feedback with an invalid photo and shows the error" do
+    sign_in_as users(:one)
+    photo = fixture_file_upload("test/fixtures/files/note.txt", "text/plain")
+
+    assert_no_difference("Feedback.count") do
+      post feedback_url, params: { feedback: { message: "Broken layout", photos: [ photo ] } }
+    end
+
+    assert_response :unprocessable_entity
+    assert_includes @response.body, "Photos"
+  end
 end

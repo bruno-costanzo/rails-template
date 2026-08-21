@@ -12,6 +12,24 @@ class FeedbackTest < ActiveSupport::TestCase
     assert feedback.valid?
   end
 
+  test "accepts a png photo" do
+    feedback = users(:one).feedbacks.build(message: "Broken layout")
+    feedback.photos.attach(io: File.open(file_fixture("avatar.png")), filename: "avatar.png", content_type: "image/png")
+    assert feedback.valid?
+  end
+
+  test "rejects a non-image photo" do
+    feedback = users(:one).feedbacks.build(message: "Broken layout")
+    feedback.photos.attach(io: StringIO.new("plain text"), filename: "notes.txt", content_type: "text/plain")
+    assert_not feedback.valid?
+  end
+
+  test "rejects an oversize photo" do
+    feedback = users(:one).feedbacks.build(message: "Broken layout")
+    feedback.photos.attach(io: StringIO.new("x" * 6.megabytes), filename: "big.png", content_type: "image/png")
+    assert_not feedback.valid?
+  end
+
   test "enqueues CreateFeedbackIssueJob after create" do
     assert_enqueued_with(job: CreateFeedbackIssueJob) do
       users(:one).feedbacks.create!(message: "The chat page is slow")

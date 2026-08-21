@@ -15,17 +15,17 @@ class CreateFeedbackIssueJob < ApplicationJob
 
   def body_for(feedback)
     lines = [
-      feedback.message,
-      "",
       "From: #{feedback.user.email_address}",
       "App: #{Rails.application.class.module_parent_name} (#{Rails.env})"
     ]
 
     if feedback.photos.attached?
-      lines << ""
       lines << "Photos:"
       feedback.photos.each { |photo| lines << photo_url(photo) }
     end
+
+    lines << "---"
+    lines << feedback.message
 
     lines.join("\n")
   end

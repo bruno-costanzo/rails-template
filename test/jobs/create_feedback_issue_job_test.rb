@@ -28,15 +28,21 @@ class CreateFeedbackIssueJobTest < ActiveJob::TestCase
     feedback = users(:one).feedbacks.create!(message: "Broken layout")
     feedback.photos.attach(io: File.open(Rails.root.join("test/fixtures/files/avatar.png")), filename: "avatar.png", content_type: "image/png")
     photo_url = "http://example.com/feedback/photos/#{feedback.photos.first.blob.signed_id}"
+    expected_body = [
+      "From: ada@example.com",
+      "App: CharcoTemplate (test)",
+      "Photos:",
+      photo_url,
+      "---",
+      "Broken layout"
+    ].join("\n")
 
     request = stub_request(:post, "https://api.github.com/repos/acme/app/issues")
       .with { |req|
         payload = JSON.parse(req.body)
         payload["title"] == "Feedback from ada@example.com" &&
           payload["labels"] == [ "feedback" ] &&
-          payload["body"].include?("Broken layout") &&
-          payload["body"].include?("ada@example.com") &&
-          payload["body"].include?(photo_url)
+          payload["body"] == expected_body
       }
       .to_return(status: 201, headers: { "Content-Type" => "application/json" }, body: { number: 1 }.to_json)
 
