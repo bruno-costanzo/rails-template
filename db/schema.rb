@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_19_232650) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_21_120000) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.text "body"
     t.datetime "created_at", null: false
@@ -153,6 +153,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_19_232650) do
     t.index ["user_id"], name: "index_sessions_on_user_id"
   end
 
+  create_table "solid_errors", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "exception_class", null: false
+    t.string "fingerprint", limit: 64, null: false
+    t.text "message", null: false
+    t.datetime "resolved_at"
+    t.text "severity", null: false
+    t.text "source"
+    t.datetime "updated_at", null: false
+    t.index ["fingerprint"], name: "index_solid_errors_on_fingerprint", unique: true
+    t.index ["resolved_at"], name: "index_solid_errors_on_resolved_at"
+  end
+
+  create_table "solid_errors_occurrences", force: :cascade do |t|
+    t.text "backtrace"
+    t.json "context"
+    t.datetime "created_at", null: false
+    t.integer "error_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["error_id"], name: "index_solid_errors_occurrences_on_error_id"
+  end
+
   create_table "tool_calls", force: :cascade do |t|
     t.json "arguments", default: {}
     t.datetime "created_at", null: false
@@ -184,5 +206,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_19_232650) do
   add_foreign_key "messages", "models"
   add_foreign_key "messages", "tool_calls"
   add_foreign_key "sessions", "users"
+  add_foreign_key "solid_errors_occurrences", "solid_errors", column: "error_id"
   add_foreign_key "tool_calls", "messages"
 end

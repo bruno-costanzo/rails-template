@@ -12,6 +12,7 @@ CharcoTemplate is a Rails 8.1.3.1 starter template. It is a fully working app on
 - A `Document` model with Lexxy rich text editing and semantic search over embeddings (Neighbor + sqlite-vec)
 - Solid Queue, Solid Cache and Solid Cable — all on SQLite, no Redis required
 - console1984: every production Rails console session and command is recorded
+- Solid Errors: uncaught exceptions are captured and deduplicated in SQLite, with a dashboard behind HTTP basic auth
 - Tailwind v4 + DaisyUI 5 (vendored, no Node/npm needed), Hotwire (Turbo + Stimulus)
 - Kamal deployment configuration ready to point at your own server
 
@@ -92,6 +93,26 @@ Tests never hit the network. `test/test_helper.rb` calls `WebMock.disable_net_co
 ## Console auditing
 
 console1984 protects and audits the Rails console in production. Every console session and every command run inside it is recorded to the database (`console1984_sessions`, `console1984_commands` tables), and by default only the `production` environment is protected — development and test consoles are unrestricted. This requires Active Record encryption to be configured (see the Quickstart's credentials step above). If you want a web UI for browsing the audit trail, console1984's companion gem [`audits1984`](https://github.com/basecamp/audits1984) is not installed by default but can be added later.
+
+## Error tracking
+
+[Solid Errors](https://github.com/fractaledmind/solid_errors) captures uncaught exceptions through Rails' native error reporter (`Rails.error`) and stores them, deduplicated by fingerprint, in the primary SQLite database (`solid_errors`/`solid_errors_occurrences` tables, migrated alongside everything else — no separate database needed). Browse them at `/errors`.
+
+The dashboard is behind HTTP basic auth, independent of the app's own session-based login. Credentials and the notification email are read once, in `config/initializers/solid_errors.rb`, from Rails credentials first and an environment variable second:
+
+- `Rails.application.credentials.dig(:solid_errors, :username)` / `:password`, falling back to `ENV["SOLID_ERRORS_USERNAME"]` / `ENV["SOLID_ERRORS_PASSWORD"]`
+- `Rails.application.credentials.dig(:solid_errors, :email_to)`, falling back to `ENV["SOLID_ERRORS_EMAIL_TO"]`
+
+Set the credentials block with `bin/rails credentials:edit`:
+
+```yaml
+solid_errors:
+  username: some-username
+  password: some-password
+  email_to: devs@yourapp.com
+```
+
+If neither username nor password is set, the dashboard is unauthenticated — set them before deploying to production. Email notification is off unless `email_to` resolves to a value; when it does, Solid Errors emails that address (via the app's already-configured Action Mailer) every time a new error occurs. `.env.test` sets `SOLID_ERRORS_USERNAME`/`SOLID_ERRORS_PASSWORD` to fixed test values so the dashboard's basic-auth test doesn't need real credentials.
 
 ## Money
 
