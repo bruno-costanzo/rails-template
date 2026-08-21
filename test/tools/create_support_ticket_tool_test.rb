@@ -2,12 +2,12 @@ require "test_helper"
 
 class CreateSupportTicketToolTest < ActiveSupport::TestCase
   test "is registered with the LLM under a human-friendly name" do
-    tool = CreateSupportTicketTool.new(users(:one))
+    tool = CreateSupportTicketTool.new(users(:one).chats.create!(support: true))
     assert_equal "create_support_ticket", tool.name
   end
 
   test "creates a feedback for the user it was built for, from the title and summary" do
-    tool = CreateSupportTicketTool.new(users(:one))
+    tool = CreateSupportTicketTool.new(users(:one).chats.create!(support: true))
 
     assert_difference("users(:one).feedbacks.count", 1) do
       tool.execute(title: "Chat page is slow", summary: "Pages take a long time to load for this person.")
@@ -19,9 +19,53 @@ class CreateSupportTicketToolTest < ActiveSupport::TestCase
   end
 
   test "returns a human-friendly confirmation with no technical details" do
-    tool = CreateSupportTicketTool.new(users(:one))
+    tool = CreateSupportTicketTool.new(users(:one).chats.create!(support: true))
     result = tool.execute(title: "Chat page is slow", summary: "Pages take a long time to load.")
 
     assert_equal "Got it - I've passed this along to the team. Thank you!", result
+  end
+
+  test "copies the chat's ticket context onto the created feedback" do
+    chat = users(:one).chats.create!(support: true, ticket_context: { "page_url" => "https://example.com/chats/1", "user_agent" => "TestBrowser/1.0", "viewport" => "1512x982" })
+    tool = CreateSupportTicketTool.new(chat)
+
+    tool.execute(title: "Chat page is slow", summary: "Pages take a long time to load.")
+
+    feedback = users(:one).feedbacks.last
+    assert_equal chat.ticket_context, feedback.context
+  end
+
+  test "leaves the feedback context blank when the chat has none" do
+    chat = users(:one).chats.create!(support: true)
+    tool = CreateSupportTicketTool.new(chat)
+
+    tool.execute(title: "Chat page is slow", summary: "Pages take a long time to load.")
+
+    feedback = users(:one).feedbacks.last
+    assert_nil feedback.context
+  end
+
+  test "attaches the chat's pending photos to the feedback and clears the pending set" do
+    chat = users(:one).chats.create!(support: true)
+    chat.pending_photos.attach(io: File.open(file_fixture("avatar.png")), filename: "avatar.png", content_type: "image/png")
+    tool = CreateSupportTicketTool.new(chat)
+
+    tool.execute(title: "Broken layout", summary: "Something looks off.")
+
+    feedback = users(:one).feedbacks.last
+    assert feedback.photos.attached?
+    assert_equal "avatar.png", feedback.photos.first.filename.to_s
+    assert_not chat.pending_photos.attached?
+    assert feedback.photos.first.blob.persisted?
+  end
+
+  test "does nothing with photos when the chat has none pending" do
+    chat = users(:one).chats.create!(support: true)
+    tool = CreateSupportTicketTool.new(chat)
+
+    tool.execute(title: "Chat page is slow", summary: "Pages take a long time to load.")
+
+    feedback = users(:one).feedbacks.last
+    assert_not feedback.photos.attached?
   end
 end

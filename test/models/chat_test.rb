@@ -20,4 +20,22 @@ class ChatTest < ActiveSupport::TestCase
     chat = users(:one).chats.create!(model: "gpt-4o-mini")
     assert_not chat.support?
   end
+
+  test "accepts a png pending photo" do
+    chat = users(:one).chats.create!(support: true)
+    chat.pending_photos.attach(io: File.open(file_fixture("avatar.png")), filename: "avatar.png", content_type: "image/png")
+    assert chat.valid?
+  end
+
+  test "rejects a non-image pending photo" do
+    chat = users(:one).chats.create!(support: true)
+    chat.pending_photos.attach(io: StringIO.new("plain text"), filename: "notes.txt", content_type: "text/plain")
+    assert_not chat.valid?
+  end
+
+  test "rejects an oversize pending photo" do
+    chat = users(:one).chats.create!(support: true)
+    chat.pending_photos.attach(io: StringIO.new("x" * 6.megabytes), filename: "big.png", content_type: "image/png")
+    assert_not chat.valid?
+  end
 end

@@ -3,5 +3,5 @@ class SupportAgent < RubyLLM::Agent
 
   instructions { SupportContext.instructions }
 
-  tools { [ CreateSupportTicketTool.new(chat.user) ] }
+  tools { [ CreateSupportTicketTool.new(chat) ] }
 end

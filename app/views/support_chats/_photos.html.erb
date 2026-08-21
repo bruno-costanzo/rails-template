@@ -1,0 +1,12 @@
+<%= turbo_frame_tag "support_chat_photos" do %>
+  <%= form_with model: chat, url: support_chat_photos_path, method: :post, data: { controller: "support-chat-photos" }, class: "flex items-center gap-2 mb-2" do |form| %>
+    <%= lucide_icon("paperclip", class: "size-4 opacity-70") %>
+    <%= form.file_field :pending_photos, multiple: true, accept: "image/*",
+        class: "file-input file-input-bordered file-input-xs w-full",
+        data: { action: "change->support-chat-photos#submit" } %>
+  <% end %>
+
+  <% if chat.pending_photos.attached? %>
+    <p class="text-xs opacity-70 mb-2"><%= pluralize(chat.pending_photos.count, "photo") %> attached</p>
+  <% end %>
+<% end %>

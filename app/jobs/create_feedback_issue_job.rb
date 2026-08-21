@@ -1,6 +1,8 @@
 class CreateFeedbackIssueJob < ApplicationJob
   queue_as :default
 
+  CONTEXT_LABELS = { "page_url" => "Page", "user_agent" => "Browser", "viewport" => "Viewport" }.freeze
+
   def perform(feedback)
     return unless GithubIssues.configured?
 
@@ -18,6 +20,11 @@ class CreateFeedbackIssueJob < ApplicationJob
       "From: #{feedback.user.email_address}",
       "App: #{Rails.application.class.module_parent_name} (#{Rails.env})"
     ]
+
+    if feedback.context.present?
+      lines << "Context:"
+      feedback.context.each { |key, value| lines << "#{CONTEXT_LABELS.fetch(key, key)}: #{value}" }
+    end
 
     if feedback.photos.attached?
       lines << "Photos:"

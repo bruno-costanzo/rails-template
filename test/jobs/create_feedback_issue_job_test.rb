@@ -25,12 +25,19 @@ class CreateFeedbackIssueJobTest < ActiveJob::TestCase
     ENV["GITHUB_ISSUES_TOKEN"] = "fine-grained-token"
     ENV["GITHUB_ISSUES_REPO"] = "acme/app"
 
-    feedback = users(:one).feedbacks.create!(message: "Broken layout")
+    feedback = users(:one).feedbacks.create!(
+      message: "Broken layout",
+      context: { "page_url" => "https://example.com/chats/1", "user_agent" => "TestBrowser/1.0", "viewport" => "1512x982" }
+    )
     feedback.photos.attach(io: File.open(Rails.root.join("test/fixtures/files/avatar.png")), filename: "avatar.png", content_type: "image/png")
     photo_url = "http://example.com/feedback/photos/#{feedback.photos.first.blob.signed_id}"
     expected_body = [
       "From: ada@example.com",
       "App: CharcoTemplate (test)",
+      "Context:",
+      "Page: https://example.com/chats/1",
+      "Browser: TestBrowser/1.0",
+      "Viewport: 1512x982",
       "Photos:",
       photo_url,
       "---",

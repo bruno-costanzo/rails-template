@@ -38,4 +38,41 @@ class SupportChatsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_no_match "create_support_ticket", @response.body
   end
+
+  test "stores the page url, user agent and viewport sent with the request" do
+    sign_in_as users(:one)
+
+    get support_chat_url, params: { context: { page_url: "https://example.com/chats/1", user_agent: "TestBrowser/1.0", viewport: "1512x982" } }
+
+    chat = users(:one).chats.support.sole
+    assert_equal "https://example.com/chats/1", chat.ticket_context["page_url"]
+    assert_equal "TestBrowser/1.0", chat.ticket_context["user_agent"]
+    assert_equal "1512x982", chat.ticket_context["viewport"]
+  end
+
+  test "truncates context values to 2 kilobytes" do
+    sign_in_as users(:one)
+
+    get support_chat_url, params: { context: { page_url: "x" * 3000 } }
+
+    chat = users(:one).chats.support.sole
+    assert_equal 2.kilobytes, chat.ticket_context["page_url"].length
+  end
+
+  test "ignores unknown context keys" do
+    sign_in_as users(:one)
+
+    get support_chat_url, params: { context: { page_url: "https://example.com", admin: "true" } }
+
+    chat = users(:one).chats.support.sole
+    assert_not chat.ticket_context.key?("admin")
+  end
+
+  test "does not touch the chat's context when none is sent" do
+    sign_in_as users(:one)
+    get support_chat_url
+
+    chat = users(:one).chats.support.sole
+    assert_nil chat.ticket_context
+  end
 end
