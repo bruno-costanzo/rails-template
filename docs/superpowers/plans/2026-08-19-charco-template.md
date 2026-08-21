@@ -1841,3 +1841,38 @@ Coverage must hold 100/100 over the new app/ code.
 bin/ci
 git add -A && git commit -m "Add user feedback channel backed by GitHub Issues"
 ```
+
+### Task 23: AI support assistant
+
+Execution order note: run after Task 22.
+
+**Files:**
+- Create: `config/support_context.md` (placeholder), `app/models/support_context.rb`, `app/tools/create_support_ticket_tool.rb`, support chat controller + views (floating button partial, chat panel), migration adding `support` boolean to `chats`, tests for all of it (`test/models`, `test/tools` or equivalent, `test/controllers`, one system test)
+- Modify: `config/routes.rb`, application layout (floating button for signed-in users), `app/models/chat.rb` (support scope/flag), the streaming response job wiring for support chats, `CLAUDE.md`, `README.md`
+
+**Interfaces:**
+- Consumes: RubyLLM chat + tools, `Current.user`, the existing `Feedback` model and its `after_create_commit` GitHub pipeline, WebMock stubs.
+- Produces: a support conversation UI; refined tickets persisted as `Feedback` (and forwarded to GitHub Issues when configured).
+
+**Binding rule (verbatim from the user):** "es importante q nunca le filtre codigo a la persona, es decir, para la persona debe ser solo human friendly." Nothing user-facing may contain code, file names, stack traces, or technical internals. This rule must appear in the agent's system instructions, and tests must assert the instructions include it.
+
+- [ ] **Step 1: Support context (TDD)**
+
+`SupportContext.content` returns the text of `config/support_context.md`; missing file returns an empty string. Template ships a short placeholder describing the app in plain language (explicitly non-technical, per the binding rule). Unit test both branches.
+
+- [ ] **Step 2: Agent + tool (TDD, WebMock)**
+
+`CreateSupportTicketTool < RubyLLM::Tool` (params: title, summary) creates a `Feedback` for the current user with a message composed from title + refined summary — reusing Task 22 persistence and its GitHub job untouched. Support chats: `support` boolean on `Chat`, excluded from the chats index; when a chat is a support chat, the streaming response job attaches the tool and system instructions built from the binding rule + `SupportContext.content`. Tests: stub the LLM (existing `stub_openai_chat` helpers, extended if needed for tool calls) and assert (a) a tool-call roundtrip creates the Feedback, (b) the system instructions contain the human-friendly rule and the support context, (c) normal chats are unaffected.
+
+- [ ] **Step 3: UI (TDD)**
+
+Floating DaisyUI button (bottom corner, signed-in users only, rendered from the layout) opens the support chat panel. Controller scoped through `Current.user`, creating/reusing the user's support chat. System test: open the widget, send a message, stubbed streamed reply visible; assert the reply text shown is the stubbed human-friendly content.
+
+- [ ] **Step 4: Document, full gate, commit**
+
+README "AI support assistant" section: what it does, how `config/support_context.md` is maintained (human-friendly only), relation to the feedback pipeline, behavior when OpenAI or GitHub env vars are unset. CLAUDE.md subsystem map entry including the binding rule. Coverage must hold 100/100.
+
+```bash
+bin/ci
+git add -A && git commit -m "Add AI support assistant filing refined feedback"
+```
