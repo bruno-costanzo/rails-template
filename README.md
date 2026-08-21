@@ -112,7 +112,9 @@ solid_errors:
   email_to: devs@yourapp.com
 ```
 
-If neither username nor password is set, the dashboard is unauthenticated — set them before deploying to production. Email notification is off unless `email_to` resolves to a value; when it does, Solid Errors emails that address (via the app's already-configured Action Mailer) every time a new error occurs. `.env.test` sets `SOLID_ERRORS_USERNAME`/`SOLID_ERRORS_PASSWORD` to fixed test values so the dashboard's basic-auth test doesn't need real credentials.
+Basic auth is only enabled when a password is set — the gem's filter is `http_basic_authenticate_with ... if SolidErrors.password`, so a username with no password still leaves `/errors` wide open. Set both before deploying to production. Email notification is off unless `email_to` resolves to a value; when it does, Solid Errors emails that address (via the app's already-configured Action Mailer) every time a new error occurs. `.env.test` sets `SOLID_ERRORS_USERNAME`/`SOLID_ERRORS_PASSWORD` to fixed test values so the dashboard's basic-auth test doesn't need real credentials.
+
+Solid Errors also reads its own env vars directly, `ENV["SOLIDERRORS_USERNAME"]`/`ENV["SOLIDERRORS_PASSWORD"]` (no underscore between "SOLID" and "ERRORS") — this gem-native lookup happens ahead of anything this app configures, credentials included. Don't set those two exact variable names unless you intend them to silently win over everything else.
 
 ## Money
 
