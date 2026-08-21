@@ -44,7 +44,6 @@
 
 !docs/superpowers/
 !docs/superpowers/**
-.env
 
 !CLAUDE.md
 !AGENTS.md
