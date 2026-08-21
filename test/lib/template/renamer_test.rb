@@ -2,6 +2,10 @@ require "test_helper"
 require "tmpdir"
 
 class Template::RenamerTest < ActiveSupport::TestCase
+  setup do
+    @target = "#{Rails.application.class.module_parent_name.underscore}_renamed"
+  end
+
   test "rewrites module, snake, dashed and title-case names in text files" do
     Dir.mktmpdir do |dir|
       File.write(File.join(dir, "application.rb"), "module CharcoTemplate\nend\n")
@@ -9,11 +13,11 @@ class Template::RenamerTest < ActiveSupport::TestCase
       File.write(File.join(dir, "layout.html.erb"), "<meta name=\"application-name\" content=\"Charco Template\">\n")
       FileUtils.mkdir(File.join(dir, "tmp"))
       File.write(File.join(dir, "tmp", "skipped.rb"), "CharcoTemplate")
-      Template::Renamer.new(root: dir, new_name: "acme_notes").run
-      assert_includes File.read(File.join(dir, "application.rb")), "module AcmeNotes"
-      assert_includes File.read(File.join(dir, "deploy.yml")), "service: acme_notes"
-      assert_includes File.read(File.join(dir, "deploy.yml")), "acme-notes.example.com"
-      assert_includes File.read(File.join(dir, "layout.html.erb")), "Acme Notes"
+      Template::Renamer.new(root: dir, new_name: @target).run
+      assert_includes File.read(File.join(dir, "application.rb")), "module #{@target.camelize}"
+      assert_includes File.read(File.join(dir, "deploy.yml")), "service: #{@target}"
+      assert_includes File.read(File.join(dir, "deploy.yml")), "#{@target.dasherize}.example.com"
+      assert_includes File.read(File.join(dir, "layout.html.erb")), @target.titleize
       assert_includes File.read(File.join(dir, "tmp", "skipped.rb")), "CharcoTemplate"
     end
   end
@@ -23,7 +27,7 @@ class Template::RenamerTest < ActiveSupport::TestCase
       path = File.join(dir, ".gitkeep")
       FileUtils.touch(path)
 
-      Template::Renamer.new(root: dir, new_name: "acme_notes").run
+      Template::Renamer.new(root: dir, new_name: @target).run
 
       assert_equal "", File.read(path)
     end
@@ -35,7 +39,7 @@ class Template::RenamerTest < ActiveSupport::TestCase
       File.write(path, "hello world")
       mtime_before = File.mtime(path)
 
-      Template::Renamer.new(root: dir, new_name: "acme_notes").run
+      Template::Renamer.new(root: dir, new_name: @target).run
 
       assert_equal "hello world", File.read(path)
       assert_equal mtime_before, File.mtime(path)
