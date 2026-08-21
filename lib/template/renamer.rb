@@ -31,7 +31,7 @@ module Template
     end
 
     def text?(path)
-      !File.binread(path, 8192).include?("\x00")
+      !File.binread(path, 8192).to_s.include?("\x00")
     end
 
     def rewrite(path)

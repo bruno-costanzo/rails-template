@@ -16,6 +16,17 @@ class Template::RenamerTest < ActiveSupport::TestCase
     end
   end
 
+  test "treats empty files as text and leaves them untouched without raising" do
+    Dir.mktmpdir do |dir|
+      path = File.join(dir, ".gitkeep")
+      FileUtils.touch(path)
+
+      Template::Renamer.new(root: dir, new_name: "acme_notes").run
+
+      assert_equal "", File.read(path)
+    end
+  end
+
   test "leaves files without a template reference untouched" do
     Dir.mktmpdir do |dir|
       path = File.join(dir, "unrelated.txt")
