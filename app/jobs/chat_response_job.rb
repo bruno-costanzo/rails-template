@@ -1,7 +1,7 @@
 class ChatResponseJob < ApplicationJob
   def perform(chat_id, content)
     chat = Chat.find(chat_id)
-    attach_support_tooling(chat) if chat.support?
+    chat = SupportAgent.find(chat_id) if chat.support?
 
     chat.ask(content) do |chunk|
       if chunk.content && !chunk.content.empty?
@@ -11,12 +11,5 @@ class ChatResponseJob < ApplicationJob
     end
 
     GenerateChatTitleJob.perform_later(chat) unless chat.support?
-  end
-
-  private
-
-  def attach_support_tooling(chat)
-    chat.with_instructions(SupportContext.instructions)
-    chat.with_tool(CreateSupportTicketTool.new(chat.user))
   end
 end

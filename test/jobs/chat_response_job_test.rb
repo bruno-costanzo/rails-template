@@ -38,9 +38,12 @@ class ChatResponseJobTest < ActiveJob::TestCase
 
     ChatResponseJob.perform_now(chat.id, "The chat page is slow for me")
 
-    system_message = chat.messages.find_by(role: "system")
-    assert_includes system_message.content, SupportContext::BINDING_RULE
-    assert_includes system_message.content, SupportContext.content
+    assert_requested :post, "https://api.openai.com/v1/chat/completions" do |request|
+      instructions_message = JSON.parse(request.body)["messages"].find { |message| message["role"] != "user" }
+      instructions_message &&
+        instructions_message["content"].include?(SupportContext::BINDING_RULE) &&
+        instructions_message["content"].include?(SupportContext.content)
+    end
   end
 
   test "does not enqueue chat titling for a support chat" do
