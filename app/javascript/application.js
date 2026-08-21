@@ -3,3 +3,7 @@ import "@hotwired/turbo-rails"
 import "controllers"
 
 import "lexxy"
+
+import confirmDialog from "confirm_dialog"
+
+Turbo.config.forms.confirm = confirmDialog

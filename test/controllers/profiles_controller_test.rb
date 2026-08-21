@@ -20,6 +20,9 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to edit_profile_url
     assert_equal "Ada King", users(:one).reload.name
     assert users(:one).avatar.attached?
+
+    follow_redirect!
+    assert_select ".toast .alert.alert-success", /Profile updated/
   end
 
   test "ignores blank password fields" do

@@ -1,0 +1,8 @@
+<div id="flash" class="toast toast-top toast-center">
+  <% flash.each do |type, message| %>
+    <div class="alert <%= type == "alert" ? "alert-error" : "alert-success" %>" data-controller="flash">
+      <span><%= message %></span>
+      <button type="button" class="btn btn-sm btn-circle btn-ghost" data-action="flash#dismiss" aria-label="Dismiss">&times;</button>
+    </div>
+  <% end %>
+</div>

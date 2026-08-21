@@ -12,6 +12,9 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
   test "rejects invalid credentials" do
     post session_url, params: { email_address: "ada@example.com", password: "wrong" }
     assert_redirected_to new_session_url
+
+    follow_redirect!
+    assert_select ".toast .alert.alert-error", /Try another email address or password/
   end
 
   test "signs out" do

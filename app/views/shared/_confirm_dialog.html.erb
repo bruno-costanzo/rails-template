@@ -1,0 +1,12 @@
+<dialog id="turbo-confirm" class="modal">
+  <div class="modal-box">
+    <p class="py-4" data-turbo-confirm-message></p>
+    <div class="modal-action">
+      <button type="button" value="cancel" data-turbo-confirm-cancel class="btn">Cancel</button>
+      <button type="button" value="confirm" data-turbo-confirm-confirm class="btn btn-error">Confirm</button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop" data-turbo="false">
+    <button>close</button>
+  </form>
+</dialog>

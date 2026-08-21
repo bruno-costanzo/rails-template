@@ -25,9 +25,8 @@
 
   <body>
     <%= render "shared/navbar" %>
-    <% flash.each do |type, message| %>
-      <div class="alert <%= type == "alert" ? "alert-error" : "alert-info" %> m-4"><%= message %></div>
-    <% end %>
+    <%= render "shared/flash" %>
+    <%= render "shared/confirm_dialog" %>
     <main class="container mx-auto mt-28 px-5 flex">
       <%= yield %>
     </main>
