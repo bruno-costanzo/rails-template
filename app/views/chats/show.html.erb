@@ -10,7 +10,7 @@
     <%= @chat.model&.label || default_model_display_name %>
   </div>
 
-  <div id="messages" class="min-w-full divide-y divide-gray-200 space-y-5 my-5">
+  <div id="chat_<%= @chat.id %>_messages" class="min-w-full divide-y divide-gray-200 space-y-5 my-5">
     <% @chat.messages.where.not(id: nil).each do |message| %>
       <%= render message %>
     <% end %>

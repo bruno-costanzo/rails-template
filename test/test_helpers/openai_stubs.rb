@@ -16,11 +16,30 @@ module OpenaiStubs
     body << server_sent_event(content: nil, finish_reason: "stop")
     body << "data: [DONE]\n\n"
 
-    stub_request(:post, "https://api.openai.com/v1/chat/completions").to_return(
-      status: 200,
-      headers: { "Content-Type" => "text/event-stream" },
-      body: body
-    )
+    stub_request(:post, "https://api.openai.com/v1/chat/completions")
+      .with(body: /"stream":true/)
+      .to_return(
+        status: 200,
+        headers: { "Content-Type" => "text/event-stream" },
+        body: body
+      )
+  end
+
+  def stub_openai_chat_stream_with_tool_call(tool_name:, arguments:, chunks:)
+    tool_call_stream = tool_call_stream_event(name: tool_name, arguments: arguments)
+    tool_call_stream << server_sent_event(content: nil, finish_reason: "tool_calls")
+    tool_call_stream << "data: [DONE]\n\n"
+
+    final_stream = chunks.map { |content| server_sent_event(content: content) }.join
+    final_stream << server_sent_event(content: nil, finish_reason: "stop")
+    final_stream << "data: [DONE]\n\n"
+
+    stub_request(:post, "https://api.openai.com/v1/chat/completions")
+      .with(body: /"stream":true/)
+      .to_return(
+        { status: 200, headers: { "Content-Type" => "text/event-stream" }, body: tool_call_stream },
+        { status: 200, headers: { "Content-Type" => "text/event-stream" }, body: final_stream }
+      )
   end
 
   def stub_openai_embedding(vector:)
@@ -36,6 +55,23 @@ module OpenaiStubs
   end
 
   private
+
+  def tool_call_stream_event(name:, arguments:)
+    chunk = {
+      id: "chatcmpl-test", object: "chat.completion.chunk", created: 0, model: "gpt-4o-mini",
+      choices: [ {
+        index: 0,
+        delta: {
+          tool_calls: [ {
+            index: 0, id: "call_1", type: "function",
+            function: { name: name, arguments: arguments.to_json }
+          } ]
+        },
+        finish_reason: nil
+      } ]
+    }
+    "data: #{chunk.to_json}\n\n"
+  end
 
   def server_sent_event(content:, finish_reason: nil)
     delta = content.nil? ? {} : { content: content }

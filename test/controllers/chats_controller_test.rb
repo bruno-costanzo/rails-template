@@ -22,6 +22,13 @@ class ChatsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "excludes support chats from the index" do
+    sign_in_as users(:one)
+    support_chat = users(:one).chats.create!(support: true)
+    get chats_url
+    assert_select "#chat_#{support_chat.id}", count: 0
+  end
+
   test "shows a new chat form with the available models" do
     sign_in_as users(:one)
     get new_chat_url

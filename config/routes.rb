@@ -2,6 +2,7 @@ Rails.application.routes.draw do
   resources :chats, except: [ :edit, :update ] do
     resources :messages, only: [ :create ]
   end
+  resource :support_chat, only: [ :show ]
   resources :documents
   resources :models, only: [ :index, :show ] do
     collection do

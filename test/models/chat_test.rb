@@ -8,4 +8,16 @@ class ChatTest < ActiveSupport::TestCase
     assert_equal [ "user", "assistant" ], chat.messages.order(:created_at).pluck(:role)
     assert_includes chat.messages.last.content, "Hello from the stub"
   end
+
+  test "support scope returns only chats flagged as support chats" do
+    support_chat = users(:one).chats.create!(support: true)
+    users(:one).chats.create!(model: "gpt-4o-mini")
+
+    assert_equal [ support_chat ], users(:one).chats.support.to_a
+  end
+
+  test "is not a support chat by default" do
+    chat = users(:one).chats.create!(model: "gpt-4o-mini")
+    assert_not chat.support?
+  end
 end

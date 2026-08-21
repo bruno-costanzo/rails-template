@@ -2,7 +2,7 @@ class ChatsController < ApplicationController
   before_action :set_chat, only: [ :show, :destroy ]
 
   def index
-    @chats = Current.user.chats.order(created_at: :desc)
+    @chats = Current.user.chats.where(support: false).order(created_at: :desc)
   end
 
   def new

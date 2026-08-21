@@ -14,6 +14,7 @@ CharcoTemplate is a Rails 8.1.3.1 starter template. It is a fully working app on
 - console1984: every production Rails console session and command is recorded
 - Solid Errors: uncaught exceptions are captured and deduplicated in SQLite, with a dashboard behind HTTP basic auth
 - A signed-in feedback form that always saves locally and, when configured, opens a labeled GitHub Issue
+- A floating AI support assistant that turns a conversation into a refined, human-friendly ticket, filed through the same feedback pipeline
 - Tailwind v4 + DaisyUI 5 (vendored, no Node/npm needed), Hotwire (Turbo + Stimulus)
 - Kamal deployment configuration ready to point at your own server
 
@@ -85,6 +86,7 @@ Tests never hit the network. `test/test_helper.rb` calls `WebMock.disable_net_co
 
 - `stub_openai_chat(content:)` — stubs a chat completion
 - `stub_openai_chat_stream(chunks:)` — stubs a streamed chat completion
+- `stub_openai_chat_stream_with_tool_call(tool_name:, arguments:, chunks:)` — stubs a streamed tool-call round trip (a tool-call chunk, then a final streamed reply)
 - `stub_openai_embedding(vector:)` — stubs an embedding request
 
 ### Coverage
@@ -137,6 +139,17 @@ Any photos attached to the feedback are linked in the issue body through a perma
 Those photo links are absolute URLs, built with `Rails.application.config.action_mailer.default_url_options` (the same host config used for password-reset emails) since a background job has no request to infer a host from. `config/environments/production.rb` ships that as the placeholder `{ host: "example.com" }` — like the `YOUR_REGISTRY_USER`/`YOUR_SERVER_IP`/domain placeholders in `config/deploy.yml`, **this must be replaced with your app's real production host before deploying**, or photo links inside GitHub issues will silently point at `example.com` instead of your app.
 
 A future extension worth considering: auto-capturing a screenshot of the page the user was on when they opened the feedback form (e.g., via a JS screenshot library posting a data URL alongside the form). Not built here — today photos are whatever the user manually attaches.
+
+## AI support assistant
+
+Every signed-in page shows a floating "Support" button (bottom-right corner). It opens a chat panel backed by a dedicated support `Chat` (`support: true`, one per user, found-or-created by `SupportChatsController`). The assistant listens to the person's problem or suggestion, asks clarifying questions in plain language, and once it understands the issue, calls `CreateSupportTicketTool` (`app/tools/create_support_ticket_tool.rb`, a `RubyLLM::Tool`) to file it — this creates a `Feedback` record for that user, reusing the exact same pipeline as the manual feedback form above (Task 22): it always saves locally, and opens a labeled GitHub Issue when `GITHUB_ISSUES_TOKEN`/`GITHUB_ISSUES_REPO` are set. The assistant needs `OPENAI_API_KEY` to work at all (like the rest of the AI chat); without it, the support button still opens the panel, but the assistant can't reply.
+
+**The binding rule:** nothing the person sees in this chat may ever contain code, file names, stack traces, class names, or any other technical detail — only plain, human-friendly language. This is enforced in depth:
+
+1. `SupportContext.instructions` (`app/models/support_context.rb`) prepends `SupportContext::BINDING_RULE`, a fixed English sentence stating the rule, to every support chat's system prompt. `ChatResponseJob` attaches these instructions (and the ticket-filing tool) only when `chat.support?` is true — normal chats are unaffected.
+2. `config/support_context.md` — a short, human-friendly, explicitly non-technical description of the app — is the *only* app-specific knowledge given to the assistant. It ships as a placeholder; **keep it non-technical when you edit it for your own app.** `SupportContext.content` reads it (empty string if the file is ever removed).
+3. Technical message types (the system prompt itself, tool-call requests, tool results) are never rendered in the support chat's UI even if something goes wrong upstream: `Message#to_partial_path` renders those as a blank partial for support chats specifically (`app/models/message.rb`), while the normal chat UI (which is meant to be transparent/debuggable) still shows them in full.
+4. The ticket itself — the refined title and summary the tool files — is written for the developer and can be as technical as the person's own words make it; only the chat reply shown back to the person stays in plain language.
 
 ## Money
 
