@@ -6,6 +6,7 @@ Rails starter template. This repo is both a working app and the template new app
 - Ruby 4.0.6, Rails 8.1.3.1, SQLite everywhere (Solid Queue/Cache/Cable on SQLite)
 - Propshaft + Importmap (no Node), Tailwind v4 + DaisyUI 5 (vendored `app/assets/tailwind/daisyui.mjs`, `app/assets/tailwind/daisyui-theme.mjs`)
 - Hotwire (Turbo + Stimulus), Lexxy for Action Text rich text
+- Lucide icons via `lucide-rails` (`lucide_icon` helper, inline SVG, no icon font/CDN)
 - RubyLLM (OpenAI only: gpt-4o-mini / text-embedding-3-small), Schematist for structured output, Neighbor + sqlite-vec for vector search
 - Native Rails authentication (+ custom registration/profile), Active Storage avatars
 - console1984 for audited production console access (depends on Active Record encryption)

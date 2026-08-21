@@ -16,6 +16,7 @@ CharcoTemplate is a Rails 8.1.3.1 starter template. It is a fully working app on
 - A signed-in feedback form that always saves locally and, when configured, opens a labeled GitHub Issue
 - A floating AI support assistant that turns a conversation into a refined, human-friendly ticket, filed through the same feedback pipeline
 - Tailwind v4 + DaisyUI 5 (vendored, no Node/npm needed), Hotwire (Turbo + Stimulus)
+- Lucide icons rendered inline through a helper, no icon font or CDN
 - Kamal deployment configuration ready to point at your own server
 
 ## Requirements
@@ -154,6 +155,16 @@ Every signed-in page shows a floating "Support" button (bottom-right corner). It
 ## Money
 
 [money-rails](https://github.com/RubyMoney/money-rails) is installed and configured with USD as the default currency (`config/initializers/money.rb`), but no monetized model ships with the template. To add a monetized column to a model: add `t.monetize :price` to a migration (this creates `price_cents` and `price_currency` columns), then declare `monetize :price_cents` on the model.
+
+## Icons
+
+The template's icon set is [Lucide](https://lucide.dev), via the `lucide-rails` gem: icons render as inline `<svg>` markup through the `lucide_icon` helper, no icon font and no CDN. In any view:
+
+```erb
+<%= lucide_icon "house", class: "size-4" %>
+```
+
+The first argument is the icon's name as it appears in the [Lucide icon library](https://lucide.dev/icons) (kebab-case, e.g. `house`, `arrow-right`, `circle-check`). Any keyword argument becomes an HTML attribute on the rendered `<svg>` — `class:` is the common case for sizing and color, since stroke color follows `currentColor` by default. Global defaults (applied to every icon) can be overridden via `LucideRails.default_options=` in an initializer if a future app needs that; the template doesn't set one.
 
 ## Deployment
 

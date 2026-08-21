@@ -90,3 +90,5 @@ gem "simplecov", "~> 1.1", group: :test, require: false
 gem "money-rails", "~> 3.0"
 
 gem "solid_errors", "~> 0.7.0"
+
+gem "lucide-rails", "~> 0.7.4"
