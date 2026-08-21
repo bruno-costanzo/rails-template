@@ -25,9 +25,37 @@ class DocumentTest < ActiveSupport::TestCase
     assert_includes results, cooking
   end
 
-  test "saving enqueues an embedding refresh" do
+  test "creating a document enqueues an embedding refresh" do
     assert_enqueued_with(job: GenerateDocumentEmbeddingJob) do
       users(:one).documents.create!(title: "New", content: "text")
+    end
+  end
+
+  test "updating the title enqueues an embedding refresh" do
+    doc = users(:one).documents.create!(title: "New", content: "text")
+    clear_enqueued_jobs
+
+    assert_enqueued_with(job: GenerateDocumentEmbeddingJob) do
+      doc.update!(title: "Renamed")
+    end
+  end
+
+  test "updating the content enqueues an embedding refresh" do
+    doc = users(:one).documents.create!(title: "New", content: "text")
+    clear_enqueued_jobs
+
+    assert_enqueued_with(job: GenerateDocumentEmbeddingJob) do
+      doc.update!(content: "different text")
+    end
+  end
+
+  test "touching a document without changing title or content does not enqueue a refresh" do
+    doc = users(:one).documents.create!(title: "New", content: "text")
+    doc = Document.find(doc.id)
+    clear_enqueued_jobs
+
+    assert_no_enqueued_jobs only: GenerateDocumentEmbeddingJob do
+      doc.touch
     end
   end
 end
