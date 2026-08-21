@@ -1,0 +1,19 @@
+<% content_for :title, "Feedback" %>
+
+<div class="flex justify-center py-16">
+  <div class="card bg-base-100 shadow w-full max-w-2xl">
+    <div class="card-body">
+      <h1 class="card-title">Send feedback</h1>
+      <%= form_with model: @feedback, url: feedback_path do |form| %>
+        <% if @feedback.errors.any? %>
+          <div class="alert alert-error mb-4"><%= @feedback.errors.full_messages.to_sentence %></div>
+        <% end %>
+        <%= form.label :message, "What's on your mind?", class: "label" %>
+        <%= form.text_area :message, class: "textarea textarea-bordered w-full", rows: 6, required: true %>
+        <%= form.label :photos, "Attach screenshots (optional)", class: "label mt-4" %>
+        <%= form.file_field :photos, multiple: true, accept: "image/*", class: "file-input file-input-bordered w-full" %>
+        <%= form.submit "Send feedback", class: "btn btn-primary w-full mt-4" %>
+      <% end %>
+    </div>
+  </div>
+</div>

@@ -13,6 +13,7 @@ CharcoTemplate is a Rails 8.1.3.1 starter template. It is a fully working app on
 - Solid Queue, Solid Cache and Solid Cable — all on SQLite, no Redis required
 - console1984: every production Rails console session and command is recorded
 - Solid Errors: uncaught exceptions are captured and deduplicated in SQLite, with a dashboard behind HTTP basic auth
+- A signed-in feedback form that always saves locally and, when configured, opens a labeled GitHub Issue
 - Tailwind v4 + DaisyUI 5 (vendored, no Node/npm needed), Hotwire (Turbo + Stimulus)
 - Kamal deployment configuration ready to point at your own server
 
@@ -115,6 +116,25 @@ solid_errors:
 Basic auth is only enabled when a password is set — the gem's filter is `http_basic_authenticate_with ... if SolidErrors.password`, so a username with no password still leaves `/errors` wide open. Set both before deploying to production. Email notification is off unless `email_to` resolves to a value; when it does, Solid Errors emails that address (via the app's already-configured Action Mailer) every time a new error occurs. `.env.test` sets `SOLID_ERRORS_USERNAME`/`SOLID_ERRORS_PASSWORD` to fixed test values so the dashboard's basic-auth test doesn't need real credentials.
 
 Solid Errors also reads its own env vars directly, `ENV["SOLIDERRORS_USERNAME"]`/`ENV["SOLIDERRORS_PASSWORD"]` (no underscore between "SOLID" and "ERRORS") — this gem-native lookup happens ahead of anything this app configures, credentials included. Don't set those two exact variable names unless you intend them to silently win over everything else.
+
+## User feedback
+
+Signed-in users can leave feedback (with optional screenshots) from the "Feedback" link in the navbar dropdown, at `/feedback`. Every submission is saved locally as a `Feedback` record (`belongs_to :user`, `has_many_attached :photos`) — that part always works, with no configuration needed.
+
+On top of that, each feedback can optionally open a GitHub Issue labeled `feedback` in a repo you choose. This is best-effort: `CreateFeedbackIssueJob` runs after the `Feedback` is created and silently does nothing unless both of these are set:
+
+```bash
+GITHUB_ISSUES_TOKEN=github_pat_your-fine-grained-token
+GITHUB_ISSUES_REPO=your-org/your-repo
+```
+
+To create the token: on GitHub, go to Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token. Scope it to the single repository you want issues created in, and grant it **Issues: Read and write** repository permission (nothing else is needed). Set both env vars in `.env` (see `.env.example`).
+
+`GithubIssues` (`app/models/github_issues.rb`) is a small PORO wrapping `Net::HTTP` — no extra gem — that POSTs to `https://api.github.com/repos/#{repo}/issues` with the token as a bearer credential and the `X-GitHub-Api-Version: 2022-11-28` header GitHub's REST API expects. `GithubIssues.configured?` is `false` whenever either env var is blank, and `CreateFeedbackIssueJob` checks that before doing anything — so with neither var set, feedback is captured locally and nothing ever reaches GitHub. If GitHub responds with anything other than a 2xx, the client raises: Solid Queue retries the job automatically, and Solid Errors captures it if retries are exhausted.
+
+Any photos attached to the feedback are linked in the issue body through a permanent public route, `/feedback/photos/:signed_id` (`FeedbackPhotosController`), rather than a raw Active Storage blob URL — those expire and GitHub can't authenticate to fetch them anyway. That controller resolves the signed ID to a blob and then checks the blob is actually attached to some `Feedback#photos` before redirecting to it, so it can't be turned into a generic "serve any blob by signed ID" proxy for attachments elsewhere in the app (avatars, message attachments, etc.).
+
+A future extension worth considering: auto-capturing a screenshot of the page the user was on when they opened the feedback form (e.g., via a JS screenshot library posting a data URL alongside the form). Not built here — today photos are whatever the user manually attaches.
 
 ## Money
 

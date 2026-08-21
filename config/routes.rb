@@ -12,6 +12,8 @@ Rails.application.routes.draw do
   resource :registration, only: %i[new create]
   resource :profile, only: %i[edit update]
   resources :passwords, param: :token
+  resource :feedback, only: %i[new create]
+  get "feedback/photos/:signed_id", to: "feedback_photos#show", as: :feedback_photo
 
   mount SolidErrors::Engine => "/errors"
 
