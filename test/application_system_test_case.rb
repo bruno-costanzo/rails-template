@@ -1,3 +1,4 @@
+ENV["SKIP_COVERAGE"] ||= "1"
 require "test_helper"
 
 class ApplicationSystemTestCase < ActionDispatch::SystemTestCase

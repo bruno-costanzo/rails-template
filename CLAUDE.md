@@ -24,8 +24,9 @@ All Ruby/Rails commands run under `mise exec ruby@4.0.6 -- <command>` in non-mis
 - English-only code and copy. No code comments. No inline styles.
 - DaisyUI component classes before custom CSS.
 - Controllers scope data through `Current.user` (see `ChatsController`, `DocumentsController`).
-- LLM calls in tests use `stub_openai_chat` / `stub_openai_embedding` (test/test_helpers/openai_stubs.rb).
+- LLM calls in tests use `stub_openai_chat` / `stub_openai_chat_stream` / `stub_openai_embedding` (test/test_helpers/openai_stubs.rb).
 - Background work goes to Solid Queue jobs (see `GenerateDocumentEmbeddingJob`).
+- 100% line and branch coverage is enforced by SimpleCov; `bin/rails test` fails below 100%. Write the test first; never delete a failing coverage gate. System tests run with `SKIP_COVERAGE=1` and are excluded from measurement.
 - Commits: short imperative messages, no co-author trailers.
 
 ## Subsystem map

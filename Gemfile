@@ -84,3 +84,5 @@ gem "neighbor", "~> 1.2"
 gem "sqlite-vec", "~> 0.1.9"
 
 gem "console1984", "~> 0.2.4"
+
+gem "simplecov", "~> 1.1", group: :test, require: false

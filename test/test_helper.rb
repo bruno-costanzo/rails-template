@@ -1,3 +1,11 @@
+unless ENV["SKIP_COVERAGE"]
+  require "simplecov"
+  SimpleCov.start "rails" do
+    enable_coverage :branch
+    minimum_coverage line: 100, branch: 100
+  end
+end
+
 ENV["RAILS_ENV"] ||= "test"
 ENV["OPENAI_API_KEY"] ||= "test-key"
 require_relative "../config/environment"
@@ -12,12 +20,16 @@ module ActiveSupport
   class TestCase
     include ActiveJob::TestHelper
 
-    # Run tests in parallel with specified workers
     parallelize(workers: :number_of_processors)
 
-    # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
-    fixtures :all
+    parallelize_setup do |worker|
+      SimpleCov.command_name "#{SimpleCov.command_name}-#{worker}" if defined?(SimpleCov)
+    end
 
-    # Add more helper methods to be used by all tests here...
+    parallelize_teardown do |worker|
+      SimpleCov.result if defined?(SimpleCov)
+    end
+
+    fixtures :all
   end
 end

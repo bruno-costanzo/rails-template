@@ -15,4 +15,17 @@ class Template::RenamerTest < ActiveSupport::TestCase
       assert_includes File.read(File.join(dir, "tmp", "skipped.rb")), "CharcoTemplate"
     end
   end
+
+  test "leaves files without a template reference untouched" do
+    Dir.mktmpdir do |dir|
+      path = File.join(dir, "unrelated.txt")
+      File.write(path, "hello world")
+      mtime_before = File.mtime(path)
+
+      Template::Renamer.new(root: dir, new_name: "acme_notes").run
+
+      assert_equal "hello world", File.read(path)
+      assert_equal mtime_before, File.mtime(path)
+    end
+  end
 end

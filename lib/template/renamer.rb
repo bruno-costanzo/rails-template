@@ -31,8 +31,7 @@ module Template
     end
 
     def text?(path)
-      chunk = File.binread(path, 8192)
-      chunk.nil? || !chunk.include?("\x00")
+      !File.binread(path, 8192).include?("\x00")
     end
 
     def rewrite(path)

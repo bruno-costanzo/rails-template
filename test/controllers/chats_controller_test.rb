@@ -21,4 +21,46 @@ class ChatsControllerTest < ActionDispatch::IntegrationTest
     get chats_url
     assert_response :success
   end
+
+  test "shows a new chat form with the available models" do
+    sign_in_as users(:one)
+    get new_chat_url
+    assert_response :success
+  end
+
+  test "shows an own chat" do
+    sign_in_as users(:one)
+    chat = users(:one).chats.create!(model: "gpt-4o-mini")
+    get chat_url(chat)
+    assert_response :success
+  end
+
+  test "creates a chat and enqueues the first response when a prompt is given" do
+    sign_in_as users(:one)
+    assert_difference("users(:one).chats.count", 1) do
+      assert_enqueued_with(job: ChatResponseJob) do
+        post chats_url, params: { chat: { model: "gpt-4o-mini", prompt: "How do I deploy with Kamal?" } }
+      end
+    end
+    assert_redirected_to Chat.last
+  end
+
+  test "does not create a chat when the prompt is blank" do
+    sign_in_as users(:one)
+    assert_no_difference("users(:one).chats.count") do
+      assert_no_enqueued_jobs(only: ChatResponseJob) do
+        post chats_url, params: { chat: { model: "gpt-4o-mini", prompt: "" } }
+      end
+    end
+    assert_response :no_content
+  end
+
+  test "destroys an own chat" do
+    sign_in_as users(:one)
+    chat = users(:one).chats.create!(model: "gpt-4o-mini")
+    assert_difference("users(:one).chats.count", -1) do
+      delete chat_url(chat)
+    end
+    assert_redirected_to chats_url
+  end
 end

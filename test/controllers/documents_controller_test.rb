@@ -24,4 +24,77 @@ class DocumentsControllerTest < ActionDispatch::IntegrationTest
     get document_url(other)
     assert_response :not_found
   end
+
+  test "lists own documents" do
+    sign_in_as users(:one)
+    users(:one).documents.create!(title: "Kamal notes", content: "Deploy with Kamal")
+    get documents_url
+    assert_response :success
+  end
+
+  test "searches own documents semantically" do
+    sign_in_as users(:one)
+    document = users(:one).documents.create!(title: "Kamal notes", content: "Deploy with Kamal")
+    vector = Array.new(Document::EMBEDDING_DIMENSIONS, 0.0).tap { |v| v[0] = 1.0 }
+    document.update!(embedding: vector)
+    stub_openai_embedding(vector: vector)
+
+    get documents_url, params: { q: "How do I deploy?" }
+
+    assert_response :success
+    assert_includes @response.body, "Kamal notes"
+  end
+
+  test "shows own document" do
+    sign_in_as users(:one)
+    document = users(:one).documents.create!(title: "Kamal notes", content: "Deploy with Kamal")
+    get document_url(document)
+    assert_response :success
+  end
+
+  test "shows a new document form" do
+    sign_in_as users(:one)
+    get new_document_url
+    assert_response :success
+  end
+
+  test "does not create a document with a blank title" do
+    sign_in_as users(:one)
+    assert_no_difference("Document.count") do
+      post documents_url, params: { document: { title: "", content: "Deploy with Kamal" } }
+    end
+    assert_response :unprocessable_entity
+  end
+
+  test "shows the edit form for an own document" do
+    sign_in_as users(:one)
+    document = users(:one).documents.create!(title: "Kamal notes", content: "Deploy with Kamal")
+    get edit_document_url(document)
+    assert_response :success
+  end
+
+  test "updates an own document" do
+    sign_in_as users(:one)
+    document = users(:one).documents.create!(title: "Kamal notes", content: "Deploy with Kamal")
+    patch document_url(document), params: { document: { title: "Kamal deploys", content: "Updated" } }
+    assert_redirected_to document
+    assert_equal "Kamal deploys", document.reload.title
+  end
+
+  test "does not update a document with a blank title" do
+    sign_in_as users(:one)
+    document = users(:one).documents.create!(title: "Kamal notes", content: "Deploy with Kamal")
+    patch document_url(document), params: { document: { title: "" } }
+    assert_response :unprocessable_entity
+    assert_equal "Kamal notes", document.reload.title
+  end
+
+  test "destroys an own document" do
+    sign_in_as users(:one)
+    document = users(:one).documents.create!(title: "Kamal notes", content: "Deploy with Kamal")
+    assert_difference("Document.count", -1) do
+      delete document_url(document)
+    end
+    assert_redirected_to documents_url
+  end
 end

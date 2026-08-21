@@ -14,4 +14,10 @@ class GenerateChatTitleJobTest < ActiveJob::TestCase
     GenerateChatTitleJob.perform_now(chat)
     assert_equal "Kept", chat.reload.title
   end
+
+  test "does nothing without a user message yet" do
+    chat = users(:one).chats.create!(model: "gpt-4o-mini")
+    GenerateChatTitleJob.perform_now(chat)
+    assert_nil chat.reload.title
+  end
 end
