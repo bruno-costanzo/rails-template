@@ -92,6 +92,10 @@ Tests never hit the network. `test/test_helper.rb` calls `WebMock.disable_net_co
 
 console1984 protects and audits the Rails console in production. Every console session and every command run inside it is recorded to the database (`console1984_sessions`, `console1984_commands` tables), and by default only the `production` environment is protected — development and test consoles are unrestricted. This requires Active Record encryption to be configured (see the Quickstart's credentials step above). If you want a web UI for browsing the audit trail, console1984's companion gem [`audits1984`](https://github.com/basecamp/audits1984) is not installed by default but can be added later.
 
+## Money
+
+[money-rails](https://github.com/RubyMoney/money-rails) is installed and configured with USD as the default currency (`config/initializers/money.rb`), but no monetized model ships with the template. To add a monetized column to a model: add `t.monetize :price` to a migration (this creates `price_cents` and `price_currency` columns), then declare `monetize :price_cents` on the model.
+
 ## Deployment
 
 Deploys use [Kamal](https://kamal-deploy.org). Before your first deploy, edit `config/deploy.yml` and replace every UPPERCASE placeholder with real values:

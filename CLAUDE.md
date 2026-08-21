@@ -9,6 +9,7 @@ Rails starter template. This repo is both a working app and the template new app
 - RubyLLM (OpenAI only: gpt-4o-mini / text-embedding-3-small), Schematist for structured output, Neighbor + sqlite-vec for vector search
 - Native Rails authentication (+ custom registration/profile), Active Storage avatars
 - console1984 for audited production console access (depends on Active Record encryption)
+- money-rails for currency handling (default currency USD in `config/initializers/money.rb`, no monetized model ships — apps opt in per-model)
 - Minitest + fixtures + WebMock (tests NEVER hit the network), Kamal deploys
 
 ## Commands
