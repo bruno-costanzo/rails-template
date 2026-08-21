@@ -56,6 +56,12 @@ Added on top (all TDD):
 - **meta-tags** — initializer with site defaults (title, description, Open Graph, Twitter cards); `set_meta_tags` on the landing as the per-page example.
 - **PWA** — Rails 8's generated `app/views/pwa/` activated: routes uncommented, complete manifest with icons and installability. Minimal service worker; caching strategies are per-app decisions.
 
+## UI feedback: confirmations and flash messages
+
+- **Confirmations** — the native browser `confirm()` dialog is replaced globally via Turbo's confirm hook (`Turbo.config.forms.confirm`) with a DaisyUI `modal` (`<dialog>`) rendered from a shared partial in the layout. Existing and future `data: { turbo_confirm: "..." }` buttons keep working unchanged — the replacement happens in one place.
+- **Flash messages** — rendered as DaisyUI toasts from a single `shared/_flash` partial in the layout: responsive positioning, dismiss button, and auto-dismiss (~5 seconds) via a small Stimulus controller. The duplicated inline flash rendering in the auth views (sessions/passwords) is removed.
+- Both flows are covered by system tests (confirm/cancel on a destroy action; flash toast on a failed login).
+
 ## Deployment
 
 - **Kamal** — `config/deploy.yml` documented with placeholders (server, registry) and `.kamal/secrets` for keys. A **persistent volume mounts `storage/`** (SQLite databases + Active Storage files survive deploys). Thruster ships in the Rails 8 Dockerfile.

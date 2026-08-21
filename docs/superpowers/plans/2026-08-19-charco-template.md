@@ -1711,3 +1711,38 @@ CLAUDE.md Conventions: add "100% line and branch coverage is enforced by SimpleC
 bin/ci
 git add -A && git commit -m "Enforce 100% line and branch coverage"
 ```
+
+### Task 19: DaisyUI confirm modal and flash toasts
+
+Execution order note: run after Task 18. Task 15 (final verification) stays last.
+
+**Files:**
+- Create: `app/views/shared/_confirm_dialog.html.erb`, `app/views/shared/_flash.html.erb`, `app/javascript/confirm_dialog.js`, `app/javascript/controllers/flash_controller.js`, `test/system/confirm_dialog_test.rb`
+- Modify: `app/views/layouts/application.html.erb`, `app/javascript/application.js`, `app/views/sessions/new.html.erb`, `app/views/passwords/new.html.erb`, `app/views/passwords/edit.html.erb`, an existing integration/system test for the flash toast
+
+**Interfaces:**
+- Consumes: existing `data: { turbo_confirm: "..." }` buttons (chats index Destroy, documents show Delete) — they must keep working UNCHANGED.
+- Produces: a global DaisyUI confirm modal replacing native `confirm()`; flash messages rendered as dismissible auto-hiding DaisyUI toasts from one shared partial.
+
+- [ ] **Step 1: Confirm modal (TDD via system test)**
+
+RED: write `test/system/confirm_dialog_test.rb`: sign in, create a chat, visit chats index, click "Destroy" — assert a DaisyUI modal appears (e.g. `find("dialog#turbo-confirm", visible: true)`) with the `data-turbo-confirm` message text; click Cancel → chat still listed; click Destroy again, click Confirm → chat gone. This fails while the native confirm is in place (Selenium auto-accepts or blocks; the dialog element does not exist).
+
+GREEN: add `app/views/shared/_confirm_dialog.html.erb` — a `<dialog id="turbo-confirm" class="modal">` with `modal-box`, a message slot, and `Cancel` (btn) / `Confirm` (btn btn-error) buttons, responsive per DaisyUI defaults. Render it once from the layout body. Add `app/javascript/confirm_dialog.js` exporting a function that shows the dialog, fills the message, and returns a `Promise<boolean>` resolved by the buttons (also resolve false on `cancel`/backdrop close). Wire it in `app/javascript/application.js` via `Turbo.config.forms.confirm = ...` (Turbo 8 API; if the bundled Turbo version predates it, use `Turbo.setConfirmMethod` — check `vendor/javascript` / importmap pin and state which was used in the report).
+
+- [ ] **Step 2: Flash toasts (TDD via integration + system assertions)**
+
+RED: adapt/extend an existing test to assert structure — failed login (`sessions`) responds with the flash inside `.toast .alert.alert-error`; a successful flow (e.g. profile update or registration) shows `.alert-success`. Run, see it fail against the current static block.
+
+GREEN: create `app/views/shared/_flash.html.erb`: a `toast` container (top, responsive) iterating `flash`, each message an `alert` (`alert-error` for `:alert`, `alert-success` for `:notice`) with a close button, wired to `app/javascript/controllers/flash_controller.js` (Stimulus): auto-dismiss after ~5s (`data-flash-timeout-value` optional), `dismiss()` action on the close button, timer cleared on disconnect. Replace the layout's current inline flash block with `render "shared/flash"`. Remove the duplicated inline flash markup from `sessions/new`, `passwords/new`, `passwords/edit` (flash now comes from the layout on every page).
+
+- [ ] **Step 3: Verify nothing regressed**
+
+Run: `bin/rails test` — Expected: green, coverage still 100/100 (views/JS are not measured; no Ruby code paths added). Run: `bin/rails test:system` — Expected: green including the new confirm-dialog test and existing destroy flows.
+
+- [ ] **Step 4: Full gate, commit**
+
+```bash
+bin/ci
+git add -A && git commit -m "Replace native confirm and flash with DaisyUI modal and toasts"
+```
