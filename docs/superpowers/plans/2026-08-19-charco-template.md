@@ -1777,3 +1777,67 @@ Coverage note: the initializer lives in `config/` (excluded from SimpleCov measu
 bin/ci
 git add -A && git commit -m "Add money-rails with USD default currency"
 ```
+
+### Task 21: Solid Errors
+
+Execution order note: run after the post-review fix wave. Task 22 follows.
+
+**Files:**
+- Modify: `Gemfile`, `Gemfile.lock`, `config/routes.rb`, `CLAUDE.md`, `README.md`, `db/schema.rb` (via migration)
+- Create: the `solid_errors` install migration, `test/integration/solid_errors_test.rb`
+
+**Interfaces:**
+- Consumes: Rails' native error reporter (`Rails.error`), Action Mailer config, Rails credentials.
+- Produces: errors persisted + deduplicated in SQLite, dashboard at `/errors` behind HTTP basic auth, optional email notification.
+
+- [ ] **Step 1: Install (TDD)**
+
+RED: write `test/integration/solid_errors_test.rb` asserting: (a) `Rails.error.report(StandardError.new("boom"), handled: true)` creates a `SolidErrors::Error` record; (b) GET `/errors` without credentials returns 401; (c) GET `/errors` with the configured basic-auth credentials returns success. Run — fails (gem absent).
+
+GREEN: `bundle add solid_errors`; run its install generator/migration against the primary database; mount `SolidErrors::Engine => "/errors"` in routes; configure basic auth username/password and notification email from `Rails.application.credentials` (test env gets known values via credentials or an env-var fallback the initializer documents); notifications off when no address is configured.
+
+- [ ] **Step 2: Document**
+
+CLAUDE.md subsystem map + README section: what Solid Errors does, dashboard URL, where credentials live, how a child app sets its notification email.
+
+- [ ] **Step 3: Full gate, commit**
+
+Coverage must hold 100/100 (our code: routes + initializer in config/, excluded; the test exercises gem behavior).
+
+```bash
+bin/ci
+git add -A && git commit -m "Add Solid Errors with protected dashboard"
+```
+
+### Task 22: User feedback to GitHub Issues
+
+Execution order note: run after Task 21.
+
+**Files:**
+- Create: `Feedback` model + migration, `FeedbacksController` (new/create), `app/views/feedbacks/new.html.erb`, `app/jobs/create_feedback_issue_job.rb`, `app/models/github_issues.rb` (PORO client), public attachment route/controller for feedback photos, tests for all of it (`test/models`, `test/controllers`, `test/jobs`, one system test)
+- Modify: `config/routes.rb`, navbar/footer link for signed-in users, `CLAUDE.md`, `README.md`, `.env.example`
+
+**Interfaces:**
+- Consumes: `Current.user`, Active Storage, Solid Queue, WebMock test stubs.
+- Produces: `Feedback` persisted locally always; GitHub issue (label `feedback`) created via REST API when `GITHUB_ISSUES_TOKEN` + `GITHUB_ISSUES_REPO` are set; silently skipped otherwise.
+
+- [ ] **Step 1: Model + form (TDD)**
+
+Feedback: `belongs_to :user`, `message` (presence-validated), `has_many_attached :photos`. Controller scoped through `Current.user`; form is a DaisyUI page at `/feedback` for signed-in users; create redirects with a success flash (toast). System test: submit feedback with a photo, assert persisted + flash toast.
+
+- [ ] **Step 2: GitHub client + job (TDD, WebMock)**
+
+`GithubIssues.create(title:, body:, labels:)` posts to `https://api.github.com/repos/#{repo}/issues` with `Net::HTTP` and the token; `configured?` is false when either env var is blank. `CreateFeedbackIssueJob` builds title/body (message, user email, app/page context, photo links) and calls the client; enqueued from `after_create_commit` on Feedback; job is a no-op when not configured. Photo links use a permanent public route (`/feedback/photos/:signed_id` style) that serves/redirects to the blob — covered by a controller test. WebMock-stub the GitHub endpoint; assert request body (title, labels, photo URLs) and behavior on non-2xx (raise → Solid Queue retry, and now also captured by Solid Errors).
+
+- [ ] **Step 3: Document**
+
+README "User feedback" section: how to create the fine-grained token, set the two env vars, what happens when unset. `.env.example` gains both vars commented. CLAUDE.md subsystem map entry. Note the screenshot-capture idea as a future extension.
+
+- [ ] **Step 4: Full gate, commit**
+
+Coverage must hold 100/100 over the new app/ code.
+
+```bash
+bin/ci
+git add -A && git commit -m "Add user feedback channel backed by GitHub Issues"
+```

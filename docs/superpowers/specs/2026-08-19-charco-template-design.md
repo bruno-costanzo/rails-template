@@ -66,6 +66,12 @@ Added on top (all TDD):
 
 - **money-rails** installed by default with its official initializer (`config/initializers/money.rb`), `default_currency = :usd`. No monetized example model ships — apps add `monetize :price_cents` when they need it (README documents the `t.monetize` migration pattern). A small behavior test verifies the wiring (default currency and formatting), so a broken initializer or missing gem fails the suite.
 
+## Error tracking and user feedback
+
+- **Solid Errors** — errors are captured via Rails' native error reporter, stored in SQLite, and deduplicated by fingerprint by the `solid_errors` gem (consistent with the Solid Queue/Cache/Cable philosophy: no external services). Its web dashboard is mounted at `/errors`, protected with HTTP basic auth whose credentials live in Rails credentials — independent of the app's session auth, so it survives per-app login changes. Email notification on new errors goes to an address configured in credentials; when absent, notifications are off and the dashboard still works.
+- **User feedback → GitHub Issues** — a `Feedback` model (message + optional photos via Active Storage) with a DaisyUI form for signed-in users. Submissions are stored locally and a Solid Queue job creates a GitHub issue (label `feedback`) in the app's repo via the REST API with plain `Net::HTTP` — no new gems. Configured per app with `GITHUB_ISSUES_TOKEN` (fine-grained, issues: write) and `GITHUB_ISSUES_REPO`; when unset the job is silently skipped and feedback still persists locally. Photos are linked in the issue body through a permanent public route served by the app (the GitHub API cannot host image uploads). A "capture screenshot automatically" button is documented as a future extension, not built.
+- Tests never hit the network: GitHub API calls are WebMock-stubbed; Solid Errors behavior is tested through Rails' error reporter against the local database.
+
 ## Deployment
 
 - **Kamal** — `config/deploy.yml` documented with placeholders (server, registry) and `.kamal/secrets` for keys. A **persistent volume mounts `storage/`** (SQLite databases + Active Storage files survive deploys). Thruster ships in the Rails 8 Dockerfile.
