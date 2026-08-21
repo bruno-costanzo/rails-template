@@ -1,6 +1,6 @@
 module Template
   class Renamer
-    SKIP_DIRS = %w[.git log node_modules storage tmp vendor].freeze
+    SKIP_DIRS = %w[.git docs log node_modules storage tmp vendor].freeze
     OLD_MODULE = "CharcoTemplate".freeze
     OLD_SNAKE = "charco_template".freeze
     OLD_DASHED = "charco-template".freeze

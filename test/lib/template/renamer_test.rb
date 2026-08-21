@@ -22,6 +22,18 @@ class Template::RenamerTest < ActiveSupport::TestCase
     end
   end
 
+  test "leaves docs directory untouched to preserve historical spec content" do
+    Dir.mktmpdir do |dir|
+      FileUtils.mkdir(File.join(dir, "docs"))
+      path = File.join(dir, "docs", "spec.md")
+      File.write(path, "CharcoTemplate")
+
+      Template::Renamer.new(root: dir, new_name: @target).run
+
+      assert_equal "CharcoTemplate", File.read(path)
+    end
+  end
+
   test "treats empty files as text and leaves them untouched without raising" do
     Dir.mktmpdir do |dir|
       path = File.join(dir, ".gitkeep")
