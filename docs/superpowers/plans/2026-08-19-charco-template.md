@@ -1876,3 +1876,113 @@ README "AI support assistant" section: what it does, how `config/support_context
 bin/ci
 git add -A && git commit -m "Add AI support assistant filing refined feedback"
 ```
+
+### Task 24: Lucide icons
+
+**Files:**
+- Modify: `Gemfile`, `Gemfile.lock`, any views carrying ad-hoc inline SVGs, `CLAUDE.md`, `README.md`
+- Create: a wiring test (helper renders an inline SVG)
+
+**Interfaces:**
+- Consumes: `lucide-rails` gem helper.
+- Produces: the template's icon convention — inline SVG through the helper, no icon font, no CDN.
+
+- [ ] **Step 1: Install and wire (TDD)**
+
+RED: view/helper test asserting the Lucide helper renders an inline `<svg>` with a given class. GREEN: `bundle add lucide-rails`, verify the actual helper name and options against the installed gem source. Sweep `app/views` and `app/javascript` for ad-hoc inline SVGs and replace each with the helper (same visual size/classes); system tests must stay green.
+
+- [ ] **Step 2: Document**
+
+README "Icons" section (convention, how to find icon names, why no font/CDN) and a CLAUDE.md stack line.
+
+- [ ] **Step 3: Full gate, commit**
+
+```bash
+bin/ci
+git add -A && git commit -m "Add Lucide icons as the template icon set"
+```
+
+### Task 25: Support agent on RubyLLM::Agent
+
+Execution order note: run after Task 24.
+
+**Files:**
+- Create: `app/agents/support_agent.rb` (or gem-conventional location), tests
+- Modify: `app/jobs/chat_response_job.rb`, `config/support_context.md`, `CLAUDE.md`, `README.md`
+
+**Interfaces:**
+- Consumes: `RubyLLM::Agent` (class-level `instructions`/`tools`/`chat_model`, verified against installed gem source), `SupportContext`, `CreateSupportTicketTool`.
+- Produces: identical support behavior through the official agent API.
+
+- [ ] **Step 1: Refactor (TDD)**
+
+`SupportAgent < RubyLLM::Agent` with `chat_model "Chat"`, instructions from the binding rule + `SupportContext.content`, and the ticket tool built with the chat's user. `ChatResponseJob` uses the agent for support chats instead of manual `with_instructions`/`with_tool`. All existing tests keep passing unchanged — including the assertion that instructions contain the binding rule and that normal chats are unaffected. Verify against gem source how `Agent.find`/instructions application avoids duplicating persisted system messages across turns; document the finding in the report.
+
+- [ ] **Step 2: Richer support context template (TDD where testable)**
+
+`config/support_context.md` gains guided sections: what the app does, common problems, what to ask per report type (bug vs suggestion) — all human-friendly. The existing non-technical placeholder rule holds.
+
+- [ ] **Step 3: Document, full gate, commit**
+
+```bash
+bin/ci
+git add -A && git commit -m "Refactor support assistant to RubyLLM::Agent"
+```
+
+### Task 26: Ticket context and photos in support chat
+
+Execution order note: run after Task 25.
+
+**Files:**
+- Create: migrations (`context` JSON on `chats` and on `feedbacks`), tests
+- Modify: support widget view + Stimulus controller, `SupportChatsController`, `CreateSupportTicketTool`, `CreateFeedbackIssueJob`, `Chat`/`Feedback` models, `CLAUDE.md`, `README.md`
+
+**Interfaces:**
+- Consumes: existing photo validation rules, existing public photo route, existing issue-body metadata block.
+- Produces: tickets carrying page URL/browser/viewport and chat-attached photos.
+
+- [ ] **Step 1: Context capture (TDD)**
+
+The widget captures page URL, user agent, and viewport when opened and posts them when the support chat is created/loaded; stored in a `context` JSON column on the support `Chat`. When the tool files the ticket it copies the chat context into `Feedback#context`. `CreateFeedbackIssueJob` renders these values inside the trusted metadata block (before the separator, never mixed into the user message). Values are user-supplied strings — length-limit and treat as plain text.
+
+- [ ] **Step 2: Photos in the chat (TDD)**
+
+Attach button in the widget (Lucide icon): images upload scoped to the user's support chat (`Chat` gains `has_many_attached :pending_photos` with the same content-type/size validation as `Feedback#photos`); on ticket filing the tool attaches those blobs to the `Feedback` and clears the pending set. Photos flow into the issue exactly as Task 22 photos do. System test covers attach → file ticket → photos on the Feedback.
+
+- [ ] **Step 3: Document, full gate, commit**
+
+README/CLAUDE.md updates; screenshot auto-capture reaffirmed as future extension.
+
+```bash
+bin/ci
+git add -A && git commit -m "Capture ticket context and photos in support chat"
+```
+
+### Task 27: Feedback lifecycle and thank-you email
+
+Execution order note: run after Task 26.
+
+**Files:**
+- Create: migration (`status` string default `open`, null false + `resolved_at`), `FeedbackMailer` + thank-you view, `Admin::FeedbacksController` + index view, tests (model, mailer, controller incl. auth, system optional)
+- Modify: `Feedback`, `config/routes.rb`, `CLAUDE.md`, `README.md`
+
+**Interfaces:**
+- Consumes: Action Mailer (Solid Queue delivery), Rails credentials/ENV lookup pattern from Solid Errors.
+- Produces: resolvable tickets with an automatic thank-you email; a minimal protected admin panel.
+
+- [ ] **Step 1: Model + mailer (TDD)**
+
+`status` enum (`open`/`resolved`, default `open`), `resolved_at`, and a `resolve!` that sets both and enqueues `FeedbackMailer.thank_you` (`deliver_later`) to the reporter. Generic English mail copy meant to be customized per app. Idempotent: resolving an already-resolved ticket neither re-sends nor fails.
+
+- [ ] **Step 2: Admin panel (TDD)**
+
+`/admin/feedbacks`: list open tickets (message, context, photo links, reporter) plus a resolve button; DaisyUI table/cards. HTTP basic auth resolved credentials-first (`admin` block), ENV second (`ADMIN_USERNAME`/`ADMIN_PASSWORD`); when neither is configured the panel denies access entirely (safer than the Solid Errors gem default — call the difference out in the README). Controller tests: 401 unauthenticated, 401 when unconfigured, success with credentials, resolve action fires the mailer.
+
+- [ ] **Step 3: Document, full gate, commit**
+
+README: lifecycle, admin credentials setup, SMTP/host requirement for production email.
+
+```bash
+bin/ci
+git add -A && git commit -m "Add feedback lifecycle with thank-you email"
+```
