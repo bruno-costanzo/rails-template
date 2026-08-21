@@ -46,6 +46,18 @@ class ChatResponseJobTest < ActiveJob::TestCase
     end
   end
 
+  test "a support chat with a pre-existing persisted system message does not duplicate instructions" do
+    chat = users(:one).chats.create!(support: true)
+    chat.messages.create!(role: "system", content: "Stale instructions from before this refactor")
+    stub_openai_chat(content: "Sure, tell me more about what happened.")
+
+    ChatResponseJob.perform_now(chat.id, "The chat page is slow for me")
+
+    assert_requested :post, "https://api.openai.com/v1/chat/completions" do |request|
+      request.body.scan(SupportContext::BINDING_RULE).count == 1
+    end
+  end
+
   test "does not enqueue chat titling for a support chat" do
     chat = users(:one).chats.create!(support: true)
     stub_openai_chat(content: "Sure, tell me more about what happened.")
