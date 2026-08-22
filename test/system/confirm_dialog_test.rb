@@ -10,6 +10,7 @@ class ConfirmDialogTest < ApplicationSystemTestCase
     chat = @user.chats.create!(model: "gpt-4o-mini")
     visit chats_url
     assert_selector "#chat_#{chat.id}"
+    assert_confirm_dialog_ready
 
     click_button "Destroy"
     find("dialog#turbo-confirm", visible: true)
@@ -24,6 +25,7 @@ class ConfirmDialogTest < ApplicationSystemTestCase
     chat = @user.chats.create!(model: "gpt-4o-mini")
     visit chats_url
     assert_selector "#chat_#{chat.id}"
+    assert_confirm_dialog_ready
 
     click_button "Destroy"
     find("dialog#turbo-confirm", visible: true)
@@ -34,6 +36,10 @@ class ConfirmDialogTest < ApplicationSystemTestCase
   end
 
   private
+
+  def assert_confirm_dialog_ready
+    assert_selector "dialog#turbo-confirm[data-turbo-confirm-ready]", visible: :all
+  end
 
   def sign_in_via_browser
     visit new_session_url

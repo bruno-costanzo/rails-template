@@ -1,16 +1,16 @@
 <% unread_count = unread_notifications_count %>
 <% recent = recent_notifications %>
 
-<div class="dropdown dropdown-end">
-  <div tabindex="0" role="button" class="btn btn-ghost btn-circle" aria-label="Notifications">
+<details class="dropdown dropdown-end">
+  <summary class="btn btn-ghost btn-circle" aria-label="Notifications">
     <div class="indicator">
       <%= lucide_icon("bell", class: "size-5") %>
       <% if unread_count.positive? %>
         <span class="badge badge-xs badge-primary indicator-item"><%= unread_count %></span>
       <% end %>
     </div>
-  </div>
-  <div tabindex="0" class="dropdown-content bg-base-100 rounded-box z-10 mt-3 w-80 p-2 shadow">
+  </summary>
+  <div class="dropdown-content bg-base-100 rounded-box z-10 mt-3 w-80 p-2 shadow">
     <div class="flex items-center justify-between px-2 py-1">
       <span class="font-semibold">Notifications</span>
       <% if unread_count.positive? %>
@@ -35,4 +35,4 @@
       <%= link_to "See all", notifications_path, class: "link link-sm" %>
     </div>
   </div>
-</div>
+</details>
