@@ -11,6 +11,7 @@ Rails starter template. This repo is both a working app and the template new app
 - Native Rails authentication (+ custom registration/profile), Active Storage avatars
 - console1984 for audited production console access (depends on Active Record encryption)
 - money-rails for currency handling (default currency USD in `config/initializers/money.rb`, no monetized model ships — apps opt in per-model)
+- letter_opener_web for development-only email preview at `/letter_opener` (development Gemfile group only)
 - Minitest + fixtures + WebMock (tests NEVER hit the network), Kamal deploys
 
 ## Commands

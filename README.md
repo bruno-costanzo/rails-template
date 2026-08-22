@@ -120,6 +120,12 @@ Basic auth is only enabled when a password is set — the gem's filter is `http_
 
 Solid Errors also reads its own env vars directly, `ENV["SOLIDERRORS_USERNAME"]`/`ENV["SOLIDERRORS_PASSWORD"]` (no underscore between "SOLID" and "ERRORS") — this gem-native lookup happens ahead of anything this app configures, credentials included. Don't set those two exact variable names unless you intend them to silently win over everything else.
 
+## Development email preview
+
+[letter_opener_web](https://github.com/fgrehm/letter_opener_web) catches every email the app sends in development and lists them in a browsable inbox at `/letter_opener`, instead of trying to reach a real SMTP server. This is where password-reset emails (`PasswordsMailer`) and Solid Errors notification emails land while developing locally.
+
+The gem lives in the `development` group of the `Gemfile`, so it never loads in test or production; `config/routes.rb` also mounts it only `if Rails.env.development?`, and `config/environments/development.rb` sets `config.action_mailer.delivery_method = :letter_opener_web`. Test and production delivery are untouched — `config/environments/test.rb` still uses `:test`, and production keeps whatever SMTP settings it's configured with.
+
 ## User feedback
 
 Signed-in users can leave feedback (with optional screenshots) from the "Feedback" link in the navbar dropdown, at `/feedback`. Every submission is saved locally as a `Feedback` record (`belongs_to :user`, `has_many_attached :photos`) — that part always works, with no configuration needed.
