@@ -1958,31 +1958,31 @@ bin/ci
 git add -A && git commit -m "Capture ticket context and photos in support chat"
 ```
 
-### Task 27: Feedback lifecycle and thank-you email
+### Task 27: Feedback ticket lifecycle and admin panel
 
 Execution order note: run after Task 26.
 
 **Files:**
-- Create: migration (`status` string default `open`, null false + `resolved_at`), `FeedbackMailer` + thank-you view, `Admin::FeedbacksController` + index view, tests (model, mailer, controller incl. auth, system optional)
+- Create: migration (`status` string default `open`, null false + `resolved_at`), `Admin::FeedbacksController` + index view, tests (model, controller incl. auth)
 - Modify: `Feedback`, `config/routes.rb`, `CLAUDE.md`, `README.md`
 
 **Interfaces:**
-- Consumes: Action Mailer (Solid Queue delivery), Rails credentials/ENV lookup pattern from Solid Errors.
-- Produces: resolvable tickets with an automatic thank-you email; a minimal protected admin panel.
+- Consumes: Rails credentials/ENV lookup pattern from Solid Errors.
+- Produces: resolvable tickets and a minimal protected admin panel. No notification is sent on resolution — the goal is ticket control, nothing more.
 
-- [ ] **Step 1: Model + mailer (TDD)**
+- [ ] **Step 1: Model (TDD)**
 
-`status` enum (`open`/`resolved`, default `open`), `resolved_at`, and a `resolve!` that sets both and enqueues `FeedbackMailer.thank_you` (`deliver_later`) to the reporter. Generic English mail copy meant to be customized per app. Idempotent: resolving an already-resolved ticket neither re-sends nor fails.
+`status` enum (`open`/`resolved`, default `open`), `resolved_at`, and a `resolve!` that sets both. Idempotent: resolving an already-resolved ticket neither changes `resolved_at` nor fails.
 
 - [ ] **Step 2: Admin panel (TDD)**
 
-`/admin/feedbacks`: list open tickets (message, context, photo links, reporter) plus a resolve button; DaisyUI table/cards. HTTP basic auth resolved credentials-first (`admin` block), ENV second (`ADMIN_USERNAME`/`ADMIN_PASSWORD`); when neither is configured the panel denies access entirely (safer than the Solid Errors gem default — call the difference out in the README). Controller tests: 401 unauthenticated, 401 when unconfigured, success with credentials, resolve action fires the mailer.
+`/admin/feedbacks`: list open tickets (message, context, photo links, reporter) plus a resolve button; DaisyUI table/cards. HTTP basic auth resolved credentials-first (`admin` block), ENV second (`ADMIN_USERNAME`/`ADMIN_PASSWORD`); when neither is configured the panel denies access entirely (safer than the Solid Errors gem default — call the difference out in the README). Controller tests: 401 unauthenticated, 401 when unconfigured, success with credentials, resolve action marks the ticket resolved.
 
 - [ ] **Step 3: Document, full gate, commit**
 
-README: lifecycle, admin credentials setup, SMTP/host requirement for production email.
+README: lifecycle, admin credentials setup.
 
 ```bash
 bin/ci
-git add -A && git commit -m "Add feedback lifecycle with thank-you email"
+git add -A && git commit -m "Add feedback ticket lifecycle and admin panel"
 ```
