@@ -97,6 +97,7 @@ Added on top (all TDD):
 
 - Minitest + fixtures; system tests with headless Capybara; WebMock for AI.
 - The template is built test-first, and the README declares TDD as the convention for child apps.
+- **The suite is deterministic.** A flaky test is a bug: it gets a root-cause diagnosis and a real fix — never sleeps, in-test retries, or weakened assertions. `bin/ci` green must mean green every time, locally and in CI.
 
 ## Quality gate: bin/ci and 100% coverage
 

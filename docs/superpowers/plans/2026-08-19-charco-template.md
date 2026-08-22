@@ -2013,3 +2013,35 @@ README "Development email preview" section (what lands there, the password-reset
 bin/ci
 git add -A && git commit -m "Add letter_opener_web for development email preview"
 ```
+
+### Task 29: Stabilize the system suite
+
+Execution order note: run after Task 28. User ruling: "CI verde siempre" — flaky tests are bugs.
+
+**Files:**
+- Determined by diagnosis. Likely candidates: `test/system/support_chat_test.rb`, `test/system/feedback_test.rb`, `test/application_system_test_case.rb`, `config/cable.yml`, support chat views/Stimulus if a product-side race is confirmed.
+
+**Interfaces:**
+- Consumes: the two known flaky system tests and the historical flash_toast dismiss flake.
+- Produces: a deterministic system suite — repeated full runs green with no retries.
+
+- [ ] **Step 1: Reproduce and characterize**
+
+Run each suspect test in isolation repeatedly (≥20 runs each) and the full system suite (≥5 runs), capturing every failure signature verbatim. Known signatures: support-chat photo test ~50% "assistant reply never renders"; feedback sign-in timing; historical one-time flash_toast dismiss flake.
+
+- [ ] **Step 2: Root-cause each**
+
+Systematic debugging, no guessing. Leading hypothesis for the photo test: the browser's Action Cable subscription to the chat stream is established after the inline job's broadcasts fire (subscription/broadcast race under the async cable adapter) — confirm or refute with evidence (e.g. instrumented logs correlating subscription confirmation vs broadcast timing). Decide explicitly whether each root cause is test-infra or a real product race that would also drop messages for real users.
+
+- [ ] **Step 3: Fix properly (TDD where expressible)**
+
+No sleeps, no in-test retries, no weakened assertions, no skipped tests. Product-side races get product fixes with tests; infra causes get deterministic infra fixes. Any deliberate wait must be a bounded Capybara matcher on real state, never a raw sleep.
+
+- [ ] **Step 4: Acceptance and gate**
+
+10 consecutive full `bin/rails test:system` runs green, then full `bin/ci` green. Record every run count and outcome in the report.
+
+```bash
+bin/ci
+git add -A && git commit -m "Stabilize system test suite"
+```
