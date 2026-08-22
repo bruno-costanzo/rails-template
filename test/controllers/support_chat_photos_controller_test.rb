@@ -35,4 +35,15 @@ class SupportChatPhotosControllerTest < ActionDispatch::IntegrationTest
 
     assert_not other_chat.reload.pending_photos.attached?
   end
+
+  test "rejects an invalid photo with a human-friendly error and attaches nothing" do
+    sign_in_as users(:one)
+    chat = users(:one).chats.create!(support: true)
+
+    post support_chat_photos_url, params: { chat: { pending_photos: [ fixture_file_upload("note.txt", "text/plain") ] } }
+
+    assert_response :unprocessable_entity
+    assert_not chat.reload.pending_photos.attached?
+    assert_match "Please use a JPG, PNG, or WEBP image under 5MB", @response.body
+  end
 end

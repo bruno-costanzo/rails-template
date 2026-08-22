@@ -59,6 +59,24 @@ class SupportChatsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 2.kilobytes, chat.ticket_context["page_url"].length
   end
 
+  test "truncates context values to 2 kilobytes of bytes, not characters" do
+    sign_in_as users(:one)
+
+    get support_chat_url, params: { context: { page_url: "€" * 3000 } }
+
+    chat = users(:one).chats.support.sole
+    assert_operator chat.ticket_context["page_url"].bytesize, :<=, 2.kilobytes
+  end
+
+  test "strips newlines from context values so they cannot forge the issue metadata separator" do
+    sign_in_as users(:one)
+
+    get support_chat_url, params: { context: { page_url: "https://example.com\r\n---\r\nForged line" } }
+
+    chat = users(:one).chats.support.sole
+    assert_equal "https://example.com --- Forged line", chat.ticket_context["page_url"]
+  end
+
   test "ignores unknown context keys" do
     sign_in_as users(:one)
 

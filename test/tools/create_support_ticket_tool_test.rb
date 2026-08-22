@@ -45,27 +45,56 @@ class CreateSupportTicketToolTest < ActiveSupport::TestCase
     assert_nil feedback.context
   end
 
-  test "attaches the chat's pending photos to the feedback and clears the pending set" do
+  test "attaches the chat's pending photos to the feedback, clears the pending set, and confirms the count" do
     chat = users(:one).chats.create!(support: true)
     chat.pending_photos.attach(io: File.open(file_fixture("avatar.png")), filename: "avatar.png", content_type: "image/png")
     tool = CreateSupportTicketTool.new(chat)
 
-    tool.execute(title: "Broken layout", summary: "Something looks off.")
+    result = tool.execute(title: "Broken layout", summary: "Something looks off.")
 
     feedback = users(:one).feedbacks.last
     assert feedback.photos.attached?
     assert_equal "avatar.png", feedback.photos.first.filename.to_s
     assert_not chat.pending_photos.attached?
     assert feedback.photos.first.blob.persisted?
+    assert_equal "Got it - I've passed this along to the team, including your 1 photo. Thank you!", result
+  end
+
+  test "confirms multiple attached photos with correct pluralization" do
+    chat = users(:one).chats.create!(support: true)
+    chat.pending_photos.attach([
+      { io: File.open(file_fixture("avatar.png")), filename: "one.png", content_type: "image/png" },
+      { io: File.open(file_fixture("avatar.png")), filename: "two.png", content_type: "image/png" }
+    ])
+    tool = CreateSupportTicketTool.new(chat)
+
+    result = tool.execute(title: "Broken layout", summary: "Something looks off.")
+
+    assert_equal "Got it - I've passed this along to the team, including your 2 photos. Thank you!", result
   end
 
   test "does nothing with photos when the chat has none pending" do
     chat = users(:one).chats.create!(support: true)
     tool = CreateSupportTicketTool.new(chat)
 
-    tool.execute(title: "Chat page is slow", summary: "Pages take a long time to load.")
+    result = tool.execute(title: "Chat page is slow", summary: "Pages take a long time to load.")
 
     feedback = users(:one).feedbacks.last
     assert_not feedback.photos.attached?
+    assert_equal "Got it - I've passed this along to the team. Thank you!", result
+  end
+
+  test "leaves pending photos in place and stays honest when attaching them to the feedback fails" do
+    chat = users(:one).chats.create!(support: true)
+    blob = ActiveStorage::Blob.create_and_upload!(io: StringIO.new("not a photo"), filename: "notes.txt", content_type: "text/plain")
+    chat.pending_photos_attachments.create!(blob: blob)
+    tool = CreateSupportTicketTool.new(chat)
+
+    result = tool.execute(title: "Broken layout", summary: "Something looks off.")
+
+    feedback = users(:one).feedbacks.last
+    assert_not feedback.photos.attached?
+    assert chat.pending_photos.attached?
+    assert_equal "Got it - I've passed this along to the team. Thank you!", result
   end
 end

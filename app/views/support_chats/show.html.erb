@@ -7,7 +7,7 @@
     <% end %>
   </div>
 
-  <%= render "support_chats/photos", chat: @chat %>
+  <%= render "support_chats/photos", chat: @chat, error: nil %>
 
   <%= render "messages/form", chat: @chat, message: @message %>
 <% end %>

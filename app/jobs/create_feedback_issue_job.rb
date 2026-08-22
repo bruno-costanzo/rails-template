@@ -23,7 +23,7 @@ class CreateFeedbackIssueJob < ApplicationJob
 
     if feedback.context.present?
       lines << "Context:"
-      feedback.context.each { |key, value| lines << "#{CONTEXT_LABELS.fetch(key, key)}: #{value}" }
+      feedback.context.each { |key, value| lines << "#{CONTEXT_LABELS.fetch(key, key)}: #{value.to_s.gsub(/\r?\n/, " ")}" }
     end
 
     if feedback.photos.attached?

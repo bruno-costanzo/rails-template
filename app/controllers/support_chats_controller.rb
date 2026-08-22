@@ -11,6 +11,10 @@ class SupportChatsController < ApplicationController
   private
 
   def context_params
-    params.fetch(:context, {}).permit(*CONTEXT_KEYS).to_h.transform_values { |value| value.to_s.first(CONTEXT_VALUE_LIMIT) }
+    params.fetch(:context, {}).permit(*CONTEXT_KEYS).to_h.transform_values { |value| sanitize_context_value(value) }
+  end
+
+  def sanitize_context_value(value)
+    value.to_s.gsub(/\r?\n/, " ").byteslice(0, CONTEXT_VALUE_LIMIT).scrub("")
   end
 end
