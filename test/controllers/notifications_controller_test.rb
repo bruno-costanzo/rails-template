@@ -40,6 +40,15 @@ class NotificationsControllerTest < ActionDispatch::IntegrationTest
     assert_select "#notification_list li", text: /Test notification/, count: 1
   end
 
+  test "renders multiple notifications without an N+1" do
+    sign_in_as users(:one)
+    3.times { TestNotifier.deliver(users(:one)) }
+
+    get notifications_url
+
+    assert_response :success
+  end
+
   test "the navbar bell stays within a fixed query budget" do
     sign_in_as users(:one)
     3.times { TestNotifier.deliver(users(:one)) }

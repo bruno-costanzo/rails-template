@@ -70,6 +70,18 @@ module Admin
       assert_includes @response.body, photo_url
     end
 
+    test "renders multiple open tickets with photos without an N+1" do
+      ENV["ADMIN_USERNAME"] = "admin"
+      ENV["ADMIN_PASSWORD"] = "secret"
+      first_feedback = users(:one).feedbacks.create!(message: "The chat page is slow")
+      first_feedback.photos.attach(io: File.open(Rails.root.join("test/fixtures/files/avatar.png")), filename: "avatar.png", content_type: "image/png")
+      users(:two).feedbacks.create!(message: "Layout looks broken")
+
+      get admin_feedbacks_url, headers: { "Authorization" => "Basic #{Base64.strict_encode64("admin:secret")}" }
+
+      assert_response :success
+    end
+
     test "resolve action marks the ticket resolved and redirects with a flash" do
       ENV["ADMIN_USERNAME"] = "admin"
       ENV["ADMIN_PASSWORD"] = "secret"

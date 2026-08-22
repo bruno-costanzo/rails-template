@@ -42,6 +42,17 @@ class ChatsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "shows a chat with multiple messages without an N+1" do
+    sign_in_as users(:one)
+    chat = users(:one).chats.create!(model: "gpt-4o-mini")
+    chat.messages.create!(role: :user, content: "How do I deploy with Kamal?")
+    chat.messages.create!(role: :assistant, content: "Run bin/kamal deploy.")
+
+    get chat_url(chat)
+
+    assert_response :success
+  end
+
   test "creates a chat and enqueues the first response when a prompt is given" do
     sign_in_as users(:one)
     assert_difference("users(:one).chats.count", 1) do

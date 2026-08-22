@@ -1,6 +1,6 @@
 class NotificationsController < ApplicationController
   def index
-    @notifications = Current.user.notifications.newest_first
+    @notifications = Current.user.notifications.newest_first.includes(:event)
   end
 
   def mark_all_read
