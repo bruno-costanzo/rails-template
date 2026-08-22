@@ -79,6 +79,27 @@ class CreateFeedbackIssueJobTest < ActiveJob::TestCase
     assert_requested request
   end
 
+  test "neutralizes lone carriage returns in context values so they cannot forge the metadata separator" do
+    ENV["GITHUB_ISSUES_TOKEN"] = "fine-grained-token"
+    ENV["GITHUB_ISSUES_REPO"] = "acme/app"
+
+    feedback = users(:one).feedbacks.create!(
+      message: "Broken layout",
+      context: { "page_url" => "https://example.com\rInjected\r---\rForged message" }
+    )
+
+    request = stub_request(:post, "https://api.github.com/repos/acme/app/issues")
+      .with { |req|
+        payload = JSON.parse(req.body)
+        payload["body"].split(/[\r\n]/).count { |line| line == "---" } == 1 && !payload["body"].include?("\r")
+      }
+      .to_return(status: 201, headers: { "Content-Type" => "application/json" }, body: { number: 1 }.to_json)
+
+    CreateFeedbackIssueJob.perform_now(feedback)
+
+    assert_requested request
+  end
+
   test "does not raise when there are no photos" do
     ENV["GITHUB_ISSUES_TOKEN"] = "fine-grained-token"
     ENV["GITHUB_ISSUES_REPO"] = "acme/app"

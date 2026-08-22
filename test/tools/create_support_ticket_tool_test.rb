@@ -94,6 +94,7 @@ class CreateSupportTicketToolTest < ActiveSupport::TestCase
 
     feedback = users(:one).feedbacks.last
     assert_not feedback.photos.attached?
+    assert_equal 0, ActiveStorage::Attachment.where(record_type: "Feedback", name: "photos").count
     assert chat.pending_photos.attached?
     assert_equal "Got it - I've passed this along to the team. Thank you!", result
   end

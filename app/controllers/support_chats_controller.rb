@@ -15,6 +15,6 @@ class SupportChatsController < ApplicationController
   end
 
   def sanitize_context_value(value)
-    value.to_s.gsub(/\r?\n/, " ").byteslice(0, CONTEXT_VALUE_LIMIT).scrub("")
+    value.to_s.gsub(/[\r\n]+/, " ").byteslice(0, CONTEXT_VALUE_LIMIT).scrub("")
   end
 end

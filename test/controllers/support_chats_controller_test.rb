@@ -77,6 +77,16 @@ class SupportChatsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "https://example.com --- Forged line", chat.ticket_context["page_url"]
   end
 
+  test "strips lone carriage returns from context values too" do
+    sign_in_as users(:one)
+
+    get support_chat_url, params: { context: { page_url: "https://example.com\rInjected\r---\rmore" } }
+
+    chat = users(:one).chats.support.sole
+    assert_not_includes chat.ticket_context["page_url"], "\r"
+    assert_equal "https://example.com Injected --- more", chat.ticket_context["page_url"]
+  end
+
   test "ignores unknown context keys" do
     sign_in_as users(:one)
 
