@@ -27,4 +27,15 @@ class UserTest < ActiveSupport::TestCase
     user.avatar.attach(io: StringIO.new("plain text"), filename: "notes.txt", content_type: "text/plain")
     assert_not user.valid?
   end
+
+  test "processes a thumb avatar variant with the vips processor" do
+    user = users(:one)
+    user.avatar.attach(io: File.open(file_fixture("avatar.png")), filename: "avatar.png", content_type: "image/png")
+
+    variant = user.avatar.variant(:thumb).processed
+    image = Vips::Image.new_from_buffer(variant.download, "")
+
+    assert_equal 48, image.width
+    assert_equal 48, image.height
+  end
 end
