@@ -5,5 +5,7 @@ import "controllers"
 import "lexxy"
 
 import confirmDialog from "confirm_dialog"
+import discardStaleStreamUpdates from "discard_stale_stream_updates"
 
 Turbo.config.forms.confirm = confirmDialog
+discardStaleStreamUpdates()

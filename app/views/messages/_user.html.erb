@@ -1,5 +1,5 @@
 <% user ||= local_assigns[:message] %>
-<div id="message_<%= user.id %>" class="chat chat-end">
+<div id="message_<%= user.id %>" data-version="<%= user.broadcast_version %>" class="chat chat-end">
   <div class="chat-header">
     User
     <time class="text-xs opacity-50"><%= user.created_at&.strftime("%I:%M %p") %></time>

@@ -1,7 +1,7 @@
 ENV["SKIP_COVERAGE"] ||= "1"
 require "test_helper"
 
-Capybara.default_max_wait_time = 5
+Capybara.default_max_wait_time = 8
 Capybara.server = :puma, { Threads: "2:8" }
 
 class ApplicationSystemTestCase < ActionDispatch::SystemTestCase

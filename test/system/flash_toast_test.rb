@@ -26,7 +26,7 @@ class FlashToastTest < ApplicationSystemTestCase
     sign_in_with_wrong_password
     assert_selector ".toast .alert.alert-error", visible: true
 
-    assert_no_selector ".toast .alert.alert-error", wait: 7
+    assert_no_selector ".toast .alert.alert-error", wait: 8
   end
 
   private

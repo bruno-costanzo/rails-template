@@ -11,13 +11,38 @@ class MessageTest < ActiveSupport::TestCase
     end
   end
 
-  test "broadcasts a replace synchronously when updated" do
+  test "broadcasts an append synchronously when updated" do
     chat = users(:one).chats.create!(model: "gpt-4o-mini")
     message = chat.messages.create!(role: :assistant, content: "")
 
     assert_broadcasts("chat_#{chat.id}", 1) do
       message.update!(content: "Hello world")
     end
+  end
+
+  test "broadcasts updates as a versioned append to the messages container, not a replace" do
+    chat = users(:one).chats.create!(model: "gpt-4o-mini")
+    message = chat.messages.create!(role: :assistant, content: "")
+
+    clear_messages("chat_#{chat.id}")
+    message.update!(content: "Hello world")
+    raw_broadcasts = broadcasts("chat_#{chat.id}")
+
+    assert_equal 1, raw_broadcasts.size
+    broadcasted = JSON.parse(raw_broadcasts.first)
+    assert_match(/action="append"/, broadcasted)
+    assert_match(/target="chat_#{chat.id}_messages"/, broadcasted)
+    assert_match(/data-version="#{Regexp.escape(message.broadcast_version.to_s)}"/, broadcasted)
+  end
+
+  test "broadcast_version increases after an update so a stale broadcast can be detected" do
+    chat = users(:one).chats.create!(model: "gpt-4o-mini")
+    message = chat.messages.create!(role: :assistant, content: "")
+    original_version = message.broadcast_version
+
+    message.update!(content: "Hello world")
+
+    assert_operator message.broadcast_version, :>, original_version
   end
 
   test "broadcasts a remove synchronously when destroyed" do
@@ -36,10 +61,13 @@ class MessageTest < ActiveSupport::TestCase
 
     clear_messages("chat_#{chat.id}")
     message.update!(updated_at: Time.current)
-    broadcasted = broadcasts("chat_#{chat.id}")
+    raw_broadcasts = broadcasts("chat_#{chat.id}")
 
-    assert_equal 1, broadcasted.size
-    assert_no_match "create_support_ticket", broadcasted.first
+    assert_equal 1, raw_broadcasts.size
+    broadcasted = JSON.parse(raw_broadcasts.first)
+    assert_no_match "create_support_ticket", broadcasted
+    assert_match(/id="message_#{message.id}"/, broadcasted)
+    assert_match(/data-version="#{Regexp.escape(message.broadcast_version.to_s)}"/, broadcasted)
   end
 
   test "renders normally for a system message in a regular chat" do
