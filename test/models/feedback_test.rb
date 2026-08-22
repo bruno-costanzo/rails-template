@@ -35,4 +35,28 @@ class FeedbackTest < ActiveSupport::TestCase
       users(:one).feedbacks.create!(message: "The chat page is slow")
     end
   end
+
+  test "defaults to open" do
+    feedback = users(:one).feedbacks.create!(message: "The chat page is slow")
+    assert feedback.open?
+    assert_nil feedback.resolved_at
+  end
+
+  test "resolve! marks the feedback resolved and stamps resolved_at" do
+    feedback = users(:one).feedbacks.create!(message: "The chat page is slow")
+    feedback.resolve!
+    assert feedback.resolved?
+    assert_not_nil feedback.resolved_at
+  end
+
+  test "resolve! is idempotent" do
+    feedback = users(:one).feedbacks.create!(message: "The chat page is slow")
+    feedback.resolve!
+    first_resolved_at = feedback.resolved_at
+
+    feedback.resolve!
+
+    assert feedback.resolved?
+    assert_equal first_resolved_at, feedback.resolved_at
+  end
 end

@@ -1,0 +1,51 @@
+<% content_for :title, "Feedback tickets" %>
+
+<div class="p-6 max-w-5xl mx-auto w-full">
+  <h1 class="font-bold text-4xl mb-6">Feedback tickets</h1>
+
+  <% if @feedbacks.any? %>
+    <div class="overflow-x-auto">
+      <table class="table bg-base-100 rounded-box shadow">
+        <thead>
+          <tr>
+            <th>Reporter</th>
+            <th>Message</th>
+            <th>Context</th>
+            <th>Photos</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @feedbacks.each do |feedback| %>
+            <tr>
+              <td><%= feedback.user.email_address %></td>
+              <td><%= feedback.message %></td>
+              <td>
+                <% if feedback.context.present? %>
+                  <ul>
+                    <% feedback.context.each do |key, value| %>
+                      <li><span class="font-semibold"><%= key %>:</span> <%= value %></li>
+                    <% end %>
+                  </ul>
+                <% end %>
+              </td>
+              <td>
+                <% feedback.photos.each do |photo| %>
+                  <%= link_to "Photo", feedback_photo_url(signed_id: photo.blob.signed_id), target: "_blank", rel: "noopener", class: "link" %>
+                <% end %>
+              </td>
+              <td>
+                <%= button_to resolve_admin_feedback_path(feedback), method: :patch, class: "btn btn-sm btn-primary" do %>
+                  <%= lucide_icon("check", class: "size-4") %>
+                  Resolve
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <p class="text-center my-10">No open tickets.</p>
+  <% end %>
+</div>

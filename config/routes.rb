@@ -18,6 +18,14 @@ Rails.application.routes.draw do
   resource :feedback, only: %i[new create]
   get "feedback/photos/:signed_id", to: "feedback_photos#show", as: :feedback_photo
 
+  namespace :admin do
+    resources :feedbacks, only: [ :index ] do
+      member do
+        patch :resolve
+      end
+    end
+  end
+
   mount SolidErrors::Engine => "/errors"
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html

@@ -156,6 +156,26 @@ The widget also has a small attach control (the paperclip icon, via `lucide_icon
 3. Technical message types (the system prompt itself, tool-call requests, tool results) are never rendered in the support chat's UI even if something goes wrong upstream: `Message#to_partial_path` renders those as a blank partial for support chats specifically (`app/models/message.rb`), while the normal chat UI (which is meant to be transparent/debuggable) still shows them in full.
 4. The ticket itself — the refined title and summary the tool files — is written for the developer and can be as technical as the person's own words make it; only the chat reply shown back to the person stays in plain language.
 
+## Ticket lifecycle
+
+Every `Feedback` (Task 22, whether filed through the manual form or the AI support assistant above) carries a `status` (`open`/`resolved`, default `open`) and a `resolved_at` timestamp. `Feedback#resolve!` sets both; calling it on an already-resolved ticket is a no-op — `resolved_at` doesn't change and it doesn't raise. Resolving a ticket only updates that local record; **it never sends any notification** (no email, no GitHub comment) — the scope here is ticket control, nothing more.
+
+Open tickets are worked from a minimal admin panel at `/admin/feedbacks` (`Admin::FeedbacksController`): a table of open tickets with the reporter's email, message, context, links to any attached photos (reusing the same public `/feedback/photos/:signed_id` route the GitHub issue body uses), and a "Resolve" button per row that calls `resolve!` and redirects back. Resolved tickets drop off the list; there's no separate view for them, since ticket control — not a full archive — is the goal.
+
+The panel sits behind its own HTTP basic auth, independent of both the app's session-based login and Solid Errors' dashboard auth. It's resolved the same credentials-first, ENV-second way as Solid Errors (`config/initializers/solid_errors.rb`), but read live in `Admin::FeedbacksController#authenticate_admin` on every request rather than once at boot — that's what lets tests flip `ENV["ADMIN_USERNAME"]`/`ENV["ADMIN_PASSWORD"]` per example without reloading the app:
+
+- `Rails.application.credentials.dig(:admin, :username)` / `:password`, falling back to `ENV["ADMIN_USERNAME"]` / `ENV["ADMIN_PASSWORD"]`
+
+Set the credentials block with `bin/rails credentials:edit`:
+
+```yaml
+admin:
+  username: some-username
+  password: some-password
+```
+
+**This is deliberately stricter than the Solid Errors gem default.** Solid Errors only enables basic auth when a password is present — an unset `SolidErrors.password` leaves `/errors` open, by that gem's own design (see the Error tracking section above). `Admin::FeedbacksController` inverts that: when neither `ADMIN_USERNAME`/`ADMIN_PASSWORD` nor the `admin` credentials block is configured, every request to `/admin/feedbacks` gets a `401 Unauthorized`, no exceptions — there is no "leave it open" fallback. Configure both before you need the panel; there's no way to reach it otherwise.
+
 ## Money
 
 [money-rails](https://github.com/RubyMoney/money-rails) is installed and configured with USD as the default currency (`config/initializers/money.rb`), but no monetized model ships with the template. To add a monetized column to a model: add `t.monetize :price` to a migration (this creates `price_cents` and `price_currency` columns), then declare `monetize :price_cents` on the model.
