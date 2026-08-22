@@ -35,6 +35,15 @@ class ConfirmDialogTest < ApplicationSystemTestCase
     assert_no_selector "#chat_#{chat.id}"
   end
 
+  test "the confirm dialog stays ready after a Turbo Drive navigation" do
+    visit chats_url
+    assert_confirm_dialog_ready
+
+    click_link "CharcoTemplate"
+    assert_current_path root_path
+    assert_confirm_dialog_ready
+  end
+
   private
 
   def assert_confirm_dialog_ready

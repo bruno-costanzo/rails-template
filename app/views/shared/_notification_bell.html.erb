@@ -1,7 +1,7 @@
 <% unread_count = unread_notifications_count %>
 <% recent = recent_notifications %>
 
-<details class="dropdown dropdown-end">
+<details class="dropdown dropdown-end" data-controller="dropdown">
   <summary class="btn btn-ghost btn-circle" aria-label="Notifications">
     <div class="indicator">
       <%= lucide_icon("bell", class: "size-5") %>
