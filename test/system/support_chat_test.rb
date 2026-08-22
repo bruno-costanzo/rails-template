@@ -2,11 +2,7 @@ require "application_system_test_case"
 
 class SupportChatTest < ApplicationSystemTestCase
   test "opening the widget and sending a message shows the stubbed human-friendly reply" do
-    visit new_session_url
-    fill_in "email_address", with: users(:one).email_address
-    fill_in "password", with: "password"
-    click_button "Sign in"
-    assert_current_path root_path
+    sign_in_via_browser(users(:one))
 
     stub_openai_chat_stream(chunks: [ "Thanks for reaching out, let's sort this out together." ])
 
@@ -37,11 +33,7 @@ class SupportChatTest < ApplicationSystemTestCase
   end
 
   test "attaching a photo before filing a ticket carries the photo to the resulting feedback" do
-    visit new_session_url
-    fill_in "email_address", with: users(:one).email_address
-    fill_in "password", with: "password"
-    click_button "Sign in"
-    assert_current_path root_path
+    sign_in_via_browser(users(:one))
 
     stub_openai_chat_stream_with_tool_call(
       tool_name: "create_support_ticket",

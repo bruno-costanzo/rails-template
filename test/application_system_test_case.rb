@@ -8,4 +8,17 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   driven_by :selenium, using: :headless_chrome, screen_size: [ 1400, 1400 ]
 
   ActiveJob::Base.queue_adapter = :inline
+
+  def assert_turbo_ready
+    assert_selector "body[data-turbo-ready]"
+  end
+
+  def sign_in_via_browser(user)
+    visit new_session_url
+    assert_turbo_ready
+    fill_in "email_address", with: user.email_address
+    fill_in "password", with: "password"
+    click_button "Sign in"
+    assert_current_path root_path
+  end
 end

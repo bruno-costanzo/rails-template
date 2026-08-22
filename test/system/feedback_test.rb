@@ -2,11 +2,7 @@ require "application_system_test_case"
 
 class FeedbackTest < ApplicationSystemTestCase
   test "submitting feedback with a photo persists it and shows a success toast" do
-    visit new_session_url
-    fill_in "email_address", with: users(:one).email_address
-    fill_in "password", with: "password"
-    click_button "Sign in"
-    assert_current_path root_path
+    sign_in_via_browser(users(:one))
 
     visit new_feedback_url
     fill_in "What's on your mind?", with: "The chat page is slow"

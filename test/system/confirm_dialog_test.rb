@@ -3,14 +3,14 @@ require "application_system_test_case"
 class ConfirmDialogTest < ApplicationSystemTestCase
   setup do
     @user = users(:one)
-    sign_in_via_browser
+    sign_in_via_browser(@user)
   end
 
   test "cancelling the confirm dialog keeps the chat" do
     chat = @user.chats.create!(model: "gpt-4o-mini")
     visit chats_url
     assert_selector "#chat_#{chat.id}"
-    assert_confirm_dialog_ready
+    assert_turbo_ready
 
     click_button "Destroy"
     find("dialog#turbo-confirm", visible: true)
@@ -25,7 +25,7 @@ class ConfirmDialogTest < ApplicationSystemTestCase
     chat = @user.chats.create!(model: "gpt-4o-mini")
     visit chats_url
     assert_selector "#chat_#{chat.id}"
-    assert_confirm_dialog_ready
+    assert_turbo_ready
 
     click_button "Destroy"
     find("dialog#turbo-confirm", visible: true)
@@ -37,26 +37,14 @@ class ConfirmDialogTest < ApplicationSystemTestCase
 
   test "the confirm dialog stays ready after a Turbo Drive navigation" do
     visit chats_url
-    assert_confirm_dialog_ready
+    assert_turbo_ready
 
     click_link "CharcoTemplate"
     assert_current_path root_path
-    assert_confirm_dialog_ready
+    assert_turbo_ready
   end
 
   private
-
-  def assert_confirm_dialog_ready
-    assert_selector "dialog#turbo-confirm[data-turbo-confirm-ready]", visible: :all
-  end
-
-  def sign_in_via_browser
-    visit new_session_url
-    fill_in "email_address", with: @user.email_address
-    fill_in "password", with: "password"
-    click_button "Sign in"
-    assert_current_path root_path
-  end
 
   def click_dialog_button(value)
     page.driver.browser.execute_script(

@@ -9,6 +9,6 @@ import discardStaleStreamUpdates from "discard_stale_stream_updates"
 
 Turbo.config.forms.confirm = confirmDialog
 document.addEventListener("turbo:load", () => {
-  document.getElementById("turbo-confirm").setAttribute("data-turbo-confirm-ready", "")
+  document.body.setAttribute("data-turbo-ready", "")
 })
 discardStaleStreamUpdates()

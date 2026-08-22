@@ -2,11 +2,7 @@ require "application_system_test_case"
 
 class NotificationsTest < ApplicationSystemTestCase
   test "the bell shows an unread badge, lists recent notifications, and marks them read" do
-    visit new_session_url
-    fill_in "email_address", with: users(:one).email_address
-    fill_in "password", with: "password"
-    click_button "Sign in"
-    assert_current_path root_path
+    sign_in_via_browser(users(:one))
 
     TestNotifier.deliver(users(:one))
     visit root_path
@@ -21,11 +17,7 @@ class NotificationsTest < ApplicationSystemTestCase
   end
 
   test "the dropdown stays open after the bell loses browser focus" do
-    visit new_session_url
-    fill_in "email_address", with: users(:one).email_address
-    fill_in "password", with: "password"
-    click_button "Sign in"
-    assert_current_path root_path
+    sign_in_via_browser(users(:one))
 
     TestNotifier.deliver(users(:one))
     visit root_path
@@ -37,11 +29,7 @@ class NotificationsTest < ApplicationSystemTestCase
   end
 
   test "clicking outside the dropdown closes it" do
-    visit new_session_url
-    fill_in "email_address", with: users(:one).email_address
-    fill_in "password", with: "password"
-    click_button "Sign in"
-    assert_current_path root_path
+    sign_in_via_browser(users(:one))
 
     TestNotifier.deliver(users(:one))
     visit root_path
@@ -55,11 +43,7 @@ class NotificationsTest < ApplicationSystemTestCase
   end
 
   test "shows a designed empty state when there are no notifications" do
-    visit new_session_url
-    fill_in "email_address", with: users(:one).email_address
-    fill_in "password", with: "password"
-    click_button "Sign in"
-    assert_current_path root_path
+    sign_in_via_browser(users(:one))
 
     find("[aria-label='Notifications']").click
 
