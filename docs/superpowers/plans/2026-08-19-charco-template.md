@@ -1986,3 +1986,30 @@ README: lifecycle, admin credentials setup.
 bin/ci
 git add -A && git commit -m "Add feedback ticket lifecycle and admin panel"
 ```
+
+### Task 28: Development email preview with letter_opener_web
+
+Execution order note: run after Task 27.
+
+**Files:**
+- Modify: `Gemfile`, `Gemfile.lock`, `config/environments/development.rb`, `config/routes.rb`, `CLAUDE.md`, `README.md`
+- Create: a wiring test where meaningfully testable (route mounted only in development; delivery method set)
+
+**Interfaces:**
+- Consumes: Action Mailer.
+- Produces: every development email lands in a browsable inbox at `/letter_opener`; test and production delivery unchanged.
+
+- [ ] **Step 1: Install and wire (TDD where testable)**
+
+`bundle add letter_opener_web --group development`. Configure `config.action_mailer.delivery_method = :letter_opener_web` and `perform_deliveries = true` in `config/environments/development.rb` (verify the exact configuration against the installed gem's README/source — never guess). Mount `LetterOpenerWeb::Engine` at `/letter_opener` guarded to development only (`if Rails.env.development?` in routes). Add a routes test asserting the mount is absent outside development if expressible; config lives in `config/` (excluded from coverage) — document what is and isn't testable.
+
+- [ ] **Step 2: Document**
+
+README "Development email preview" section (what lands there, the password-reset example); CLAUDE.md stack line.
+
+- [ ] **Step 3: Full gate, commit**
+
+```bash
+bin/ci
+git add -A && git commit -m "Add letter_opener_web for development email preview"
+```

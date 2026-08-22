@@ -89,6 +89,10 @@ Added on top (all TDD):
 
 - **console1984** — Basecamp's audited Rails console. Gem installed, its migrations run (console session/command trail tables), default protection (production only). Requires Active Record encryption: the template runs `bin/rails db:encryption:init` and stores the keys in credentials. Because `config/master.key` never travels with the repo, the README instructs each new app to regenerate credentials (`rm config/credentials.yml.enc && bin/rails credentials:edit`) and re-run `db:encryption:init`, pasting the fresh keys. Companion tool `audits1984` is documented as optional, not installed.
 
+## Development email preview
+
+- **letter_opener_web** — in development, Action Mailer delivers to a browsable inbox mounted at `/letter_opener` instead of sending real email. Covers password resets, Solid Errors notifications, and any mail a child app adds. Development-only gem and route; test and production behavior unchanged.
+
 ## Testing and CI
 
 - Minitest + fixtures; system tests with headless Capybara; WebMock for AI.
