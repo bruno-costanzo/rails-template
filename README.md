@@ -301,3 +301,22 @@ Since this repo doubles as a living app, keeping it current means:
 4. Run `bin/ci` before committing the upgrade.
 
 Also worth re-checking after a Rails upgrade: whether Lexxy still needs to monkey-patch `rich_text_area` (see `CLAUDE.md`'s Subsystem map) — a new Rails version may ship the official `ActionText::Editor` adapter API Lexxy prefers.
+
+## Porting template improvements into an existing app
+
+Apps born from this template do not receive updates automatically — "Use this template" creates a fresh history with no git link back, and `bin/rename` rewrites the app's identity throughout the tree, so wholesale merges from the template would conflict everywhere the rename touched. This is a deliberate trade-off: your app fully owns its code and its name.
+
+Individual improvements port well with cherry-pick:
+
+```bash
+git remote add template git@github.com:bruno-costanzo/rails-template.git
+git fetch template
+git log template/main --oneline
+git cherry-pick <sha>
+```
+
+What applies cleanly: commits that never mention the app name — JavaScript fixes, jobs, POROs, migrations, test helpers, gem bumps. Recent examples of this kind: streaming-race fixes, upload validations, N+1 guards.
+
+What conflicts: anything `bin/rename` rewrote — layouts and views carrying the app name, `config/` files, `database.yml`, `deploy.yml`. For those, read the template commit's diff (`git show <sha>`) and apply the change by hand under your app's names.
+
+Pick commits one at a time, run `bin/ci` after each, and skip anything your app has since diverged from — a template improvement is an offer, not an obligation.

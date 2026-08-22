@@ -120,7 +120,7 @@ Added on top (all TDD):
 
 ## Documentation
 
-README in English: quickstart, `bin/rename`, Kamal deploy, and an "Updating this template" section covering Rails/gem upgrades, re-downloading DaisyUI `.mjs` files, and running RubyLLM's official upgrade generators.
+README in English: quickstart, `bin/rename`, Kamal deploy, an "Updating this template" section covering Rails/gem upgrades, re-downloading DaisyUI `.mjs` files, and running RubyLLM's official upgrade generators, and a "Porting template improvements" section documenting the cherry-pick recipe for existing apps (template remote + per-commit cherry-pick; what applies cleanly vs what conflicts with the rename). There is still no automated update mechanism — a deliberate trade-off, reaffirmed against the Jumpstart-style linked-clone model.
 
 ## Out of scope
 
