@@ -4,7 +4,7 @@ module Admin
     before_action :authenticate_admin
 
     def index
-      @feedbacks = Feedback.open.order(created_at: :desc)
+      @feedbacks = Feedback.open.includes(:user, photos_attachments: :blob).order(created_at: :desc)
     end
 
     def resolve

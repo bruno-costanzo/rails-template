@@ -52,6 +52,24 @@ module Admin
       assert_not_includes @response.body, resolved_feedback.message
     end
 
+    test "renders escaped context values and photo links" do
+      ENV["ADMIN_USERNAME"] = "admin"
+      ENV["ADMIN_PASSWORD"] = "secret"
+
+      get admin_feedbacks_url, headers: { "Authorization" => "Basic #{Base64.strict_encode64("admin:secret")}" }
+      assert_not_includes @response.body, "&lt;b&gt;evil&lt;/b&gt;"
+
+      feedback = users(:one).feedbacks.create!(message: "Layout looks broken", context: { page_url: "<b>evil</b>" })
+      feedback.photos.attach(io: File.open(Rails.root.join("test/fixtures/files/avatar.png")), filename: "avatar.png", content_type: "image/png")
+      photo_url = feedback_photo_url(signed_id: feedback.photos.first.blob.signed_id)
+
+      get admin_feedbacks_url, headers: { "Authorization" => "Basic #{Base64.strict_encode64("admin:secret")}" }
+
+      assert_includes @response.body, "&lt;b&gt;evil&lt;/b&gt;"
+      assert_not_includes @response.body, "<b>evil</b>"
+      assert_includes @response.body, photo_url
+    end
+
     test "resolve action marks the ticket resolved and redirects with a flash" do
       ENV["ADMIN_USERNAME"] = "admin"
       ENV["ADMIN_PASSWORD"] = "secret"
