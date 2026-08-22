@@ -6,6 +6,11 @@ Rails.application.routes.draw do
     resource :photos, only: [ :create ], controller: "support_chat_photos"
   end
   resources :documents
+  resources :notifications, only: [ :index ] do
+    collection do
+      patch :mark_all_read
+    end
+  end
   resources :models, only: [ :index, :show ] do
     collection do
       post :refresh

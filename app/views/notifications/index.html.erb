@@ -1,0 +1,23 @@
+<% content_for :title, "Notifications" %>
+
+<div class="p-6 max-w-2xl mx-auto w-full">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="font-bold text-4xl">Notifications</h1>
+    <% if @notifications.unread.any? %>
+      <%= button_to "Mark all read", mark_all_read_notifications_path, method: :patch, class: "btn btn-sm btn-primary" %>
+    <% end %>
+  </div>
+
+  <% if @notifications.any? %>
+    <ul id="notification_list" class="menu bg-base-100 rounded-box shadow w-full">
+      <% @notifications.each do |notification| %>
+        <li><%= render "notifications/notification", notification: notification %></li>
+      <% end %>
+    </ul>
+  <% else %>
+    <div class="text-center my-10">
+      <%= lucide_icon("bell-off", class: "size-8 mx-auto mb-2 opacity-60") %>
+      <p>You're all caught up.</p>
+    </div>
+  <% end %>
+</div>

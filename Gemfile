@@ -95,3 +95,5 @@ gem "solid_errors", "~> 0.7.0"
 gem "lucide-rails", "~> 0.7.4"
 
 gem "letter_opener_web", "~> 3.0", group: :development
+
+gem "noticed", "~> 3.0"

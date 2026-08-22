@@ -15,6 +15,7 @@ require "webmock/minitest"
 WebMock.disable_net_connect!(allow_localhost: true)
 
 Dir[Rails.root.join("test/test_helpers/**/*.rb")].each { |f| require f }
+Dir[Rails.root.join("test/notifiers/*.rb")].reject { |f| f.end_with?("_test.rb") }.each { |f| require f }
 
 module ActiveSupport
   class TestCase

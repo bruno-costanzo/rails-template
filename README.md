@@ -196,6 +196,72 @@ The template's icon set is [Lucide](https://lucide.dev), via the `lucide-rails` 
 
 The first argument is the icon's name as it appears in the [Lucide icon library](https://lucide.dev/icons) (kebab-case, e.g. `house`, `arrow-right`, `circle-check`). Any keyword argument becomes an HTML attribute on the rendered `<svg>` — `class:` is the common case for sizing and color, since stroke color follows `currentColor` by default. Global defaults (applied to every icon) can be overridden via `LucideRails.default_options=` in an initializer if a future app needs that; the template doesn't set one.
 
+## Notifications
+
+[Noticed](https://github.com/excid3/noticed) provides the in-app notification pipeline: a bell in the navbar, a `/notifications` page, and the database tables and Active Job wiring underneath them. The template ships **zero notifications** — no notifier ever fires in app code. What ships is the capability: install the gem's migrations, `ApplicationNotifier` as a base class, the `User` recipient association, and the bell UI. A child app adds one notifier class and the bell works.
+
+The installed gem is Noticed 3.0.0, which keeps the `Event`/`Notification` split introduced in the v2 rewrite (v1 used a single notification class). In this architecture, database persistence is core, not a delivery method — declaring `deliver_by :database` raises a deprecation warning and does nothing (`Noticed::Deliverable#deliver_by`, noticed gem, `app/models/concerns/noticed/deliverable.rb`). Calling `SomeNotifier.deliver(recipients)` always saves a `Noticed::Event` row (the thing that happened, with an optional polymorphic `record`) and one `Noticed::Notification` row per recipient (the per-person inbox entry: `read_at`, `seen_at`), inside a transaction — synchronously, no job needed just to see it in someone's inbox. Only the *delivery methods* you declare (`:email`, `:action_cable`, `:slack`, etc.) run through a background job (`Noticed::EventJob`, itself an `ActiveJob::Base` subclass), which Solid Queue is already configured to run in this app.
+
+### Create a notifier
+
+```bash
+bin/rails generate noticed:notifier NewCommentNotifier
+```
+
+Or by hand, inheriting from `ApplicationNotifier` (`app/notifiers/application_notifier.rb`):
+
+```ruby
+# app/notifiers/new_comment_notifier.rb
+class NewCommentNotifier < ApplicationNotifier
+  notification_methods do
+    def message
+      "#{params[:comment].author.name} commented on your post"
+    end
+
+    def url
+      post_path(params[:comment].post)
+    end
+  end
+end
+```
+
+Deliver it to one or many recipients:
+
+```ruby
+NewCommentNotifier.with(record: comment, comment: comment).deliver(post.author)
+```
+
+`record:` is special — it fills the `Noticed::Event#record` polymorphic association (what the notification is *about*), so you can later ask "every notification generated from this comment." Any recipient with `has_many :notifications, as: :recipient, class_name: "Noticed::Notification"` (already added to `User`) picks it up immediately: `recipient.notifications.unread.count`, `recipient.notifications.newest_first`, `notification.mark_as_read`. The bell (`app/views/shared/_notification_bell.html.erb`, backed by `NotificationsHelper`) and the full list at `/notifications` (`NotificationsController`, scoped through `Current.user`) render whatever `message` your notifier's `notification_methods` block defines — every notifier you write needs one.
+
+### Email opt-in pattern
+
+Nothing ships with email enabled. To add it to a specific notifier, use Noticed's built-in `:email` delivery method and guard it with `config.if`:
+
+```ruby
+class NewCommentNotifier < ApplicationNotifier
+  deliver_by :email do |config|
+    config.mailer = "NewCommentMailer"
+    config.method = :notify
+    config.if = -> { recipient.email_notifications? }
+  end
+
+  notification_methods do
+    def message
+      "#{params[:comment].author.name} commented on your post"
+    end
+  end
+end
+```
+
+`config.mailer` and `config.method` are required (`Noticed::DeliveryMethods::Email`, noticed gem, `lib/noticed/delivery_methods/email.rb`); the delivery method calls `mailer.with(params).public_send(method)`, so the mailer action reads `params[:notification]`, `params[:record]`, and `params[:recipient]`. `config.if`/`config.unless` are evaluated per-recipient at delivery time (not at `.deliver` time), so you can check a per-user preference, not just a global switch. This exact pattern — a `deliver_by :email` block guarded by `config.if`, backed by a plain `ActionMailer::Base` mailer — is exercised end-to-end by the template's only notifier, `TestNotifier` (`test/notifiers/`), which is test-only and never invoked by app code. Its test (`test/notifiers/test_notifier_test.rb`) delivers with and without the opt-in param and asserts `ActionMailer::Base.deliveries` accordingly.
+
+In development, any email a notifier sends lands in the same [letter_opener](#development-email-preview) inbox at `/letter_opener` as password resets — no separate setup needed.
+
+### Future channels (not installed)
+
+- **Web push** (desktop/mobile browser notifications while the app is closed) needs the [`web-push`](https://github.com/pushpad/web-push) gem plus VAPID keys and a service worker subscription flow. Deliberately not installed — add it if a real notifier needs it, then `deliver_by :web_push` following Noticed's docs.
+- **Mobile push** (iOS/Android native apps) is supported by Noticed's built-in `:fcm` (Firebase Cloud Messaging) and `:ios` (Apple Push Notification Service) delivery methods — no extra gem needed, just credentials and device tokens, wired up the same `deliver_by` way as `:email` above.
+
 ## Deployment
 
 Deploys use [Kamal](https://kamal-deploy.org). Before your first deploy, edit `config/deploy.yml` and replace every UPPERCASE placeholder with real values:
