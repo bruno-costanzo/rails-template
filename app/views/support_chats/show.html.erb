@@ -2,7 +2,7 @@
   <%= turbo_stream_from "chat_#{@chat.id}" %>
 
   <div id="chat_<%= @chat.id %>_messages" class="max-h-64 overflow-y-auto space-y-3 mb-3">
-    <% @chat.messages.order(:created_at).each do |message| %>
+    <% @messages.each do |message| %>
       <%= render message %>
     <% end %>
   </div>

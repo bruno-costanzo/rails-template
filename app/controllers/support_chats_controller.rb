@@ -6,6 +6,7 @@ class SupportChatsController < ApplicationController
     @chat = Current.user.chats.find_or_create_by!(support: true)
     @chat.update!(ticket_context: context_params) if context_params.present?
     @message = @chat.messages.build
+    @messages = @chat.messages.includes(:tool_calls, :parent_tool_call, :model, attachments_attachments: :blob).order(:created_at)
   end
 
   private

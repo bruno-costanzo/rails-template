@@ -21,6 +21,17 @@ module ActiveSupport
   class TestCase
     include ActiveJob::TestHelper
 
+    def before_setup
+      Bullet.start_request
+      super
+    end
+
+    def after_teardown
+      super
+      Bullet.perform_out_of_channel_notifications if Bullet.notification?
+      Bullet.end_request
+    end
+
     parallelize(workers: :number_of_processors)
 
     parallelize_setup do |worker|

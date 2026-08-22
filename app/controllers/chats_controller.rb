@@ -23,6 +23,7 @@ class ChatsController < ApplicationController
 
   def show
     @message = @chat.messages.build
+    @messages = @chat.messages.where.not(id: nil).includes(:tool_calls, :parent_tool_call, :model, attachments_attachments: :blob)
   end
 
   def destroy
