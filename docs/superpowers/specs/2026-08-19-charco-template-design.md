@@ -89,6 +89,12 @@ Added on top (all TDD):
 
 - **console1984** — Basecamp's audited Rails console. Gem installed, its migrations run (console session/command trail tables), default protection (production only). Requires Active Record encryption: the template runs `bin/rails db:encryption:init` and stores the keys in credentials. Because `config/master.key` never travels with the repo, the README instructs each new app to regenerate credentials (`rm config/credentials.yml.enc && bin/rails credentials:edit`) and re-run `db:encryption:init`, pasting the fresh keys. Companion tool `audits1984` is documented as optional, not installed.
 
+## Notifications
+
+- **noticed (v2) is the entire notifications layer** — no other notification gem or service. The template ships the *capability*, not any notification: `noticed` installed with its migrations (`noticed_events`/`noticed_notifications` on SQLite), an `ApplicationNotifier < Noticed::Event` base class, and a navbar bell (DaisyUI dropdown: unread badge, list, mark-as-read) that renders whatever notifications exist — empty until a child app creates its first notifier. Creating a notification in a child app is one notifier class; the README documents the recipe. Tests exercise the full pipeline with a notifier that lives only under `test/`.
+- **Channels**: in-app (database) works out of the box; email delivery uses noticed's built-in `:email` delivery method as a documented, per-notifier opt-in pattern (previewable in `/letter_opener` in development). Web push and mobile push are documented future channels: browser push requires the `web-push` gem for VAPID crypto (deliberately not installed — nothing beyond noticed ships today), and mobile uses noticed's built-in FCM/APNS delivery methods when an app needs them.
+- **Binding rule for implementation:** the noticed v2 documentation and installed gem source are read before any code is written — v2 is a rewrite; v1 memory is not trusted.
+
 ## Development email preview
 
 - **letter_opener_web** — in development, Action Mailer delivers to a browsable inbox mounted at `/letter_opener` instead of sending real email. Covers password resets, Solid Errors notifications, and any mail a child app adds. Development-only gem and route; test and production behavior unchanged.

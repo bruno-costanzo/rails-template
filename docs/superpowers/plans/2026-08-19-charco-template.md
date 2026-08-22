@@ -2045,3 +2045,34 @@ No sleeps, no in-test retries, no weakened assertions, no skipped tests. Product
 bin/ci
 git add -A && git commit -m "Stabilize system test suite"
 ```
+
+### Task 31: Notifications core with noticed
+
+Execution order note: run after Task 30. User rulings: "todo va con noticed... no necesitamos algo mas que noticed" (noticed is the whole layer, no other gems) and "leer bien la documentacion" (read the v2 docs + installed gem source before writing code — v1 memory is not trusted). The template ships NO notification — only the capability.
+
+**Files:**
+- Create: noticed migrations (primary SQLite DB), `app/notifiers/application_notifier.rb`, navbar bell partial + Stimulus/Turbo wiring, notifications controller (list, mark as read), a test-only notifier under `test/`, tests
+- Modify: `Gemfile`, `Gemfile.lock`, `config/routes.rb`, navbar in the layout, `CLAUDE.md`, `README.md`
+
+**Interfaces:**
+- Consumes: noticed v2 (`Noticed::Event`/`Noticed::Notification`), `Current.user`, Solid Queue (noticed delivers via Active Job), DaisyUI + Lucide (bell icon).
+- Produces: a working in-app notification pipeline with zero shipped notifications; child apps add one notifier class and the bell just works.
+
+- [ ] **Step 1: Install and model (TDD)**
+
+`bundle add noticed`; run its install migrations against the primary DB. Read the installed gem source first: how `Noticed::Event` relates to `Noticed::Notification`, how recipients map to records, how `deliver_by :database`... actually verify whether database storage is core or a delivery method in v2 — the report must state what the source says, with file references. `ApplicationNotifier < Noticed::Event`. A `TestNotifier` under `test/` exercises: deliver to a user, notification persisted, unread count, mark as read. `User` gains the noticed association (`has_many :notifications, as: :recipient, dependent: :destroy, class_name: "Noticed::Notification"` — verify exact form against docs).
+
+- [ ] **Step 2: Bell UI (TDD)**
+
+Navbar bell (Lucide icon) for signed-in users: DaisyUI dropdown with unread badge, recent notifications list, mark-all-read. Notifications controller scoped through `Current.user`. System test drives it with the test-only notifier (seeded via the test, since the app ships none). Empty state is a designed state, not a blank hole.
+
+- [ ] **Step 3: Email pattern + docs**
+
+Document (and test with `TestNotifier`) the per-notifier email opt-in using noticed's built-in `:email` delivery method — verify its exact v2 API (`deliver_by :email do |config| ... end`) against the gem. Nothing ships with email enabled. README "Notifications" section: the create-a-notifier recipe, the email opt-in pattern, `/letter_opener` preview note, and future channels (web push needs the `web-push` gem — documented deliberately-not-installed; mobile via noticed's built-in FCM/APNS). CLAUDE.md subsystem-map entry.
+
+- [ ] **Step 4: Full gate, commit**
+
+```bash
+bin/ci
+git add -A && git commit -m "Add notifications infrastructure with noticed"
+```
