@@ -2076,3 +2076,32 @@ Document (and test with `TestNotifier`) the per-notifier email opt-in using noti
 bin/ci
 git add -A && git commit -m "Add notifications infrastructure with noticed"
 ```
+
+### Task 34: N+1 detection with bullet
+
+Execution order note: run after Task 33 (one test process at a time). User ruling: strict mode — a detected N+1 is a red test.
+
+**Files:**
+- Modify: `Gemfile`, `Gemfile.lock`, `config/environments/development.rb`, `config/environments/test.rb`, any code paths Bullet flags once enabled, `CLAUDE.md`, `README.md`
+- Create: safelist entries only where a flagged case is a verified false positive (documented in the report with reasoning)
+
+**Interfaces:**
+- Consumes: the `bullet` gem (configuration verified against its installed source/README — never from memory), the existing test suite as the audit surface.
+- Produces: N+1 regressions fail `bin/rails test`; development navigation warns live.
+
+- [ ] **Step 1: Install and configure (verify against gem docs)**
+
+`bundle add bullet --group development,test`. Development: `Bullet.enable`, Rails logger + browser console warnings (verify exact option names in the gem README/source). Test: `Bullet.enable` + `Bullet.raise = true`. Confirm how Bullet integrates with the test framework (per-test start/end hooks — verify what the gem requires for Minitest and add it to test_helper accordingly).
+
+- [ ] **Step 2: Face the audit (TDD in reverse — the suite is the RED)**
+
+Run the full suite with raise enabled. Every failure is either (a) a real N+1 → fix with `includes`/counter cache and keep the fix covered, or (b) a verified false positive → safelist with the narrowest possible scope. No mode-loosening, no test-weakening. Record every flagged site and its resolution in the report.
+
+- [ ] **Step 3: Document, full gate, commit**
+
+README "N+1 detection" section (what fails, how to read a Bullet error, safelist policy); CLAUDE.md conventions line. System tests: confirm whether Bullet applies there too and document the behavior found.
+
+```bash
+bin/ci
+git add -A && git commit -m "Fail tests on N+1 queries with bullet"
+```
