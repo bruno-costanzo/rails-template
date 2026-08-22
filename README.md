@@ -233,6 +233,8 @@ NewCommentNotifier.with(record: comment, comment: comment).deliver(post.author)
 
 `record:` is special — it fills the `Noticed::Event#record` polymorphic association (what the notification is *about*), so you can later ask "every notification generated from this comment." Any recipient with `has_many :notifications, as: :recipient, class_name: "Noticed::Notification"` (already added to `User`) picks it up immediately: `recipient.notifications.unread.count`, `recipient.notifications.newest_first`, `notification.mark_as_read`. The bell (`app/views/shared/_notification_bell.html.erb`, backed by `NotificationsHelper`) and the full list at `/notifications` (`NotificationsController`, scoped through `Current.user`) render whatever `message` your notifier's `notification_methods` block defines — every notifier you write needs one.
 
+`User#notifications`'s `dependent: :destroy` only cleans up the recipient side: if you pass `record:` and that record is later destroyed, its `Noticed::Event` rows (and their notifications) are not cleaned up automatically and will linger in `noticed_events`. If you add a notifier tied to a record, also add the record-side association Noticed's own README documents ("Associating Notifications"): `has_many :noticed_events, as: :record, dependent: :destroy, class_name: "Noticed::Event"` on that model.
+
 ### Email opt-in pattern
 
 Nothing ships with email enabled. To add it to a specific notifier, use Noticed's built-in `:email` delivery method and guard it with `config.if`:

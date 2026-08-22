@@ -1,22 +1,25 @@
+<% unread_count = unread_notifications_count %>
+<% recent = recent_notifications %>
+
 <div class="dropdown dropdown-end">
   <div tabindex="0" role="button" class="btn btn-ghost btn-circle" aria-label="Notifications">
     <div class="indicator">
       <%= lucide_icon("bell", class: "size-5") %>
-      <% if unread_notifications_count.positive? %>
-        <span class="badge badge-xs badge-primary indicator-item"><%= unread_notifications_count %></span>
+      <% if unread_count.positive? %>
+        <span class="badge badge-xs badge-primary indicator-item"><%= unread_count %></span>
       <% end %>
     </div>
   </div>
   <div tabindex="0" class="dropdown-content bg-base-100 rounded-box z-10 mt-3 w-80 p-2 shadow">
     <div class="flex items-center justify-between px-2 py-1">
       <span class="font-semibold">Notifications</span>
-      <% if unread_notifications_count.positive? %>
+      <% if unread_count.positive? %>
         <%= button_to "Mark all read", mark_all_read_notifications_path, method: :patch, class: "btn btn-ghost btn-xs" %>
       <% end %>
     </div>
     <ul class="menu w-full">
-      <% if recent_notifications.any? %>
-        <% recent_notifications.each do |notification| %>
+      <% if recent.any? %>
+        <% recent.each do |notification| %>
           <li><%= render "notifications/notification", notification: notification %></li>
         <% end %>
       <% else %>
