@@ -33,9 +33,9 @@ class FlashToastTest < ApplicationSystemTestCase
 
   def sign_in_with_wrong_password
     visit new_session_url
-    assert_turbo_ready
     fill_in "email_address", with: @user.email_address
     fill_in "password", with: "wrong-password"
     click_button "Sign in"
+    assert_turbo_ready
   end
 end

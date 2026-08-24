@@ -9,16 +9,21 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
 
   ActiveJob::Base.queue_adapter = :inline
 
+  def visit(...)
+    super
+    assert_turbo_ready
+  end
+
   def assert_turbo_ready
     assert_selector "body[data-turbo-ready]"
   end
 
   def sign_in_via_browser(user)
     visit new_session_url
-    assert_turbo_ready
     fill_in "email_address", with: user.email_address
     fill_in "password", with: "password"
     click_button "Sign in"
     assert_current_path root_path
+    assert_turbo_ready
   end
 end

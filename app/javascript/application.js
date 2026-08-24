@@ -9,6 +9,12 @@ import discardStaleStreamUpdates from "discard_stale_stream_updates"
 
 Turbo.config.forms.confirm = confirmDialog
 document.addEventListener("turbo:load", () => {
-  document.body.setAttribute("data-turbo-ready", "")
+  controllersLoaded().then(() => document.body.setAttribute("data-turbo-ready", ""))
 })
 discardStaleStreamUpdates()
+
+function controllersLoaded() {
+  const importmap = JSON.parse(document.querySelector("script[type=importmap]").text)
+  const paths = Object.keys(importmap.imports).filter(path => path.match(/^controllers\/.*_controller$/))
+  return Promise.allSettled(paths.map(path => import(path)))
+}

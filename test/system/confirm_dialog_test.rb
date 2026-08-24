@@ -10,7 +10,6 @@ class ConfirmDialogTest < ApplicationSystemTestCase
     chat = @user.chats.create!(model: "gpt-4o-mini")
     visit chats_url
     assert_selector "#chat_#{chat.id}"
-    assert_turbo_ready
 
     click_button "Destroy"
     find("dialog#turbo-confirm", visible: true)
@@ -25,7 +24,6 @@ class ConfirmDialogTest < ApplicationSystemTestCase
     chat = @user.chats.create!(model: "gpt-4o-mini")
     visit chats_url
     assert_selector "#chat_#{chat.id}"
-    assert_turbo_ready
 
     click_button "Destroy"
     find("dialog#turbo-confirm", visible: true)
@@ -37,7 +35,6 @@ class ConfirmDialogTest < ApplicationSystemTestCase
 
   test "the confirm dialog stays ready after a Turbo Drive navigation" do
     visit chats_url
-    assert_turbo_ready
 
     click_link "CharcoTemplate"
     assert_current_path root_path
