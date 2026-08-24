@@ -37,7 +37,7 @@ class NotificationsTest < ApplicationSystemTestCase
     find("[aria-label='Notifications']").click
     assert_text "Test notification"
 
-    page.execute_script("arguments[0].click()", find("body").native)
+    find("body").click
 
     assert_no_text "Test notification"
   end

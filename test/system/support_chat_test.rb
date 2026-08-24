@@ -20,10 +20,8 @@ class SupportChatTest < ApplicationSystemTestCase
     assert context["viewport"].present?
 
     within "dialog.modal" do
-      field = find_field("Message")
-      page.execute_script("arguments[0].value = arguments[1]", field.native, "The chat page loads slowly for me")
-      button = find_button("Send message")
-      page.execute_script("arguments[0].click()", button.native)
+      fill_in "Message", with: "The chat page loads slowly for me"
+      click_button "Send message"
 
       assert_text "The chat page loads slowly for me"
     end
@@ -47,10 +45,8 @@ class SupportChatTest < ApplicationSystemTestCase
     attach_file "chat_pending_photos", file_fixture("avatar.png")
     assert_text "1 photo attached"
 
-    field = find_field("Message")
-    page.execute_script("arguments[0].value = arguments[1]", field.native, "The layout looks broken on this page")
-    button = find_button("Send message")
-    page.execute_script("arguments[0].click()", button.native)
+    fill_in "Message", with: "The layout looks broken on this page"
+    click_button "Send message"
 
     assert_text "Got it - I've passed this along to the team. Thank you!"
 
