@@ -13,6 +13,7 @@ CharcoTemplate is a Rails 8.1.3.1 starter template. It is a fully working app on
 - Solid Queue, Solid Cache and Solid Cable — all on SQLite, no Redis required
 - console1984: every production Rails console session and command is recorded
 - Solid Errors: uncaught exceptions are captured and deduplicated in SQLite, with a dashboard behind HTTP basic auth
+- onlylogs: a self-hosted log viewer at `/onlylogs` behind HTTP basic auth, tailing a rotated, size-capped copy of the production log on the storage volume
 - A signed-in feedback form that always saves locally and, when configured, opens a labeled GitHub Issue
 - A floating AI support assistant that turns a conversation into a refined, human-friendly ticket, filed through the same feedback pipeline
 - Tailwind v4 + DaisyUI 5 (vendored, no Node/npm needed), Hotwire (Turbo + Stimulus)
@@ -133,6 +134,22 @@ solid_errors:
 Basic auth is only enabled when a password is set — the gem's filter is `http_basic_authenticate_with ... if SolidErrors.password`, so a username with no password still leaves `/errors` wide open. Set both before deploying to production. Email notification is off unless `email_to` resolves to a value; when it does, Solid Errors emails that address (via the app's already-configured Action Mailer) every time a new error occurs. `.env.test` sets `SOLID_ERRORS_USERNAME`/`SOLID_ERRORS_PASSWORD` to fixed test values so the dashboard's basic-auth test doesn't need real credentials.
 
 Solid Errors also reads its own env vars directly, `ENV["SOLIDERRORS_USERNAME"]`/`ENV["SOLIDERRORS_PASSWORD"]` (no underscore between "SOLID" and "ERRORS") — this gem-native lookup happens ahead of anything this app configures, credentials included. Don't set those two exact variable names unless you intend them to silently win over everything else.
+
+## Log viewer
+
+[onlylogs](https://github.com/renuo/onlylogs) mounts a self-hosted web log viewer at `/onlylogs`: live-tail the log in the browser, grep it (with regular expressions — install [ripgrep](https://github.com/BurntSushi/ripgrep) on the server for fast searches), and download it. No external log service involved.
+
+Production keeps logging to STDOUT exactly as before (`bin/kamal logs` is unchanged), but `config/environments/production.rb` now broadcasts every line to a second destination through `ActiveSupport::BroadcastLogger`: `storage/logs/production.log`, on the persistent storage volume that `config/deploy.yml` already mounts. That file is rotated by Ruby's own `Logger` (`ActiveSupport::TaggedLogging.logger(path, 5, 100.megabytes)`): when it reaches 100 MB it shifts to `production.log.0`, keeping at most five files total (`production.log` plus `.0`–`.3`), so the on-disk copy is hard-capped at ~500 MB and can never fill the volume.
+
+The viewer's file whitelist (`config.log_file_patterns` in `config/initializers/onlylogs.rb`) is restricted to exactly that path — onlylogs automatically extends a `*.log` entry to its `*.log.N` rotation suffixes, so the dropdown lists the rotated set too, and nothing else on the server is reachable through the viewer. In development and test the environment's own `log/<env>.log` is additionally whitelisted so the viewer has something to show locally.
+
+Access control mirrors `/admin/feedbacks`, not the gem's built-in basic auth. Onlylogs ships its own basic-auth (it answers 403 when unconfigured, reads ENV ahead of credentials, and only once at boot); this app bypasses it through the gem's documented custom-auth hook — `config.disable_basic_authentication` plus `config.parent_controller` pointing at `OnlylogsBaseController` (`app/controllers/onlylogs_base_controller.rb`), whose `authenticate_onlylogs_user!` re-implements the admin panel's contract: credentials first, ENV second, read live on every request (so tests can flip ENV per example), and **deny-when-unconfigured** — when neither source is set, every request to `/onlylogs` gets a `401 Unauthorized`, no "leave it open" fallback. The variable names are the gem's own native ones, kept for consistency with its documentation:
+
+- `Rails.application.credentials.dig(:onlylogs, :basic_auth_user)` / `:basic_auth_password`, falling back to `ENV["ONLYLOGS_BASIC_AUTH_USER"]` / `ENV["ONLYLOGS_BASIC_AUTH_PASSWORD"]`
+
+To reuse one shared credential pair across every app born from this template, keep the values out of every repo and inject them at deploy time: store them once in your password manager, then list both variables under `env.secret` in `config/deploy.yml` and resolve them in `.kamal/secrets` (for example via `kamal secrets fetch --adapter 1password`, next to `RAILS_MASTER_KEY` and `OPENAI_API_KEY`). Every child app then points at the same vault entry, and rotating the credential is a redeploy — no repo ever contains the values.
+
+This is stage 1 of a two-stage plan. Stage 2 — streaming logs from all apps to one central onlylogs server instead of hosting a viewer per app — is deliberately not built yet: onlylogs' server side (https://onlylogs.io) is still in beta and not yet publicly self-hostable. When it is, the per-app viewer can be replaced by (or complemented with) streaming to that single central instance.
 
 ## Development email preview
 
