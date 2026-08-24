@@ -36,7 +36,7 @@ class ConfirmDialogTest < ApplicationSystemTestCase
   test "the confirm dialog stays ready after a Turbo Drive navigation" do
     visit chats_url
 
-    page.execute_script("arguments[0].click()", find_link("CharcoTemplate").native)
+    click_link "CharcoTemplate"
     assert_current_path root_path
     assert_turbo_ready
   end
@@ -44,9 +44,6 @@ class ConfirmDialogTest < ApplicationSystemTestCase
   private
 
   def click_dialog_button(value)
-    page.driver.browser.execute_script(
-      "document.querySelector(arguments[0]).click()",
-      "[data-turbo-confirm-#{value}]"
-    )
+    find("[data-turbo-confirm-#{value}]").click
   end
 end

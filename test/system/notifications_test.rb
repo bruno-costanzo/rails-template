@@ -23,7 +23,7 @@ class NotificationsTest < ApplicationSystemTestCase
     visit root_path
 
     find("[aria-label='Notifications']").click
-    page.driver.browser.execute_script("document.activeElement.blur()")
+    page.execute_script("document.activeElement.blur()")
 
     assert_text "Test notification"
   end
@@ -37,7 +37,7 @@ class NotificationsTest < ApplicationSystemTestCase
     find("[aria-label='Notifications']").click
     assert_text "Test notification"
 
-    page.execute_script("arguments[0].click()", find("body").native)
+    find("body").click
 
     assert_no_text "Test notification"
   end
