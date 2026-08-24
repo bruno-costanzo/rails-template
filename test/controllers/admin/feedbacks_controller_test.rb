@@ -3,18 +3,18 @@ require "test_helper"
 module Admin
   class FeedbacksControllerTest < ActionDispatch::IntegrationTest
     setup do
-      @original_username = ENV["ADMIN_USERNAME"]
-      @original_password = ENV["ADMIN_PASSWORD"]
+      @original_username = ENV["SUPERADMIN_USER"]
+      @original_password = ENV["SUPERADMIN_PASSWORD"]
     end
 
     teardown do
-      ENV["ADMIN_USERNAME"] = @original_username
-      ENV["ADMIN_PASSWORD"] = @original_password
+      ENV["SUPERADMIN_USER"] = @original_username
+      ENV["SUPERADMIN_PASSWORD"] = @original_password
     end
 
     test "requires basic auth credentials" do
-      ENV["ADMIN_USERNAME"] = "admin"
-      ENV["ADMIN_PASSWORD"] = "secret"
+      ENV["SUPERADMIN_USER"] = "admin"
+      ENV["SUPERADMIN_PASSWORD"] = "secret"
 
       get admin_feedbacks_url
 
@@ -22,8 +22,8 @@ module Admin
     end
 
     test "denies access when no admin credentials are configured" do
-      ENV["ADMIN_USERNAME"] = nil
-      ENV["ADMIN_PASSWORD"] = nil
+      ENV["SUPERADMIN_USER"] = nil
+      ENV["SUPERADMIN_PASSWORD"] = nil
 
       get admin_feedbacks_url, headers: { "Authorization" => "Basic #{Base64.strict_encode64("admin:secret")}" }
 
@@ -31,8 +31,8 @@ module Admin
     end
 
     test "is reachable with the configured admin credentials" do
-      ENV["ADMIN_USERNAME"] = "admin"
-      ENV["ADMIN_PASSWORD"] = "secret"
+      ENV["SUPERADMIN_USER"] = "admin"
+      ENV["SUPERADMIN_PASSWORD"] = "secret"
 
       get admin_feedbacks_url, headers: { "Authorization" => "Basic #{Base64.strict_encode64("admin:secret")}" }
 
@@ -40,8 +40,8 @@ module Admin
     end
 
     test "lists only open tickets" do
-      ENV["ADMIN_USERNAME"] = "admin"
-      ENV["ADMIN_PASSWORD"] = "secret"
+      ENV["SUPERADMIN_USER"] = "admin"
+      ENV["SUPERADMIN_PASSWORD"] = "secret"
       open_feedback = users(:one).feedbacks.create!(message: "The chat page is slow")
       resolved_feedback = users(:one).feedbacks.create!(message: "Already handled")
       resolved_feedback.resolve!
@@ -53,8 +53,8 @@ module Admin
     end
 
     test "renders escaped context values and photo links" do
-      ENV["ADMIN_USERNAME"] = "admin"
-      ENV["ADMIN_PASSWORD"] = "secret"
+      ENV["SUPERADMIN_USER"] = "admin"
+      ENV["SUPERADMIN_PASSWORD"] = "secret"
 
       get admin_feedbacks_url, headers: { "Authorization" => "Basic #{Base64.strict_encode64("admin:secret")}" }
       assert_not_includes @response.body, "&lt;b&gt;evil&lt;/b&gt;"
@@ -71,8 +71,8 @@ module Admin
     end
 
     test "renders multiple open tickets with photos without an N+1" do
-      ENV["ADMIN_USERNAME"] = "admin"
-      ENV["ADMIN_PASSWORD"] = "secret"
+      ENV["SUPERADMIN_USER"] = "admin"
+      ENV["SUPERADMIN_PASSWORD"] = "secret"
       first_feedback = users(:one).feedbacks.create!(message: "The chat page is slow")
       first_feedback.photos.attach(io: File.open(Rails.root.join("test/fixtures/files/avatar.png")), filename: "avatar.png", content_type: "image/png")
       users(:two).feedbacks.create!(message: "Layout looks broken")
@@ -83,8 +83,8 @@ module Admin
     end
 
     test "resolve action marks the ticket resolved and redirects with a flash" do
-      ENV["ADMIN_USERNAME"] = "admin"
-      ENV["ADMIN_PASSWORD"] = "secret"
+      ENV["SUPERADMIN_USER"] = "admin"
+      ENV["SUPERADMIN_PASSWORD"] = "secret"
       feedback = users(:one).feedbacks.create!(message: "The chat page is slow")
 
       patch resolve_admin_feedback_url(feedback), headers: { "Authorization" => "Basic #{Base64.strict_encode64("admin:secret")}" }
@@ -95,8 +95,8 @@ module Admin
     end
 
     test "resolve action is idempotent" do
-      ENV["ADMIN_USERNAME"] = "admin"
-      ENV["ADMIN_PASSWORD"] = "secret"
+      ENV["SUPERADMIN_USER"] = "admin"
+      ENV["SUPERADMIN_PASSWORD"] = "secret"
       feedback = users(:one).feedbacks.create!(message: "The chat page is slow")
       feedback.resolve!
       first_resolved_at = feedback.resolved_at

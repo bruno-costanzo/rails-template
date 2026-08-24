@@ -117,27 +117,37 @@ Bullet.add_safelist type: :unused_eager_loading, class_name: "TestNotifier::Noti
 
 console1984 protects and audits the Rails console in production. Every console session and every command run inside it is recorded to the database (`console1984_sessions`, `console1984_commands` tables), and by default only the `production` environment is protected — development and test consoles are unrestricted. This requires Active Record encryption to be configured (see the Quickstart's credentials step above). If you want a web UI for browsing the audit trail, console1984's companion gem [`audits1984`](https://github.com/basecamp/audits1984) is not installed by default but can be added later.
 
+## Superadmin access
+
+Every developer-only panel — `/errors`, `/onlylogs`, `/admin/feedbacks`, and the `/madmin` resource browser — is gated by a single HTTP basic-auth credential pair, independent of the app's own session-based login, through the `SuperadminAuthentication` concern (`app/controllers/concerns/superadmin_authentication.rb`). A controller only needs `include SuperadminAuthentication`; the concern's `included` hook registers the `before_action`. Credentials resolve credentials-first then ENV, read live on every request (so tests can flip ENV per example):
+
+- `Rails.application.credentials.dig(:superadmin, :username)` / `:password`, falling back to `ENV["SUPERADMIN_USER"]` / `ENV["SUPERADMIN_PASSWORD"]`
+
+Comparison is constant-time (`ActiveSupport::SecurityUtils.secure_compare`). The gate is **deny-by-default**: when either value is blank, every request gets a `401 Unauthorized` — there is no "leave it open when unconfigured" fallback anywhere. This is deliberately stricter than the Solid Errors and onlylogs gem defaults, both of which leave their own dashboard open until a password is set; here that door is closed. Set the credentials block with `bin/rails credentials:edit`:
+
+```yaml
+superadmin:
+  username: some-username
+  password: some-password
+```
+
+To reuse one shared pair across every app born from this template, keep the values out of every repo and inject them at deploy time: store them once in your password manager, then list `SUPERADMIN_USER`/`SUPERADMIN_PASSWORD` under `env.secret` in `config/deploy.yml` and resolve them in `.kamal/secrets` (for example via `kamal secrets fetch --adapter 1password`, next to `RAILS_MASTER_KEY` and `OPENAI_API_KEY`). Rotating the credential is a redeploy — no repo ever contains the values.
+
+### Resource browser (madmin)
+
+`/madmin` is a [madmin](https://github.com/excid3/madmin) panel for browsing and editing the app's records, gated by the same superadmin auth (`Madmin::ApplicationController` includes the concern). It ships dashboards for the domain models only — `Chat`, `Document`, `Feedback`, `Message`, `Model`, `Session`, `ToolCall`, `User`, plus `Noticed::Notification` and `Noticed::Event`. The framework-internal and sensitive resources the installer generates (Active Storage, Action Text, console1984 audit logs, and Solid Errors — which already has `/errors`) were removed from `config/routes/madmin.rb`, `app/madmin/resources/`, and `app/controllers/madmin/`. Add a dashboard for a new model with `bin/rails g madmin:resource ModelName`, then trim its route/resource/controller the same way if the generator pulls in extras you don't want exposed.
+
+Two integration points with the template's conventions: madmin's generated files are excluded from the 100%-coverage gate (`add_filter "app/madmin"` / `add_filter "app/controllers/madmin"` in `test/test_helper.rb`), since they're generated boilerplate; and `Madmin::ApplicationController` disables Bullet for the duration of each madmin request (`around_action :without_bullet if defined?(Bullet)`), because madmin's index views intentionally lazy-load associations and would otherwise trip the strict N+1 gate — acceptable for a dev-only panel over bounded data.
+
 ## Error tracking
 
 [Solid Errors](https://github.com/fractaledmind/solid_errors) captures uncaught exceptions through Rails' native error reporter (`Rails.error`) and stores them, deduplicated by fingerprint, in the primary SQLite database (`solid_errors`/`solid_errors_occurrences` tables, migrated alongside everything else — no separate database needed). Browse them at `/errors`.
 
-The dashboard is behind HTTP basic auth, independent of the app's own session-based login. Credentials and the notification email are read once, in `config/initializers/solid_errors.rb`, from Rails credentials first and an environment variable second:
+The dashboard is behind the shared superadmin basic auth (see [Superadmin access](#superadmin-access)), not the gem's own: `config/initializers/solid_errors.rb` sets `SolidErrors.base_controller_class = "SolidErrorsBaseController"`, and that controller just `include SuperadminAuthentication`. So `/errors` is deny-by-default like the other panels — the initializer no longer sets `SolidErrors.username`/`password`, which leaves the gem's own password-gated filter inert. Only the notification email stays panel-specific, read once in the initializer from Rails credentials first and an environment variable second:
 
-- `Rails.application.credentials.dig(:solid_errors, :username)` / `:password`, falling back to `ENV["SOLID_ERRORS_USERNAME"]` / `ENV["SOLID_ERRORS_PASSWORD"]`
 - `Rails.application.credentials.dig(:solid_errors, :email_to)`, falling back to `ENV["SOLID_ERRORS_EMAIL_TO"]`
 
-Set the credentials block with `bin/rails credentials:edit`:
-
-```yaml
-solid_errors:
-  username: some-username
-  password: some-password
-  email_to: devs@yourapp.com
-```
-
-Basic auth is only enabled when a password is set — the gem's filter is `http_basic_authenticate_with ... if SolidErrors.password`, so a username with no password still leaves `/errors` wide open. Set both before deploying to production. Email notification is off unless `email_to` resolves to a value; when it does, Solid Errors emails that address (via the app's already-configured Action Mailer) every time a new error occurs. `.env.test` sets `SOLID_ERRORS_USERNAME`/`SOLID_ERRORS_PASSWORD` to fixed test values so the dashboard's basic-auth test doesn't need real credentials.
-
-Solid Errors also reads its own env vars directly, `ENV["SOLIDERRORS_USERNAME"]`/`ENV["SOLIDERRORS_PASSWORD"]` (no underscore between "SOLID" and "ERRORS") — this gem-native lookup happens ahead of anything this app configures, credentials included. Don't set those two exact variable names unless you intend them to silently win over everything else.
+Email notification is off unless `email_to` resolves to a value; when it does, Solid Errors emails that address (via the app's already-configured Action Mailer) every time a new error occurs.
 
 ## Log viewer
 
@@ -147,9 +157,7 @@ Production keeps logging to STDOUT exactly as before (`bin/kamal logs` is unchan
 
 The viewer's file whitelist (`config.log_file_patterns` in `config/initializers/onlylogs.rb`) is restricted to exactly that path — onlylogs automatically extends a `*.log` entry to its `*.log.N` rotation suffixes, so the dropdown lists the rotated set too, and nothing else on the server is reachable through the viewer. In development and test the environment's own `log/<env>.log` is additionally whitelisted so the viewer has something to show locally.
 
-Access control for the HTTP side (the `/onlylogs` page and its download endpoint) mirrors `/admin/feedbacks`, not the gem's built-in basic auth. Onlylogs ships its own basic-auth (it answers 403 when unconfigured, reads ENV ahead of credentials, and only once at boot); this app bypasses it through the gem's documented custom-auth hook — `config.disable_basic_authentication` plus `config.parent_controller` pointing at `OnlylogsBaseController` (`app/controllers/onlylogs_base_controller.rb`), whose `authenticate_onlylogs_user!` re-implements the admin panel's contract: credentials first, ENV second, read live on every request (so tests can flip ENV per example), and **deny-when-unconfigured** — when neither source is set, every request to `/onlylogs` gets a `401 Unauthorized`, no "leave it open" fallback. The variable names are the gem's own native ones, kept for consistency with its documentation:
-
-- `Rails.application.credentials.dig(:onlylogs, :basic_auth_user)` / `:basic_auth_password`, falling back to `ENV["ONLYLOGS_BASIC_AUTH_USER"]` / `ENV["ONLYLOGS_BASIC_AUTH_PASSWORD"]`
+Access control for the HTTP side (the `/onlylogs` page and its download endpoint) is the shared superadmin basic auth (see [Superadmin access](#superadmin-access)), not the gem's built-in one. Onlylogs ships its own basic-auth (it answers 403 when unconfigured, reads ENV ahead of credentials, and only once at boot); this app bypasses it through the gem's documented custom-auth hook — `config.disable_basic_authentication` plus `config.parent_controller` pointing at `OnlylogsBaseController` (`app/controllers/onlylogs_base_controller.rb`), which just `include SuperadminAuthentication`. So `/onlylogs` is gated by `SUPERADMIN_USER`/`SUPERADMIN_PASSWORD` exactly like the other panels — deny-by-default, read live per request — while the gem's own auth no-ops under `disable_basic_authentication`.
 
 **Basic auth protects the HTTP surface only.** The live tail streams over Action Cable, and by the gem's design `Onlylogs::LogsChannel` performs no basic-auth check of its own — the WebSocket's boundary is whatever the app's cable connection accepts, which here is *any signed-in user* (`app/channels/application_cable/connection.rb`), and this template ships open self-registration. The channel's protection is the file whitelist plus path encryption: a streamable path must decrypt via `Onlylogs::SecureFilePath` (keyed from `secret_key_base`) and re-pass the whitelist. Two consequences:
 
@@ -157,8 +165,6 @@ Access control for the HTTP side (the `/onlylogs` page and its download endpoint
 - Residual risk that remains after that fix: encrypted path tokens are normally only rendered into pages behind `/onlylogs` basic auth, but the channel never checks onlylogs credentials — so a signed-in user who somehow holds a valid encrypted token for a whitelisted file (a leaked page source, a shared URL, an operator's copy-paste) can stream that file over the socket without basic auth. The tokens don't expire (`MessageEncryptor` without expiry), so treat rendered `/onlylogs` HTML as sensitive.
 
 **Known upstream gap** worth patching in the gem (renuo/onlylogs): the channel has no `parent_controller`-style hook to inject app authentication into the WebSocket path, and the gem README's claim that streaming always requires a whitelisted, encrypted path is false for the blank-path branch of `LogsChannel#initialize_watcher`. Until that's fixed upstream, the two mitigations above are what stand between a signed-in user and the log stream.
-
-To reuse one shared credential pair across every app born from this template, keep the values out of every repo and inject them at deploy time: store them once in your password manager, then list both variables under `env.secret` in `config/deploy.yml` and resolve them in `.kamal/secrets` (for example via `kamal secrets fetch --adapter 1password`, next to `RAILS_MASTER_KEY` and `OPENAI_API_KEY`). Every child app then points at the same vault entry, and rotating the credential is a redeploy — no repo ever contains the values.
 
 This is stage 1 of a two-stage plan. Stage 2 — streaming logs from all apps to one central onlylogs server instead of hosting a viewer per app — is deliberately not built yet: onlylogs' server side (https://onlylogs.io) is still in beta and not yet publicly self-hostable. When it is, the per-app viewer can be replaced by (or complemented with) streaming to that single central instance.
 
@@ -210,19 +216,7 @@ Every `Feedback` (Task 22, whether filed through the manual form or the AI suppo
 
 Open tickets are worked from a minimal admin panel at `/admin/feedbacks` (`Admin::FeedbacksController`): a table of open tickets with the reporter's email, message, context, links to any attached photos (reusing the same public `/feedback/photos/:signed_id` route the GitHub issue body uses), and a "Resolve" button per row that calls `resolve!` and redirects back. Resolved tickets drop off the list; there's no separate view for them, since ticket control — not a full archive — is the goal.
 
-The panel sits behind its own HTTP basic auth, independent of both the app's session-based login and Solid Errors' dashboard auth. It's resolved the same credentials-first, ENV-second way as Solid Errors (`config/initializers/solid_errors.rb`), but read live in `Admin::FeedbacksController#authenticate_admin` on every request rather than once at boot — that's what lets tests flip `ENV["ADMIN_USERNAME"]`/`ENV["ADMIN_PASSWORD"]` per example without reloading the app:
-
-- `Rails.application.credentials.dig(:admin, :username)` / `:password`, falling back to `ENV["ADMIN_USERNAME"]` / `ENV["ADMIN_PASSWORD"]`
-
-Set the credentials block with `bin/rails credentials:edit`:
-
-```yaml
-admin:
-  username: some-username
-  password: some-password
-```
-
-**This is deliberately stricter than the Solid Errors gem default.** Solid Errors only enables basic auth when a password is present — an unset `SolidErrors.password` leaves `/errors` open, by that gem's own design (see the Error tracking section above). `Admin::FeedbacksController` inverts that: when neither `ADMIN_USERNAME`/`ADMIN_PASSWORD` nor the `admin` credentials block is configured, every request to `/admin/feedbacks` gets a `401 Unauthorized`, no exceptions — there is no "leave it open" fallback. Configure both before you need the panel; there's no way to reach it otherwise.
+The panel sits behind the shared superadmin basic auth (see [Superadmin access](#superadmin-access)), independent of the app's session-based login: `Admin::FeedbacksController` `include SuperadminAuthentication` and keeps `allow_unauthenticated_access` so only the superadmin gate applies. Access is the same `SUPERADMIN_USER`/`SUPERADMIN_PASSWORD` (or `superadmin` credentials block) as every other panel — resolved live per request, deny-by-default, so `/admin/feedbacks` returns `401 Unauthorized` until the credentials are set. Configure them before you need the panel; there's no way to reach it otherwise.
 
 ## Money
 

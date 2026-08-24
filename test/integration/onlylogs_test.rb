@@ -2,18 +2,18 @@ require "test_helper"
 
 class OnlylogsTest < ActionDispatch::IntegrationTest
   setup do
-    @original_user = ENV["ONLYLOGS_BASIC_AUTH_USER"]
-    @original_password = ENV["ONLYLOGS_BASIC_AUTH_PASSWORD"]
+    @original_user = ENV["SUPERADMIN_USER"]
+    @original_password = ENV["SUPERADMIN_PASSWORD"]
   end
 
   teardown do
-    ENV["ONLYLOGS_BASIC_AUTH_USER"] = @original_user
-    ENV["ONLYLOGS_BASIC_AUTH_PASSWORD"] = @original_password
+    ENV["SUPERADMIN_USER"] = @original_user
+    ENV["SUPERADMIN_PASSWORD"] = @original_password
   end
 
   test "requires basic auth credentials" do
-    ENV["ONLYLOGS_BASIC_AUTH_USER"] = "logs"
-    ENV["ONLYLOGS_BASIC_AUTH_PASSWORD"] = "secret"
+    ENV["SUPERADMIN_USER"] = "logs"
+    ENV["SUPERADMIN_PASSWORD"] = "secret"
 
     get "/onlylogs"
 
@@ -21,8 +21,8 @@ class OnlylogsTest < ActionDispatch::IntegrationTest
   end
 
   test "denies access with wrong credentials" do
-    ENV["ONLYLOGS_BASIC_AUTH_USER"] = "logs"
-    ENV["ONLYLOGS_BASIC_AUTH_PASSWORD"] = "secret"
+    ENV["SUPERADMIN_USER"] = "logs"
+    ENV["SUPERADMIN_PASSWORD"] = "secret"
 
     get "/onlylogs", headers: { "Authorization" => "Basic #{Base64.strict_encode64("logs:wrong")}" }
 
@@ -30,8 +30,8 @@ class OnlylogsTest < ActionDispatch::IntegrationTest
   end
 
   test "denies access when no credentials are configured" do
-    ENV["ONLYLOGS_BASIC_AUTH_USER"] = nil
-    ENV["ONLYLOGS_BASIC_AUTH_PASSWORD"] = nil
+    ENV["SUPERADMIN_USER"] = nil
+    ENV["SUPERADMIN_PASSWORD"] = nil
 
     get "/onlylogs", headers: { "Authorization" => "Basic #{Base64.strict_encode64("logs:secret")}" }
 
@@ -39,8 +39,8 @@ class OnlylogsTest < ActionDispatch::IntegrationTest
   end
 
   test "is reachable with the configured credentials" do
-    ENV["ONLYLOGS_BASIC_AUTH_USER"] = "logs"
-    ENV["ONLYLOGS_BASIC_AUTH_PASSWORD"] = "secret"
+    ENV["SUPERADMIN_USER"] = "logs"
+    ENV["SUPERADMIN_PASSWORD"] = "secret"
 
     get "/onlylogs", headers: { "Authorization" => "Basic #{Base64.strict_encode64("logs:secret")}" }
 

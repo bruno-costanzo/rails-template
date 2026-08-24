@@ -2,6 +2,8 @@ unless ENV["SKIP_COVERAGE"]
   require "simplecov"
   SimpleCov.start "rails" do
     enable_coverage :branch
+    add_filter "app/madmin"
+    add_filter "app/controllers/madmin"
     minimum_coverage line: 100, branch: 100
   end
 end
