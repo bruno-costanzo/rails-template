@@ -347,7 +347,7 @@ end
 
 For index-style actions, `policy_scope(Document)` runs your policy's `Scope#resolve` against the current user and returns the filtered relation. In views, the `policy` helper drives conditional UI: `<% if policy(document).update? %>` around the edit link.
 
-The whole pipeline — permit, deny with the redirect-and-alert rescue, and scope filtering — is exercised by the template's test-only `DocumentPolicy` (`test/policies/`), which is never loaded by app code, exactly like `TestNotifier`.
+The whole pipeline — permit, deny with the redirect-and-alert rescue, and scope filtering — is exercised by the template's test-only `PunditTestRecordPolicy` (`test/policies/`), a policy for a plain test-only record class that shadows no app model, never loaded by app code, exactly like `TestNotifier`.
 
 ### Opt-in strictness
 

@@ -3,7 +3,7 @@ require "test_helper"
 class ApplicationPolicyTest < ActiveSupport::TestCase
   setup do
     @user = users(:one)
-    @record = documents(:one)
+    @record = PunditTestRecord.new(@user)
     @policy = ApplicationPolicy.new(@user, @record)
   end
 
@@ -23,7 +23,7 @@ class ApplicationPolicyTest < ActiveSupport::TestCase
   end
 
   test "scope requires resolve to be defined" do
-    scope = ApplicationPolicy::Scope.new(@user, Document.all)
+    scope = ApplicationPolicy::Scope.new(@user, PunditTestRecord)
     error = assert_raises(NoMethodError) { scope.resolve }
     assert_match "You must define #resolve", error.message
   end

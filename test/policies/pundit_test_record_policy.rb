@@ -1,11 +1,11 @@
-class DocumentPolicy < ApplicationPolicy
+class PunditTestRecordPolicy < ApplicationPolicy
   def show?
     record.user == user
   end
 
   class Scope < ApplicationPolicy::Scope
     def resolve
-      scope.where(user: user)
+      scope.all.select { |record| record.user == user }
     end
   end
 end
