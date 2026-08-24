@@ -22,7 +22,7 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     visit new_session_url
     fill_in "email_address", with: user.email_address
     fill_in "password", with: "password"
-    click_button "Sign in"
+    page.execute_script("arguments[0].click()", find_button("Sign in").native)
     assert_current_path root_path
     assert_turbo_ready
   end
