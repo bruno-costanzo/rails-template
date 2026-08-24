@@ -135,7 +135,15 @@ To reuse one shared pair across every app born from this template, keep the valu
 
 ### Resource browser (madmin)
 
-`/madmin` is a [madmin](https://github.com/excid3/madmin) panel for browsing and editing the app's records, gated by the same superadmin auth (`Madmin::ApplicationController` includes the concern). It ships dashboards for the domain models only — `Chat`, `Document`, `Feedback`, `Message`, `Model`, `Session`, `ToolCall`, `User`, plus `Noticed::Notification` and `Noticed::Event`. The framework-internal and sensitive resources the installer generates (Active Storage, Action Text, console1984 audit logs, and Solid Errors — which already has `/errors`) were removed from `config/routes/madmin.rb`, `app/madmin/resources/`, and `app/controllers/madmin/`. Add a dashboard for a new model with `bin/rails g madmin:resource ModelName`, then trim its route/resource/controller the same way if the generator pulls in extras you don't want exposed.
+`/madmin` is a [madmin](https://github.com/excid3/madmin) panel for browsing and editing the app's records, gated by the same superadmin auth (`Madmin::ApplicationController` includes the concern). It ships dashboards for the domain models only — `Chat`, `Document`, `Feedback`, `Message`, `Model`, `Session`, `ToolCall`, `User`, plus `Noticed::Notification` and `Noticed::Event`. The framework-internal and sensitive resources the installer generates (Active Storage, Action Text, console1984 audit logs, and Solid Errors — which already has `/errors`) were removed from `config/routes/madmin.rb`, `app/madmin/resources/`, and `app/controllers/madmin/`. Adding a dashboard for a new model is a manual, deliberate step — there is no "auto-generate a dashboard for every model" option, in madmin or here. The resource generator reads the model's columns (`attribute_names`/`attribute_types`), so the table has to exist first; run it **after** the migration:
+
+```bash
+bin/rails g model Widget name:string
+bin/rails db:migrate
+bin/rails g madmin:resource Widget
+```
+
+Then trim the generated route/resource/controller the same way if the generator pulls in extras you don't want exposed. (This ordering is why a "create the model, get the dashboard for free" hook isn't wired: right after `rails g model` the table hasn't been migrated yet, so the resource generator would fail.)
 
 Two integration points with the template's conventions: madmin's generated files are excluded from the 100%-coverage gate (`add_filter "app/madmin"` / `add_filter "app/controllers/madmin"` in `test/test_helper.rb`), since they're generated boilerplate; and `Madmin::ApplicationController` disables Bullet for the duration of each madmin request (`around_action :without_bullet if defined?(Bullet)`), because madmin's index views intentionally lazy-load associations and would otherwise trip the strict N+1 gate — acceptable for a dev-only panel over bounded data.
 
