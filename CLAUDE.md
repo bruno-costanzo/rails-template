@@ -13,7 +13,7 @@ Rails starter template. This repo is both a working app and the template new app
 - money-rails for currency handling (default currency USD in `config/initializers/money.rb`, no monetized model ships — apps opt in per-model)
 - letter_opener_web for development-only email preview at `/letter_opener` (development Gemfile group only)
 - noticed for in-app notifications (bell UI + `/notifications`); the template ships zero notifiers — capability only
-- Minitest + fixtures + WebMock (tests NEVER hit the network), bullet for N+1 detection (raises in test, logs in development), Kamal deploys
+- Minitest + fixtures + WebMock (tests NEVER hit the network), Capybara + cuprite (Ferrum/CDP driver) for system tests, bullet for N+1 detection (raises in test, logs in development), Kamal deploys
 
 ## Commands
 - `bin/setup` — install and prepare everything

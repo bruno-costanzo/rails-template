@@ -91,6 +91,10 @@ Tests never hit the network. `test/test_helper.rb` calls `WebMock.disable_net_co
 - `stub_openai_chat_stream_with_tool_call(tool_name:, arguments:, chunks:)` — stubs a streamed tool-call round trip (a tool-call chunk, then a final streamed reply)
 - `stub_openai_embedding(vector:)` — stubs an embedding request
 
+### System tests
+
+System tests (`bin/rails test:system`) drive a real headless Chrome through **cuprite** (Ferrum/CDP), configured in `test/application_system_test_case.rb`. Cuprite talks to Chrome directly over the DevTools protocol rather than through a WebDriver/chromedriver layer, which delivers clicks and keystrokes reliably — Selenium's synthetic input dropped intermittently on the CI runner and made these tests flaky. Because input is reliable, the tests use plain Capybara (`click_button`, `fill_in`, `find(...).click`) with no `execute_script` workarounds. `Capybara.disable_animation = true` is set so DaisyUI transitions never intercept an interaction. The CI runner already ships Chrome; no extra install step is needed.
+
 ### Coverage
 
 100% line and branch coverage over `app/` and `lib/` is enforced by SimpleCov and measured on the `bin/rails test` (unit/integration) run. `test/test_helper.rb` sets `minimum_coverage line: 100, branch: 100`, so the suite fails the moment either number drops below 100%. Write the test that closes the gap first; never delete or weaken a failing coverage gate to make it pass. System tests (`bin/rails test:system`) are excluded from measurement — they run with `SKIP_COVERAGE=1` set (see `test/application_system_test_case.rb` and the system step in `config/ci.rb`), since browser-driven tests would otherwise double-count or skew the coverage figures gathered from the unit/integration run.
