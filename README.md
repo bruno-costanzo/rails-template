@@ -302,6 +302,57 @@ In development, any email a notifier sends lands in the same [letter_opener](#de
 - **Web push** (desktop/mobile browser notifications while the app is closed) needs the [`web-push`](https://github.com/pushpad/web-push) gem plus VAPID keys and a service worker subscription flow. Deliberately not installed — add it if a real notifier needs it, then `deliver_by :web_push` following Noticed's docs.
 - **Mobile push** (iOS/Android native apps) is supported by Noticed's built-in `:fcm` (Firebase Cloud Messaging) and `:ios` (Apple Push Notification Service) delivery methods — no extra gem needed, just credentials and device tokens, wired up the same `deliver_by` way as `:email` above.
 
+## Authorization
+
+[Pundit](https://github.com/varvet/pundit) provides the authorization capability: plain Ruby policy classes that answer "may this user do this to this record." The template ships **zero policies** — no `authorize` call exists in app code, mirroring how [Notifications](#notifications) ships zero notifiers. What ships is the capability: the gem, `Pundit::Authorization` included in `ApplicationController` (with `pundit_user` mapped to `Current.user`, since this app has no `current_user`), a `rescue_from Pundit::NotAuthorizedError` that redirects back with an alert, and `ApplicationPolicy` (`app/policies/application_policy.rb`) as the default-deny base class. A child app adds one policy class and authorization works.
+
+Until you need it, `Current.user` scoping **is** the template's authorization: every controller already fetches records through `Current.user.chats`, `Current.user.documents`, and so on, which makes "not yours" indistinguishable from "not found." Reach for Pundit when that stops being enough — the first role (admin, moderator), the first shared resource (a document with viewers and editors), the first rule beyond "the owner may do everything."
+
+### Create a policy
+
+```bash
+bin/rails generate pundit:policy Document
+```
+
+Or by hand, inheriting from `ApplicationPolicy`:
+
+```ruby
+# app/policies/document_policy.rb
+class DocumentPolicy < ApplicationPolicy
+  def show?
+    record.user == user
+  end
+
+  def update?
+    record.user == user
+  end
+
+  class Scope < ApplicationPolicy::Scope
+    def resolve
+      scope.where(user: user)
+    end
+  end
+end
+```
+
+`ApplicationPolicy` answers `false` to every action, so a policy only grants what it explicitly opens up. In a controller, `authorize` looks up the policy from the record's class, asks the query named after the current action (`authorize document` inside `update` asks `DocumentPolicy#update?` — the query defaults to `"#{action_name}?"`), returns the record when allowed, and raises `Pundit::NotAuthorizedError` when not — which the `ApplicationController` rescue turns into a redirect back (or to root) with an alert toast:
+
+```ruby
+def update
+  @document = Document.find(params[:id])
+  authorize @document
+  @document.update!(document_params)
+end
+```
+
+For index-style actions, `policy_scope(Document)` runs your policy's `Scope#resolve` against the current user and returns the filtered relation. In views, the `policy` helper drives conditional UI: `<% if policy(document).update? %>` around the edit link.
+
+The whole pipeline — permit, deny with the redirect-and-alert rescue, and scope filtering — is exercised by the template's test-only `DocumentPolicy` (`test/policies/`), which is never loaded by app code, exactly like `TestNotifier`.
+
+### Opt-in strictness
+
+Once an app adopts policies broadly, Pundit can enforce that no action forgets them: `after_action :verify_authorized` raises unless the action called `authorize` (and `after_action :verify_policy_scoped` does the same for `policy_scope` on index actions). The template deliberately does not enable these — they would force a policy onto every existing action, and that is an app decision, not a template one. When you flip them on, `skip_authorization` / `skip_policy_scope` mark the actions that legitimately have nothing to authorize.
+
 ## Deployment
 
 Deploys use [Kamal](https://kamal-deploy.org). Before your first deploy, edit `config/deploy.yml` and replace every UPPERCASE placeholder with real values:

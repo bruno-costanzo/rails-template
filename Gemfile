@@ -101,3 +101,5 @@ gem "noticed", "~> 3.0"
 gem "bullet", "~> 8.1", groups: [ :development, :test ]
 
 gem "onlylogs", "~> 0.7"
+
+gem "pundit", "~> 2.5"
