@@ -64,6 +64,7 @@ en:
       notice: We're preparing your data export. We'll email you a download link when
         it's ready.
     show:
+      expired: That export has expired for your security. Request a new one.
       pending: Your export isn't ready yet. We'll email you when it is.
   documents:
     create:

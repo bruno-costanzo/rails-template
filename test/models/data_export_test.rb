@@ -1,6 +1,8 @@
 require "test_helper"
 
 class DataExportTest < ActiveSupport::TestCase
+  include ActiveJob::TestHelper
+
   test "packages the user's records and files into a zip without sensitive columns" do
     user = users(:one)
     user.avatar.attach(io: File.open(file_fixture("avatar.png")), filename: "avatar.png", content_type: "image/png")
@@ -21,6 +23,37 @@ class DataExportTest < ActiveSupport::TestCase
 
     assert_includes entries.keys, "files/user/avatar/avatar.png"
     assert_includes entries.keys, "files/feedbacks/#{feedback.id}/photos/shot.png"
+  end
+
+  test "encrypted columns are decrypted by the serialization the export uses, and are excludable" do
+    ActiveRecord::Encryption.configure(primary_key: "a" * 32, deterministic_key: "b" * 32, key_derivation_salt: "c" * 32)
+    ActiveRecord::Base.connection.create_table(:encrypted_probes, force: true) { |t| t.string :secret }
+    probe_class = Class.new(ActiveRecord::Base) do
+      self.table_name = "encrypted_probes"
+      encrypts :secret
+    end
+    probe = probe_class.create!(secret: "sensitive")
+
+    stored = ActiveRecord::Base.connection.select_value("select secret from encrypted_probes limit 1")
+    assert_not_includes stored, "sensitive"
+    assert_equal "sensitive", probe.as_json["secret"]
+    assert_not probe.as_json(except: [ "secret" ]).key?("secret")
+  ensure
+    ActiveRecord::Base.connection.drop_table(:encrypted_probes, if_exists: true)
+  end
+
+  test "purge_expired removes exports past the retention window and keeps fresh ones" do
+    old_user = users(:one)
+    old_user.data_export.attach(io: StringIO.new("old"), filename: "old.zip", content_type: "application/zip")
+    old_user.data_export.attachment.update_column(:created_at, (DataExport::RETENTION + 1.hour).ago)
+
+    fresh_user = users(:two)
+    fresh_user.data_export.attach(io: StringIO.new("fresh"), filename: "fresh.zip", content_type: "application/zip")
+
+    perform_enqueued_jobs { DataExport.purge_expired }
+
+    assert_not old_user.reload.data_export.attached?
+    assert fresh_user.reload.data_export.attached?
   end
 
   private

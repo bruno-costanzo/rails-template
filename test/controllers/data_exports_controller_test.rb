@@ -31,6 +31,20 @@ class DataExportsControllerTest < ActionDispatch::IntegrationTest
     assert_response :redirect
   end
 
+  test "show purges and reports an expired export" do
+    user = users(:one)
+    user.data_export.attach(io: StringIO.new("zip"), filename: "data-export.zip", content_type: "application/zip")
+    user.data_export.attachment.update_column(:created_at, (DataExport::RETENTION + 1.hour).ago)
+    sign_in_as user
+
+    assert_enqueued_with(job: ActiveStorage::PurgeJob) do
+      get data_export_url
+    end
+
+    assert_redirected_to edit_profile_url
+    assert_equal I18n.t("data_exports.show.expired"), flash[:notice]
+  end
+
   test "show reports when no export is ready yet" do
     sign_in_as users(:one)
 

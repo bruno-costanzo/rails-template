@@ -8,6 +8,14 @@ class DataExport
 
   EXCLUDED_ATTACHMENTS = %w[data_export].freeze
 
+  RETENTION = 48.hours
+
+  def self.purge_expired
+    ActiveStorage::Attachment
+      .where(name: "data_export", created_at: ..RETENTION.ago)
+      .find_each(&:purge_later)
+  end
+
   def initialize(user)
     @user = user
   end

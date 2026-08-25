@@ -64,6 +64,7 @@ es:
       notice: Estamos preparando tu exportación de datos. Te enviaremos un enlace
         de descarga cuando esté lista.
     show:
+      expired: Esa exportación caducó por tu seguridad. Solicita una nueva.
       pending: Tu exportación todavía no está lista. Te avisaremos por correo cuando
         lo esté.
   documents:
