@@ -17,6 +17,8 @@ class User < ApplicationRecord
     attachable.variant :medium, resize_to_fill: [ 200, 200 ]
   end
 
+  has_one_attached :data_export
+
   validates :name, presence: true
   validates :email_address, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :password, length: { minimum: 8 }, allow_nil: true

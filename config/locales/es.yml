@@ -54,6 +54,18 @@ es:
       heading: Mostrando chat n.º %{id}
       model: 'Modelo:'
       title: Mostrando chat
+  data_export_mailer:
+    ready:
+      lead: 'Tu exportación de datos está lista para descargar:'
+      link_text: descargar tus datos
+      subject: Tu exportación de datos está lista
+  data_exports:
+    create:
+      notice: Estamos preparando tu exportación de datos. Te enviaremos un enlace
+        de descarga cuando esté lista.
+    show:
+      pending: Tu exportación todavía no está lista. Te avisaremos por correo cuando
+        lo esté.
   documents:
     create:
       notice: Documento creado
@@ -172,6 +184,9 @@ es:
       delete_account: Eliminar mi cuenta
       delete_warning: Eliminar tu cuenta es permanente y no se puede deshacer. Se
         borrarán todos tus datos.
+      export_data: Exportar mis datos
+      export_hint: Descarga un ZIP con todos tus datos — tus registros y archivos.
+      export_title: Tus datos
       meta_title: Perfil
       password_label: Tu contraseña
       save: Guardar

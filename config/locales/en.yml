@@ -54,6 +54,17 @@ en:
       heading: 'Showing chat #%{id}'
       model: 'Model:'
       title: Showing chat
+  data_export_mailer:
+    ready:
+      lead: 'Your data export is ready to download:'
+      link_text: download your data
+      subject: Your data export is ready
+  data_exports:
+    create:
+      notice: We're preparing your data export. We'll email you a download link when
+        it's ready.
+    show:
+      pending: Your export isn't ready yet. We'll email you when it is.
   documents:
     create:
       notice: Document created
@@ -170,6 +181,9 @@ en:
       delete_account: Delete my account
       delete_warning: Deleting your account is permanent and cannot be undone. All
         your data will be removed.
+      export_data: Export my data
+      export_hint: Download a ZIP with all your data — your records and files.
+      export_title: Your data
       meta_title: Profile
       password_label: Your password
       save: Save

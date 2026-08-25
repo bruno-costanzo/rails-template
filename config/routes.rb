@@ -22,6 +22,7 @@ Rails.application.routes.draw do
   end
   resource :session
   resource :registration, only: %i[new create destroy]
+  resource :data_export, only: %i[create show]
   resource :profile, only: %i[edit update]
   resources :passwords, param: :token
   resources :email_confirmations, only: [ :new, :create, :show ], param: :token
