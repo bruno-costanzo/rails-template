@@ -6,7 +6,7 @@ CharcoTemplate is a Rails 8.1.3.1 starter template. It is a fully working app on
 
 ## Features
 
-- Native Rails authentication (sign up, sign in/out, password reset) plus a custom registration flow, email confirmation on signup, and a profile page
+- Native Rails authentication (sign up, sign in/out, password reset) plus a custom registration flow, email confirmation on signup, self-service account deletion (right to erasure), and a profile page
 - Avatars via Active Storage variants, with an initials fallback when no avatar is uploaded
 - An AI chat UI (RubyLLM + OpenAI) scoped per signed-in user, with streaming responses and automatic chat titling
 - A `Document` model with Lexxy rich text editing and semantic search over embeddings (Neighbor + sqlite-vec)
@@ -80,6 +80,8 @@ OPENAI_API_KEY=sk-your-key-here
 ### Email
 
 Signing up requires **email confirmation**. A new account is created unconfirmed and **cannot sign in until it confirms** — registration sends a confirmation link (`EmailConfirmationsMailer`) and redirects to the sign-in page with a "check your email" notice; `SessionsController#create` rejects sign-in until `user.confirmed?`. Clicking `GET /email_confirmations/:token` confirms the account (the token, from `User.generates_token_for :email_confirmation`, expires in a day and is tied to the address). There's a resend form at `/email_confirmations/new` (rate-limited, and it never reveals whether an address exists). This block-until-confirmed behavior is the strict default; to allow sign-in but keep the account marked unconfirmed instead, change the `user.confirmed?` guard in `SessionsController#create`.
+
+A signed-in user can **delete their own account** from the profile page's "Danger zone". Deleting is deliberately hard to do by accident *and* requires proving identity: you type an exact confirmation phrase — **`I WANT TO DELETE MY ACCOUNT`** (`QUIERO BORRAR MI CUENTA` in Spanish; the page shows the phrase for your locale) — **and** re-enter your current password. Get either wrong and nothing is deleted (you're sent back to the profile with an error). On success the deletion is permanent and irreversible: the account and everything it owns — sessions, chats, documents, feedback, notifications, and the avatar — are cascade-deleted (`Current.user.destroy`), your session is ended, and you land back on the sign-in page. It's a true erasure, not a soft delete. (One thing the cascade doesn't touch: if you enable RailsPress authors, a deleted user's blog posts keep their `author_id` — decide per app whether to nullify or remove them.)
 
 For production delivery, the template ships an active, **provider-agnostic SMTP scaffold** in `config/environments/production.rb` — you only fill the secrets. It reads `Rails.application.credentials.dig(:smtp, :user_name)` / `:password` first, then falls back to environment variables, so pick either:
 
