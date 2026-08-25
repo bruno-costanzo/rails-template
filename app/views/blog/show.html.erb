@@ -1,0 +1,24 @@
+<article class="p-6 max-w-3xl mx-auto w-full">
+  <%= link_to t(".back"), blog_path, class: "link link-hover text-sm" %>
+
+  <% if @post.header_image.attached? %>
+    <%= image_tag @post.header_image, class: "w-full rounded-lg my-4" %>
+  <% end %>
+
+  <% if @post.category %>
+    <%= link_to @post.category.name, blog_path(category: @post.category.slug), class: "badge badge-primary mt-4" %>
+  <% end %>
+
+  <h1 class="font-bold text-4xl mt-2 mb-1"><%= @post.title %></h1>
+  <p class="text-sm text-base-content/60 mb-6"><%= l(@post.published_at.to_date, format: :long) %></p>
+
+  <div class="max-w-none"><%= @post.content %></div>
+
+  <% if @post.tags.any? %>
+    <div class="flex flex-wrap gap-1 mt-6">
+      <% @post.tags.each do |tag| %>
+        <%= link_to "##{tag.name}", blog_path(tag: tag.slug), class: "badge badge-ghost badge-sm" %>
+      <% end %>
+    </div>
+  <% end %>
+</article>

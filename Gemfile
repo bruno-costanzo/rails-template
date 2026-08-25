@@ -112,3 +112,5 @@ gem "pundit", "~> 2.5"
 gem "madmin", "~> 2.0"
 
 gem "mission_control-jobs", "~> 1.1"
+
+gem "railspress-engine", "~> 1.4"

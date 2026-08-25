@@ -15,6 +15,12 @@ en:
         notice: Ticket resolved.
   authorization:
     not_authorized: You are not authorized to perform this action.
+  blog:
+    index:
+      empty: No posts yet.
+      title: Blog
+    show:
+      back: "← Back to the blog"
   chats:
     chat:
       created: 'Created:'

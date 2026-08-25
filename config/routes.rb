@@ -1,5 +1,8 @@
 Rails.application.routes.draw do
+  mount Railspress::Engine => "/railspress"
   draw :madmin
+  get "blog", to: "blog#index", as: :blog
+  get "blog/:id", to: "blog#show", as: :blog_post
   resources :chats, except: [ :edit, :update ] do
     resources :messages, only: [ :create ]
   end

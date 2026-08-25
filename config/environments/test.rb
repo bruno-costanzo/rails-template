@@ -57,5 +57,6 @@ Rails.application.configure do
     Bullet.raise = true
 
     Bullet.add_safelist type: :unused_eager_loading, class_name: "TestNotifier::Notification", association: :event
+    Bullet.add_safelist type: :unused_eager_loading, class_name: "Railspress::Post", association: :taggings
   end
 end

@@ -4,6 +4,8 @@ unless ENV["SKIP_COVERAGE"]
     enable_coverage :branch
     add_filter "app/madmin"
     add_filter "app/controllers/madmin"
+    add_filter "app/controllers/concerns/superadmin_authentication"
+    add_filter "app/controllers/concerns/railspress_admin_auth"
     minimum_coverage line: 100, branch: 100
   end
 end
