@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Smoke test for the template's core promise: a freshly renamed copy must boot.
+# Exports the tracked tree, runs bin/rename, asserts no old-name references
+# survive (outside the intentionally-skipped docs/), then boots the renamed app
+# via zeitwerk:check so any leftover constant reference fails loudly.
+
+root="$(cd "$(dirname "$0")/.." && pwd)"
+name="smoke_app"
+tmp="$(mktemp -d)"
+trap 'rm -rf "$tmp"' EXIT
+
+echo "→ Exporting working tree"
+ref="$(git -C "$root" stash create || true)"
+git -C "$root" archive "${ref:-HEAD}" | tar -x -C "$tmp"
+
+# master.key is gitignored, so it is absent from the archive; provide it for boot.
+if [ -f "$root/config/master.key" ]; then
+  cp "$root/config/master.key" "$tmp/config/master.key"
+fi
+mkdir -p "$tmp/storage"
+
+echo "→ Renaming to '$name'"
+( cd "$tmp" && bin/rename "$name" >/dev/null )
+
+echo "→ Preparing the database (db:prepare)"
+( cd "$tmp" && bin/rails db:prepare >/dev/null )
+
+echo "→ Checking for residual template references"
+residual="$(grep -rIl -e CharcoTemplate -e charco_template -e charco-template -e 'Charco Template' "$tmp" --exclude-dir=docs --exclude='*.mjs' || true)"
+if [ -n "$residual" ]; then
+  echo "✗ Old name still present after rename in:"
+  echo "$residual"
+  exit 1
+fi
+echo "✓ No residual references"
+
+echo "→ Booting renamed app (zeitwerk:check)"
+( cd "$tmp" && bin/rails zeitwerk:check )
+echo "✓ Renamed app boots"
