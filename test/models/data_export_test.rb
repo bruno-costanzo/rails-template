@@ -7,7 +7,8 @@ class DataExportTest < ActiveSupport::TestCase
     user = users(:one)
     user.avatar.attach(io: File.open(file_fixture("avatar.png")), filename: "avatar.png", content_type: "image/png")
     chat = user.chats.create!(model: "gpt-4o-mini")
-    document = user.documents.create!(title: "My notes")
+    document = user.documents.create!(title: "My notes", content: "Confidential <b>rich text</b>")
+    user.documents.create!(title: "Second", content: "More notes")
     feedback = user.feedbacks.create!(message: "Nice app")
     feedback.photos.attach(io: File.open(file_fixture("avatar.png")), filename: "shot.png", content_type: "image/png")
 
@@ -17,8 +18,9 @@ class DataExportTest < ActiveSupport::TestCase
     assert_equal user.email_address, data["user"]["email_address"]
     assert_not data["user"].key?("password_digest")
     assert_includes data["chats"].map { |record| record["id"] }, chat.id
-    assert_includes data["documents"].map { |record| record["id"] }, document.id
-    assert_not data["documents"].find { |record| record["id"] == document.id }.key?("embedding")
+    exported_document = data["documents"].find { |record| record["id"] == document.id }
+    assert_not exported_document.key?("embedding")
+    assert_equal "Confidential rich text", exported_document["content"]
     assert_includes data["feedbacks"].map { |record| record["id"] }, feedback.id
 
     assert_includes entries.keys, "files/user/avatar/avatar.png"

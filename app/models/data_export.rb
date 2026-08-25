@@ -41,8 +41,13 @@ class DataExport
 
   def associations_data
     exported_associations.to_h do |reflection|
-      [ reflection.name.to_s, user.public_send(reflection.name).map { |record| serialize(record) } ]
+      [ reflection.name.to_s, records_for(reflection).map { |record| serialize(record) } ]
     end
+  end
+
+  def records_for(reflection)
+    names = rich_text_reflections(reflection.klass).map(&:name)
+    names.any? ? user.public_send(reflection.name).includes(names) : user.public_send(reflection.name)
   end
 
   def exported_associations
@@ -56,7 +61,15 @@ class DataExport
   end
 
   def serialize(record)
-    record.as_json(except: EXCLUDED_COLUMNS[record.class.name])
+    json = record.as_json(except: EXCLUDED_COLUMNS[record.class.name])
+    rich_text_reflections(record.class).each do |reflection|
+      json[reflection.name.to_s.delete_prefix("rich_text_")] = record.public_send(reflection.name)&.to_plain_text
+    end
+    json
+  end
+
+  def rich_text_reflections(klass)
+    klass.reflect_on_all_associations.select { |reflection| reflection.options[:class_name] == "ActionText::RichText" }
   end
 
   def files
