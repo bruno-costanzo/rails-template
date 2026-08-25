@@ -137,6 +137,8 @@ System tests (`bin/rails test:system`) drive a real headless Chrome through **cu
 
 100% line and branch coverage over `app/` and `lib/` is enforced by SimpleCov and measured on the `bin/rails test` (unit/integration) run. `test/test_helper.rb` sets `minimum_coverage line: 100, branch: 100`, so the suite fails the moment either number drops below 100%. Write the test that closes the gap first; never delete or weaken a failing coverage gate to make it pass. System tests (`bin/rails test:system`) are excluded from measurement — they run with `SKIP_COVERAGE=1` set (see `test/application_system_test_case.rb` and the system step in `config/ci.rb`), since browser-driven tests would otherwise double-count or skew the coverage figures gathered from the unit/integration run.
 
+When coverage drops below 100%, you don't have to open the HTML report to find the gap: `simplecov-console` prints a table to the terminal listing each file under 100% with the exact **uncovered line numbers** (its `missing` column) and uncovered branches, so `bin/rails test` tells you precisely what to cover.
+
 ### N+1 detection
 
 The `bullet` gem watches every query the test suite issues and fails the test the moment it spots an N+1 (an association lazily loaded once per record instead of eager-loaded once for the batch) or an eager load that was requested but never used. It's enabled strictly: `config/environments/test.rb` sets `Bullet.enable = true` and `Bullet.raise = true`, so a detected N+1 on any test-exercised path is a red test, not a log line. `config/environments/development.rb` enables it non-fatally instead (`Bullet.rails_logger = true`, `Bullet.console = true`) — it logs to `log/bullet.log` and to the browser console while you develop, without raising.
@@ -187,7 +189,7 @@ bin/rails g madmin:resource Widget
 
 Then trim the generated route/resource/controller the same way if the generator pulls in extras you don't want exposed. (This ordering is why a "create the model, get the dashboard for free" hook isn't wired: right after `rails g model` the table hasn't been migrated yet, so the resource generator would fail.)
 
-Two integration points with the template's conventions: madmin's generated files are excluded from the 100%-coverage gate (`add_filter "app/madmin"` / `add_filter "app/controllers/madmin"` in `test/test_helper.rb`), since they're generated boilerplate; and `Madmin::ApplicationController` disables Bullet for the duration of each madmin request (`around_action :without_bullet if defined?(Bullet)`), because madmin's index views intentionally lazy-load associations and would otherwise trip the strict N+1 gate — acceptable for a dev-only panel over bounded data.
+Two integration points with the template's conventions: madmin's generated files are excluded from the 100%-coverage gate (`skip "app/madmin"` / `skip "app/controllers/madmin"` in `test/test_helper.rb`), since they're generated boilerplate; and `Madmin::ApplicationController` disables Bullet for the duration of each madmin request (`around_action :without_bullet if defined?(Bullet)`), because madmin's index views intentionally lazy-load associations and would otherwise trip the strict N+1 gate — acceptable for a dev-only panel over bounded data.
 
 ## Blog & content (RailsPress)
 
@@ -227,7 +229,7 @@ module RailspressAdminAuth
 end
 ```
 
-Two integration notes: a narrow Bullet safelist in `config/environments/test.rb` covers `Railspress::Post => :taggings` (a `has_many :through` false positive — the join table is loaded to serve `.tags` but never accessed directly); and `superadmin_authentication.rb` and `railspress_admin_auth.rb` are excluded from the coverage gate (`add_filter` in `test/test_helper.rb`) because the RailsPress engine includes them into its admin controller at boot (`config.to_prepare`), which the parallel test runner's coverage can't attribute — their behavior is still verified by the five superadmin panels' integration tests. (Also note: RailsPress 1.4.4 declares an `excerpt` field but ships no `excerpt` column, so `Railspress::Post#excerpt` doesn't exist.)
+Two integration notes: a narrow Bullet safelist in `config/environments/test.rb` covers `Railspress::Post => :taggings` (a `has_many :through` false positive — the join table is loaded to serve `.tags` but never accessed directly); and `superadmin_authentication.rb` and `railspress_admin_auth.rb` are excluded from the coverage gate (`skip` in `test/test_helper.rb`) because the RailsPress engine includes them into its admin controller at boot (`config.to_prepare`), which the parallel test runner's coverage can't attribute — their behavior is still verified by the five superadmin panels' integration tests. (Also note: RailsPress 1.4.4 declares an `excerpt` field but ships no `excerpt` column, so `Railspress::Post#excerpt` doesn't exist.)
 
 ## Error tracking
 
