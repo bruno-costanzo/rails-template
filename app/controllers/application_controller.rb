@@ -9,12 +9,12 @@ class ApplicationController < ActionController::Base
 
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
 
-  before_action :set_locale
+  around_action :switch_locale
 
   private
 
-  def set_locale
-    I18n.locale = locale_from_accept_language || I18n.default_locale
+  def switch_locale(&action)
+    I18n.with_locale(locale_from_accept_language || I18n.default_locale, &action)
   end
 
   def locale_from_accept_language
