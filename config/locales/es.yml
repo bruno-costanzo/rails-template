@@ -81,6 +81,24 @@ es:
       edit: Editar
     update:
       notice: Documento actualizado
+  email_confirmations:
+    create:
+      notice: Te enviamos un correo de confirmación. Revisa tu bandeja para activar
+        tu cuenta.
+    new:
+      email_placeholder: Ingresa tu correo electrónico
+      submit: Reenviar correo de confirmación
+      title: Reenviar confirmación
+    rate_limit: Inténtalo de nuevo más tarde.
+    show:
+      confirmed: Tu correo está confirmado. Ya puedes iniciar sesión.
+      invalid: Ese enlace de confirmación no es válido o ha expirado.
+  email_confirmations_mailer:
+    confirm:
+      expiration: Este enlace caducará en %{duration}.
+      lead: 'Confirma tu correo electrónico para activar tu cuenta:'
+      link_text: confirmar tu correo electrónico
+      subject: Confirma tu correo
   feedbacks:
     create:
       notice: "¡Gracias por tu comentario!"
@@ -155,7 +173,8 @@ es:
       notice: Perfil actualizado
   registrations:
     create:
-      notice: "¡Bienvenido!"
+      notice: Cuenta creada. Revisa tu correo para confirmar tu dirección antes de
+        iniciar sesión.
     new:
       meta_title: Registrarse
       sign_up: Registrarse
@@ -163,6 +182,7 @@ es:
   sessions:
     create:
       alert: Prueba con otro correo electrónico o contraseña.
+      unconfirmed: Confirma tu correo electrónico antes de iniciar sesión.
     new:
       email_placeholder: Ingresa tu correo electrónico
       forgot_password: "¿Olvidaste tu contraseña?"

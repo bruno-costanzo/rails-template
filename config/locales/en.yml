@@ -81,6 +81,23 @@ en:
       edit: Edit
     update:
       notice: Document updated
+  email_confirmations:
+    create:
+      notice: Confirmation email sent. Check your inbox to activate your account.
+    new:
+      email_placeholder: Enter your email address
+      submit: Resend confirmation email
+      title: Resend confirmation
+    rate_limit: Try again later.
+    show:
+      confirmed: Your email is confirmed. You can sign in now.
+      invalid: That confirmation link is invalid or has expired.
+  email_confirmations_mailer:
+    confirm:
+      expiration: This link will expire in %{duration}.
+      lead: 'Confirm your email address to activate your account:'
+      link_text: confirm your email address
+      subject: Confirm your email
   feedbacks:
     create:
       notice: Thanks for the feedback!
@@ -154,7 +171,8 @@ en:
       notice: Profile updated
   registrations:
     create:
-      notice: Welcome!
+      notice: Account created. Check your email to confirm your address before signing
+        in.
     new:
       meta_title: Sign up
       sign_up: Sign up
@@ -162,6 +180,7 @@ en:
   sessions:
     create:
       alert: Try another email address or password.
+      unconfirmed: Please confirm your email address before signing in.
     new:
       email_placeholder: Enter your email address
       forgot_password: Forgot password?

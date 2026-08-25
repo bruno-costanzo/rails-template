@@ -1,0 +1,13 @@
+require "test_helper"
+
+class EmailConfirmationsMailerTest < ActionMailer::TestCase
+  test "confirm addresses the user and includes a confirmation link" do
+    user = User.create!(name: "Unconf", email_address: "mailer@example.com", password: "password1234")
+
+    email = EmailConfirmationsMailer.confirm(user)
+
+    assert_equal [ user.email_address ], email.to
+    assert_equal I18n.t("email_confirmations_mailer.confirm.subject"), email.subject
+    assert_match %r{http://example\.com/email_confirmations/[\w.-]+}, email.body.encoded.gsub("=\r\n", "")
+  end
+end

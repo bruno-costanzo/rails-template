@@ -6,13 +6,17 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test "creates a user and starts a session" do
+  test "creates an unconfirmed user, sends a confirmation email, and does not start a session" do
     assert_difference("User.count") do
-      post registration_url, params: { user: { name: "Joan Clarke", email_address: "joan@example.com",
-        password: "password1234", password_confirmation: "password1234" } }
+      assert_enqueued_emails 1 do
+        post registration_url, params: { user: { name: "Joan Clarke", email_address: "joan@example.com",
+          password: "password1234", password_confirmation: "password1234" } }
+      end
     end
-    assert_redirected_to root_url
-    assert cookies[:session_id].present?
+
+    assert_not User.find_by(email_address: "joan@example.com").confirmed?
+    assert_redirected_to new_session_url
+    assert_not cookies[:session_id].present?
   end
 
   test "re-renders on invalid data" do

@@ -8,6 +8,10 @@ class User < ApplicationRecord
 
   normalizes :email_address, with: ->(e) { e.strip.downcase }
 
+  generates_token_for :email_confirmation, expires_in: 1.day do
+    email_address
+  end
+
   has_one_attached :avatar do |attachable|
     attachable.variant :thumb, resize_to_fill: [ 48, 48 ]
     attachable.variant :medium, resize_to_fill: [ 200, 200 ]
@@ -20,5 +24,13 @@ class User < ApplicationRecord
 
   def initials
     name.to_s.split.first(2).filter_map { |part| part[0] }.join.upcase
+  end
+
+  def confirmed?
+    confirmed_at.present?
+  end
+
+  def confirm!
+    update!(confirmed_at: Time.current) unless confirmed?
   end
 end
