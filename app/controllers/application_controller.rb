@@ -8,7 +8,20 @@ class ApplicationController < ActionController::Base
   stale_when_importmap_changes
 
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
+
+  before_action :set_locale
+
   private
+
+  def set_locale
+    I18n.locale = locale_from_accept_language || I18n.default_locale
+  end
+
+  def locale_from_accept_language
+    request.env["HTTP_ACCEPT_LANGUAGE"].to_s.scan(/[a-z]{2}/).map(&:to_sym).find do |locale|
+      I18n.available_locales.include?(locale)
+    end
+  end
 
   def pundit_user
     Current.user

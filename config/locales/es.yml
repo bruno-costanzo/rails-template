@@ -1,0 +1,5 @@
+es:
+  hello: "Hola mundo"
+  sessions:
+    new:
+      title: "Iniciar sesión"
