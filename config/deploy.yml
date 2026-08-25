@@ -115,3 +115,20 @@ builder:
 #     port: 6379
 #     directories:
 #       - data:/data
+
+# Encrypted, deduplicated backups of the SQLite databases and Active Storage files (kamal-backup + restic).
+# Set the destination in config/kamal-backup.yml and the RESTIC/AWS secrets in .kamal/secrets before deploying.
+accessories:
+  backup:
+    image: ghcr.io/crmne/kamal-backup:latest
+    host: app.YOUR_DOMAIN.com
+    files:
+      - config/kamal-backup.yml:/app/config/kamal-backup.yml:ro
+    env:
+      secret:
+        - RESTIC_PASSWORD
+        - AWS_ACCESS_KEY_ID
+        - AWS_SECRET_ACCESS_KEY
+    volumes:
+      - "charco_template_storage:/rails/storage"
+      - "charco_template_backup_state:/var/lib/kamal-backup"

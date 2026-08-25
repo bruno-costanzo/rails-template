@@ -1,0 +1,30 @@
+# kamal-backup — https://github.com/crmne/kamal-backup
+# The four SQLite databases are backed up consistently; Active Storage files under /rails/storage
+# are captured in the file snapshot (kamal-backup auto-excludes the raw db/WAL/shm files listed here).
+
+databases:
+  - name: primary
+    adapter: sqlite
+    path: /rails/storage/production.sqlite3
+  - name: cache
+    adapter: sqlite
+    path: /rails/storage/production_cache.sqlite3
+  - name: queue
+    adapter: sqlite
+    path: /rails/storage/production_queue.sqlite3
+  - name: cable
+    adapter: sqlite
+    path: /rails/storage/production_cable.sqlite3
+
+paths:
+  - /rails/storage
+
+restic:
+  # Any restic/rclone remote: s3:https://..., b2:..., sftp:..., etc.
+  repository: YOUR_RESTIC_REPOSITORY
+  password:
+    secret: RESTIC_PASSWORD
+  init_if_missing: true
+
+backup:
+  schedule: 1d
