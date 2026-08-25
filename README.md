@@ -112,11 +112,13 @@ To add a new string: wrap it in a translation lookup (views use the lazy form `t
 
 ## Testing
 
-Run `bin/ci` before every commit — it is the pre-commit gate and exactly what CI runs. It's Rails' native CI runner, configured in `config/ci.rb`: rubocop, brakeman, then `bin/rails test` and `bin/rails test:system`.
+Run `bin/ci` before every commit — it is the pre-commit gate and exactly what CI runs. It's Rails' native CI runner, configured in `config/ci.rb`: rubocop, brakeman, `i18n-tasks health`, `bin/rails test`, `bin/rails test:system`, and a `bin/smoke-rename` step.
 
 ```bash
 bin/ci
 ```
+
+That last step is a **smoke test of the template's core promise** — that you can clone this repo, rename it, and get an app that boots. It exports the tracked tree to a temp dir, runs `bin/rename smoke_app` on it, asserts no reference to the old name survived (outside `docs/`, which is intentionally preserved), then boots the renamed copy with `db:prepare` + `zeitwerk:check` so a single leftover `CharcoTemplate` constant fails loudly instead of surfacing only when someone actually renames the app. It reuses the existing bundle (renaming never touches the `Gemfile`), so it adds only a few seconds. The `zeitwerk:check` boot doesn't decrypt credentials, so it needs no master key — locally, if `config/master.key` is present it's copied into the copy as a safety belt, but CI (where the key is absent) still boots fine.
 
 Tests never hit the network. `test/test_helper.rb` calls `WebMock.disable_net_connect!(allow_localhost: true)`, so any real HTTP call from a test fails loudly instead of silently reaching OpenAI. Stub RubyLLM calls with the helpers in `test/test_helpers/openai_stubs.rb`:
 
