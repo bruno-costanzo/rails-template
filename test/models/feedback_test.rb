@@ -4,7 +4,7 @@ class FeedbackTest < ActiveSupport::TestCase
   test "requires a message" do
     feedback = users(:one).feedbacks.build(message: "")
     assert_not feedback.valid?
-    assert_includes feedback.errors[:message], "can't be blank"
+    assert_includes feedback.errors[:message], I18n.t("errors.messages.blank")
   end
 
   test "is valid with a user and a message" do

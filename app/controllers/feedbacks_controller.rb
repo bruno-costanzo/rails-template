@@ -6,7 +6,7 @@ class FeedbacksController < ApplicationController
   def create
     @feedback = Current.user.feedbacks.build(feedback_params)
     if @feedback.save
-      redirect_to root_path, notice: "Thanks for the feedback!"
+      redirect_to root_path, notice: t("feedbacks.create.notice")
     else
       render :new, status: :unprocessable_entity
     end

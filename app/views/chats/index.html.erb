@@ -1,11 +1,11 @@
-<% content_for :title, "Chats" %>
+<% content_for :title, t(".title") %>
 
 <div class="p-6 max-w-3xl mx-auto">
   <div class="flex justify-between items-center mb-6">
-    <h1 class="font-bold text-4xl">Chats</h1>
+    <h1 class="font-bold text-4xl"><%= t(".title") %></h1>
     <div class="flex items-center gap-2">
-      <%= link_to "Models", models_path, class: "btn btn-ghost" %>
-      <%= link_to "New chat", new_chat_path, class: "btn btn-primary" %>
+      <%= link_to t(".models"), models_path, class: "btn btn-ghost" %>
+      <%= link_to t(".new_chat"), new_chat_path, class: "btn btn-primary" %>
     </div>
   </div>
 
@@ -15,13 +15,13 @@
         <li class="list-row items-center">
           <%= render chat %>
           <div class="flex gap-2">
-            <%= link_to "Show", chat, class: "btn btn-ghost" %>
-            <%= button_to "Destroy", chat, method: :delete, class: "btn btn-error", data: { turbo_confirm: "Are you sure?" } %>
+            <%= link_to t(".show"), chat, class: "btn btn-ghost" %>
+            <%= button_to t(".destroy"), chat, method: :delete, class: "btn btn-error", data: { turbo_confirm: t(".confirm") } %>
           </div>
         </li>
       <% end %>
     </ul>
   <% else %>
-    <p class="text-center my-10" id="chats">No chats found.</p>
+    <p class="text-center my-10" id="chats"><%= t(".empty") %></p>
   <% end %>
 </div>

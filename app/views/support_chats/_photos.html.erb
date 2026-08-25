@@ -11,6 +11,6 @@
   <% end %>
 
   <% if chat.pending_photos.attached? %>
-    <p class="text-xs opacity-70 mb-2"><%= pluralize(chat.pending_photos.count, "photo") %> attached</p>
+    <p class="text-xs opacity-70 mb-2"><%= t(".attached", count: chat.pending_photos.count) %></p>
   <% end %>
 <% end %>

@@ -14,7 +14,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_session_url
 
     follow_redirect!
-    assert_select ".toast .alert.alert-error", /Try another email address or password/
+    assert_select ".toast .alert.alert-error", /#{Regexp.escape(I18n.t("sessions.create.alert"))}/
   end
 
   test "signs out" do

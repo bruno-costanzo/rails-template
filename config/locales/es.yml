@@ -1,5 +1,199 @@
+---
 es:
-  hello: "Hola mundo"
-  sessions:
+  admin:
+    feedbacks:
+      index:
+        context: Contexto
+        empty: No hay tickets abiertos.
+        message: Mensaje
+        photo: Foto
+        photos: Fotos
+        reporter: Autor
+        resolve: Resolver
+        title: Tickets de comentarios
+      resolve:
+        notice: Ticket resuelto.
+  authorization:
+    not_authorized: No estás autorizado para realizar esta acción.
+  chats:
+    chat:
+      created: 'Creado:'
+      messages: 'Mensajes:'
+      model: 'Modelo:'
+    create:
+      notice: El chat se creó correctamente.
+    destroy:
+      notice: El chat se eliminó correctamente.
+    form:
+      errors:
+        one: "%{count} error impidió guardar este chat:"
+        other: "%{count} errores impidieron guardar este chat:"
+      model_label: 'Selecciona el modelo de IA:'
+      prompt_label: Instrucción
+      prompt_placeholder: "¿Qué te gustaría conversar?"
+      submit: Iniciar nuevo chat
+    index:
+      confirm: "¿Estás seguro?"
+      destroy: Eliminar
+      empty: No se encontraron chats.
+      models: Modelos
+      new_chat: Nuevo chat
+      show: Ver
+      title: Chats
     new:
-      title: "Iniciar sesión"
+      back: Volver a los chats
+      title: Nuevo chat
+    show:
+      back: Volver a los chats
+      heading: Mostrando chat n.º %{id}
+      model: 'Modelo:'
+      title: Mostrando chat
+  documents:
+    create:
+      notice: Documento creado
+    destroy:
+      notice: Documento eliminado
+    edit:
+      title: Editar documento
+    form:
+      create: Crear documento
+      edit_title: Editar documento
+      new_title: Nuevo documento
+      update: Actualizar documento
+    index:
+      empty: No se encontraron documentos.
+      new_document: Nuevo documento
+      search: Buscar
+      search_placeholder: Búsqueda semántica…
+      title: Documentos
+    new:
+      title: Nuevo documento
+    show:
+      back: Volver a documentos
+      delete: Eliminar
+      delete_confirm: "¿Eliminar este documento?"
+      edit: Editar
+    update:
+      notice: Documento actualizado
+  feedbacks:
+    create:
+      notice: "¡Gracias por tu comentario!"
+    new:
+      heading: Enviar comentarios
+      message_label: "¿Qué tienes en mente?"
+      photos_label: Adjuntar capturas de pantalla (opcional)
+      submit: Enviar comentarios
+      title: Comentarios
+  messages:
+    assistant:
+      role: Asistente
+    error:
+      title: Error
+    form:
+      content_label: Mensaje
+      content_placeholder: Mensaje...
+      errors:
+        one: "%{count} error impidió guardar este mensaje:"
+        other: "%{count} errores impidieron guardar este mensaje:"
+      submit: Enviar mensaje
+    system:
+      label: Sistema
+    tool_calls:
+      default:
+        label: Llamada a herramienta
+    tool_results:
+      default:
+        error_title: Error del resultado de la herramienta
+        label: Herramienta
+        no_output: "(sin salida)"
+    user:
+      role: Usuario
+  models:
+    refresh:
+      notice: Modelos actualizados correctamente
+  notifications:
+    index:
+      empty: Estás al día.
+      mark_all_read: Marcar todo como leído
+      title: Notificaciones
+  passwords:
+    create:
+      notice: Enviamos las instrucciones para restablecer la contraseña (si existe
+        un usuario con ese correo electrónico).
+    edit:
+      password_confirmation_placeholder: Repite la nueva contraseña
+      password_placeholder: Ingresa la nueva contraseña
+      save: Guardar
+      title: Actualiza tu contraseña
+    invalid_token: El enlace para restablecer la contraseña no es válido o ha expirado.
+    new:
+      email_placeholder: Ingresa tu correo electrónico
+      submit: Enviar instrucciones por correo
+      title: "¿Olvidaste tu contraseña?"
+    rate_limit: Inténtalo de nuevo más tarde.
+    update:
+      alert: Las contraseñas no coinciden.
+      notice: La contraseña se restableció.
+  passwords_mailer:
+    reset:
+      expiration: Este enlace caducará en %{duration}.
+      lead: Puedes restablecer tu contraseña en
+      reset_link_text: esta página de restablecimiento de contraseña
+      subject: Restablece tu contraseña
+  profiles:
+    edit:
+      meta_title: Perfil
+      save: Guardar
+      title: Tu perfil
+    update:
+      notice: Perfil actualizado
+  registrations:
+    create:
+      notice: "¡Bienvenido!"
+    new:
+      meta_title: Registrarse
+      sign_up: Registrarse
+      title: Crea tu cuenta
+  sessions:
+    create:
+      alert: Prueba con otro correo electrónico o contraseña.
+    new:
+      email_placeholder: Ingresa tu correo electrónico
+      forgot_password: "¿Olvidaste tu contraseña?"
+      password_placeholder: Ingresa tu contraseña
+      sign_in: Iniciar sesión
+      title: Iniciar sesión
+    rate_limit: Inténtalo de nuevo más tarde.
+  shared:
+    confirm_dialog:
+      cancel: Cancelar
+      close: cerrar
+      confirm: Confirmar
+    flash:
+      dismiss: Cerrar
+    navbar:
+      chats: Chats
+      documents: Documentos
+      feedback: Comentarios
+      profile: Perfil
+      sign_in: Iniciar sesión
+      sign_out: Cerrar sesión
+      sign_up: Registrarse
+    notification_bell:
+      aria_label: Notificaciones
+      empty: Estás al día
+      mark_all_read: Marcar todas como leídas
+      see_all: Ver todas
+      title: Notificaciones
+  support_chat_photos:
+    create:
+      upload_error: No se pudo adjuntar esa foto. Usa una imagen JPG, PNG o WEBP de
+        menos de 5MB.
+  support_chats:
+    photos:
+      attached:
+        one: "%{count} foto adjunta"
+        other: "%{count} fotos adjuntas"
+    widget:
+      close: cerrar
+      support: Soporte

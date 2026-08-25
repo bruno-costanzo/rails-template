@@ -6,7 +6,7 @@ class ProfilesController < ApplicationController
   def update
     @user = Current.user
     if @user.update(profile_params)
-      redirect_to edit_profile_url, notice: "Profile updated"
+      redirect_to edit_profile_url, notice: t("profiles.update.notice")
     else
       render :edit, status: :unprocessable_entity
     end

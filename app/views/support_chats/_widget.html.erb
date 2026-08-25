@@ -1,15 +1,15 @@
 <div data-controller="support-chat" data-support-chat-url-value="<%= support_chat_path %>">
   <button type="button" data-action="support-chat#open" class="btn btn-primary fixed bottom-4 right-4 z-50 shadow-lg">
-    Support
+    <%= t(".support") %>
   </button>
 
   <dialog data-support-chat-target="dialog" class="modal">
     <div class="modal-box">
-      <h3 class="font-bold text-lg mb-3">Support</h3>
+      <h3 class="font-bold text-lg mb-3"><%= t(".support") %></h3>
       <%= turbo_frame_tag "support_chat", data: { support_chat_target: "frame" } %>
     </div>
     <form method="dialog" class="modal-backdrop" data-turbo="false">
-      <button>close</button>
+      <button><%= t(".close") %></button>
     </form>
   </dialog>
 </div>

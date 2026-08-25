@@ -22,7 +22,7 @@ class FeedbacksControllerTest < ActionDispatch::IntegrationTest
     feedback = Feedback.last
     assert_equal users(:one), feedback.user
     assert_redirected_to root_url
-    assert_equal "Thanks for the feedback!", flash[:notice]
+    assert_equal I18n.t("feedbacks.create.notice"), flash[:notice]
   end
 
   test "attaches uploaded photos to the feedback" do

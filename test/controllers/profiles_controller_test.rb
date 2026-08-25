@@ -22,7 +22,7 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
     assert users(:one).avatar.attached?
 
     follow_redirect!
-    assert_select ".toast .alert.alert-success", /Profile updated/
+    assert_select ".toast .alert.alert-success", /#{Regexp.escape(I18n.t("profiles.update.notice"))}/
   end
 
   test "ignores blank password fields" do

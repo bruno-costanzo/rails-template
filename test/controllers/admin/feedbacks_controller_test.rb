@@ -90,7 +90,7 @@ module Admin
       patch resolve_admin_feedback_url(feedback), headers: { "Authorization" => "Basic #{Base64.strict_encode64("admin:secret")}" }
 
       assert_redirected_to admin_feedbacks_url
-      assert_equal "Ticket resolved.", flash[:notice]
+      assert_equal I18n.t("admin.feedbacks.resolve.notice"), flash[:notice]
       assert feedback.reload.resolved?
     end
 

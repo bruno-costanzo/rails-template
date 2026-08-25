@@ -1,5 +1,198 @@
+---
 en:
-  hello: "Hello world"
-  sessions:
+  admin:
+    feedbacks:
+      index:
+        context: Context
+        empty: No open tickets.
+        message: Message
+        photo: Photo
+        photos: Photos
+        reporter: Reporter
+        resolve: Resolve
+        title: Feedback tickets
+      resolve:
+        notice: Ticket resolved.
+  authorization:
+    not_authorized: You are not authorized to perform this action.
+  chats:
+    chat:
+      created: 'Created:'
+      messages: 'Messages:'
+      model: 'Model:'
+    create:
+      notice: Chat was successfully created.
+    destroy:
+      notice: Chat was successfully destroyed.
+    form:
+      errors:
+        one: "%{count} error prohibited this chat from being saved:"
+        other: "%{count} errors prohibited this chat from being saved:"
+      model_label: 'Select AI model:'
+      prompt_label: Prompt
+      prompt_placeholder: What would you like to discuss?
+      submit: Start new chat
+    index:
+      confirm: Are you sure?
+      destroy: Destroy
+      empty: No chats found.
+      models: Models
+      new_chat: New chat
+      show: Show
+      title: Chats
     new:
-      title: "Sign in"
+      back: Back to chats
+      title: New chat
+    show:
+      back: Back to chats
+      heading: 'Showing chat #%{id}'
+      model: 'Model:'
+      title: Showing chat
+  documents:
+    create:
+      notice: Document created
+    destroy:
+      notice: Document deleted
+    edit:
+      title: Edit document
+    form:
+      create: Create document
+      edit_title: Edit document
+      new_title: New document
+      update: Update document
+    index:
+      empty: No documents found.
+      new_document: New document
+      search: Search
+      search_placeholder: Semantic search…
+      title: Documents
+    new:
+      title: New document
+    show:
+      back: Back to documents
+      delete: Delete
+      delete_confirm: Delete this document?
+      edit: Edit
+    update:
+      notice: Document updated
+  feedbacks:
+    create:
+      notice: Thanks for the feedback!
+    new:
+      heading: Send feedback
+      message_label: What's on your mind?
+      photos_label: Attach screenshots (optional)
+      submit: Send feedback
+      title: Feedback
+  messages:
+    assistant:
+      role: Assistant
+    error:
+      title: Error
+    form:
+      content_label: Message
+      content_placeholder: Message...
+      errors:
+        one: "%{count} error prohibited this message from being saved:"
+        other: "%{count} errors prohibited this message from being saved:"
+      submit: Send message
+    system:
+      label: System
+    tool_calls:
+      default:
+        label: Tool Call
+    tool_results:
+      default:
+        error_title: Tool Result Error
+        label: Tool
+        no_output: "(no output)"
+    user:
+      role: User
+  models:
+    refresh:
+      notice: Models refreshed successfully
+  notifications:
+    index:
+      empty: You're all caught up.
+      mark_all_read: Mark all read
+      title: Notifications
+  passwords:
+    create:
+      notice: Password reset instructions sent (if user with that email address exists).
+    edit:
+      password_confirmation_placeholder: Repeat new password
+      password_placeholder: Enter new password
+      save: Save
+      title: Update your password
+    invalid_token: Password reset link is invalid or has expired.
+    new:
+      email_placeholder: Enter your email address
+      submit: Email reset instructions
+      title: Forgot your password?
+    rate_limit: Try again later.
+    update:
+      alert: Passwords did not match.
+      notice: Password has been reset.
+  passwords_mailer:
+    reset:
+      expiration: This link will expire in %{duration}.
+      lead: You can reset your password on
+      reset_link_text: this password reset page
+      subject: Reset your password
+  profiles:
+    edit:
+      meta_title: Profile
+      save: Save
+      title: Your profile
+    update:
+      notice: Profile updated
+  registrations:
+    create:
+      notice: Welcome!
+    new:
+      meta_title: Sign up
+      sign_up: Sign up
+      title: Create your account
+  sessions:
+    create:
+      alert: Try another email address or password.
+    new:
+      email_placeholder: Enter your email address
+      forgot_password: Forgot password?
+      password_placeholder: Enter your password
+      sign_in: Sign in
+      title: Sign in
+    rate_limit: Try again later.
+  shared:
+    confirm_dialog:
+      cancel: Cancel
+      close: close
+      confirm: Confirm
+    flash:
+      dismiss: Dismiss
+    navbar:
+      chats: Chats
+      documents: Documents
+      feedback: Feedback
+      profile: Profile
+      sign_in: Sign in
+      sign_out: Sign out
+      sign_up: Sign up
+    notification_bell:
+      aria_label: Notifications
+      empty: You're all caught up
+      mark_all_read: Mark all read
+      see_all: See all
+      title: Notifications
+  support_chat_photos:
+    create:
+      upload_error: That photo couldn't be attached. Please use a JPG, PNG, or WEBP
+        image under 5MB.
+  support_chats:
+    photos:
+      attached:
+        one: "%{count} photo attached"
+        other: "%{count} photos attached"
+    widget:
+      close: close
+      support: Support

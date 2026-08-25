@@ -17,7 +17,7 @@ class ChatsController < ApplicationController
       @chat = Current.user.chats.create!(model: params.dig(:chat, :model).presence)
       ChatResponseJob.perform_later(@chat.id, prompt)
 
-      redirect_to @chat, notice: "Chat was successfully created."
+      redirect_to @chat, notice: t("chats.create.notice")
     end
   end
 
@@ -28,7 +28,7 @@ class ChatsController < ApplicationController
 
   def destroy
     @chat.destroy!
-    redirect_to chats_path, notice: "Chat was successfully destroyed.", status: :see_other
+    redirect_to chats_path, notice: t("chats.destroy.notice"), status: :see_other
   end
 
   private

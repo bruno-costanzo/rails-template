@@ -10,16 +10,16 @@
           <%= render "users/avatar", user: Current.user %>
         </div>
         <ul tabindex="0" class="menu dropdown-content bg-base-100 rounded-box z-10 mt-3 w-52 p-2 shadow">
-          <li><%= link_to "Chats", chats_path %></li>
-          <li><%= link_to "Documents", documents_path %></li>
-          <li><%= link_to "Profile", edit_profile_path %></li>
-          <li><%= link_to "Feedback", new_feedback_path %></li>
-          <li><%= button_to "Sign out", session_path, method: :delete %></li>
+          <li><%= link_to t("shared.navbar.chats"), chats_path %></li>
+          <li><%= link_to t("shared.navbar.documents"), documents_path %></li>
+          <li><%= link_to t("shared.navbar.profile"), edit_profile_path %></li>
+          <li><%= link_to t("shared.navbar.feedback"), new_feedback_path %></li>
+          <li><%= button_to t("shared.navbar.sign_out"), session_path, method: :delete %></li>
         </ul>
       </div>
     <% else %>
-      <%= link_to "Sign in", new_session_path, class: "btn btn-ghost" %>
-      <%= link_to "Sign up", new_registration_path, class: "btn btn-primary" %>
+      <%= link_to t("shared.navbar.sign_in"), new_session_path, class: "btn btn-ghost" %>
+      <%= link_to t("shared.navbar.sign_up"), new_registration_path, class: "btn btn-primary" %>
     <% end %>
   </div>
 </div>

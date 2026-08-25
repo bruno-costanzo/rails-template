@@ -1,10 +1,10 @@
-<% content_for :title, "Notifications" %>
+<% content_for :title, t(".title") %>
 
 <div class="p-6 max-w-2xl mx-auto w-full">
   <div class="flex items-center justify-between mb-6">
-    <h1 class="font-bold text-4xl">Notifications</h1>
+    <h1 class="font-bold text-4xl"><%= t(".title") %></h1>
     <% if @notifications.unread.any? %>
-      <%= button_to "Mark all read", mark_all_read_notifications_path, method: :patch, class: "btn btn-sm btn-primary" %>
+      <%= button_to t(".mark_all_read"), mark_all_read_notifications_path, method: :patch, class: "btn btn-sm btn-primary" %>
     <% end %>
   </div>
 
@@ -17,7 +17,7 @@
   <% else %>
     <div class="text-center my-10">
       <%= lucide_icon("bell-off", class: "size-8 mx-auto mb-2 opacity-60") %>
-      <p>You're all caught up.</p>
+      <p><%= t(".empty") %></p>
     </div>
   <% end %>
 </div>

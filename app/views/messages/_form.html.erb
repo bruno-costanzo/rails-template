@@ -1,7 +1,7 @@
 <%= form_with(model: message, url: [@chat, message], id: "new_message", class: "contents") do |form| %>
   <% if message.errors.any? %>
     <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-md mt-3">
-      <h2><%= pluralize(message.errors.count, "error") %> prohibited this message from being saved:</h2>
+      <h2><%= t(".errors", count: message.errors.count) %></h2>
 
       <ul class="list-disc ml-6">
         <% message.errors.each do |error| %>
@@ -12,12 +12,12 @@
   <% end %>
 
   <div class="my-5">
-    <%= form.label :content, "Message" %>
-    <%= form.text_area :content, rows: 4, placeholder: "Message...", autofocus: true, required: true,
+    <%= form.label :content, t(".content_label") %>
+    <%= form.text_area :content, rows: 4, placeholder: t(".content_placeholder"), autofocus: true, required: true,
         class: ["input input-bordered w-full", {"input-error": message.errors[:content].any?}] %>
   </div>
 
   <div class="inline">
-    <%= form.submit "Send message", class: "btn btn-primary" %>
+    <%= form.submit t(".submit"), class: "btn btn-primary" %>
   </div>
 <% end %>

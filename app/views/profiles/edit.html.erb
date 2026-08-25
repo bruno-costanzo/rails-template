@@ -1,9 +1,9 @@
-<% set_meta_tags title: "Profile" %>
+<% set_meta_tags title: t(".meta_title") %>
 <div class="flex justify-center py-16">
   <div class="card bg-base-100 shadow w-full max-w-md">
     <div class="card-body">
       <%= render "users/avatar", user: @user %>
-      <h1 class="card-title">Your profile</h1>
+      <h1 class="card-title"><%= t(".title") %></h1>
       <%= form_with model: @user, url: profile_path, method: :patch do |form| %>
         <% if @user.errors.any? %>
           <div class="alert alert-error mb-4"><%= @user.errors.full_messages.to_sentence %></div>
@@ -18,7 +18,7 @@
         <%= form.password_field :password, class: "input input-bordered w-full" %>
         <%= form.label :password_confirmation, class: "label" %>
         <%= form.password_field :password_confirmation, class: "input input-bordered w-full" %>
-        <%= form.submit "Save", class: "btn btn-primary w-full mt-4" %>
+        <%= form.submit t(".save"), class: "btn btn-primary w-full mt-4" %>
       <% end %>
     </div>
   </div>

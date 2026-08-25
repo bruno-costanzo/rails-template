@@ -1,14 +1,14 @@
-<% content_for :title, "Documents" %>
+<% content_for :title, t(".title") %>
 
 <div class="p-6 max-w-3xl mx-auto w-full">
   <div class="flex justify-between items-center mb-6">
-    <h1 class="font-bold text-4xl">Documents</h1>
-    <%= link_to "New document", new_document_path, class: "btn btn-primary" %>
+    <h1 class="font-bold text-4xl"><%= t(".title") %></h1>
+    <%= link_to t(".new_document"), new_document_path, class: "btn btn-primary" %>
   </div>
 
   <%= form_with url: documents_path, method: :get, class: "join w-full mb-6" do |form| %>
-    <%= form.text_field :q, value: params[:q], placeholder: "Semantic search…", class: "input input-bordered join-item w-full" %>
-    <%= form.submit "Search", class: "btn btn-primary join-item" %>
+    <%= form.text_field :q, value: params[:q], placeholder: t(".search_placeholder"), class: "input input-bordered join-item w-full" %>
+    <%= form.submit t(".search"), class: "btn btn-primary join-item" %>
   <% end %>
 
   <% if @documents.any? %>
@@ -20,6 +20,6 @@
       <% end %>
     </ul>
   <% else %>
-    <p class="text-center my-10">No documents found.</p>
+    <p class="text-center my-10"><%= t(".empty") %></p>
   <% end %>
 </div>

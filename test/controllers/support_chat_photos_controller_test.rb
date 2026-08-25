@@ -44,6 +44,6 @@ class SupportChatPhotosControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_entity
     assert_not chat.reload.pending_photos.attached?
-    assert_match "Please use a JPG, PNG, or WEBP image under 5MB", @response.body
+    assert_includes @response.body, I18n.t("support_chat_photos.create.upload_error")
   end
 end

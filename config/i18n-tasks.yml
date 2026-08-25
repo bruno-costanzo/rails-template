@@ -1,0 +1,10 @@
+base_locale: es
+locales: [es, en]
+
+data:
+  read:
+    - config/locales/%{locale}.yml
+
+search:
+  paths:
+    - app/

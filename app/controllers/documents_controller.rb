@@ -18,7 +18,7 @@ class DocumentsController < ApplicationController
   def create
     @document = Current.user.documents.build(document_params)
     if @document.save
-      redirect_to @document, notice: "Document created"
+      redirect_to @document, notice: t("documents.create.notice")
     else
       render :new, status: :unprocessable_entity
     end
@@ -31,7 +31,7 @@ class DocumentsController < ApplicationController
   def update
     @document = Current.user.documents.find(params[:id])
     if @document.update(document_params)
-      redirect_to @document, notice: "Document updated"
+      redirect_to @document, notice: t("documents.update.notice")
     else
       render :edit, status: :unprocessable_entity
     end
@@ -39,7 +39,7 @@ class DocumentsController < ApplicationController
 
   def destroy
     Current.user.documents.find(params[:id]).destroy
-    redirect_to documents_url, notice: "Document deleted"
+    redirect_to documents_url, notice: t("documents.destroy.notice")
   end
 
   private

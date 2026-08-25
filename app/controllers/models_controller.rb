@@ -9,6 +9,6 @@ class ModelsController < ApplicationController
 
   def refresh
     Model.refresh!
-    redirect_to models_path, notice: "Models refreshed successfully"
+    redirect_to models_path, notice: t("models.refresh.notice")
   end
 end

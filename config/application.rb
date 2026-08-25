@@ -17,7 +17,7 @@ module CharcoTemplate
     config.autoload_lib(ignore: %w[assets tasks])
 
     config.i18n.available_locales = [ :es, :en ]
-    config.i18n.default_locale = :en
+    config.i18n.default_locale = :es
     config.i18n.fallbacks = [ :en ]
 
     # Configuration for the application, engines, and railties goes here.

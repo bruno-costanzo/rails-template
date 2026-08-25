@@ -1,17 +1,17 @@
-<% content_for :title, "Feedback tickets" %>
+<% content_for :title, t(".title") %>
 
 <div class="p-6 max-w-5xl mx-auto w-full">
-  <h1 class="font-bold text-4xl mb-6">Feedback tickets</h1>
+  <h1 class="font-bold text-4xl mb-6"><%= t(".title") %></h1>
 
   <% if @feedbacks.any? %>
     <div class="overflow-x-auto">
       <table class="table bg-base-100 rounded-box shadow">
         <thead>
           <tr>
-            <th>Reporter</th>
-            <th>Message</th>
-            <th>Context</th>
-            <th>Photos</th>
+            <th><%= t(".reporter") %></th>
+            <th><%= t(".message") %></th>
+            <th><%= t(".context") %></th>
+            <th><%= t(".photos") %></th>
             <th></th>
           </tr>
         </thead>
@@ -31,13 +31,13 @@
               </td>
               <td>
                 <% feedback.photos.each do |photo| %>
-                  <%= link_to "Photo", feedback_photo_url(signed_id: photo.blob.signed_id), target: "_blank", rel: "noopener", class: "link" %>
+                  <%= link_to t(".photo"), feedback_photo_url(signed_id: photo.blob.signed_id), target: "_blank", rel: "noopener", class: "link" %>
                 <% end %>
               </td>
               <td>
                 <%= button_to resolve_admin_feedback_path(feedback), method: :patch, class: "btn btn-sm btn-primary" do %>
                   <%= lucide_icon("check", class: "size-4") %>
-                  Resolve
+                  <%= t(".resolve") %>
                 <% end %>
               </td>
             </tr>
@@ -46,6 +46,6 @@
       </table>
     </div>
   <% else %>
-    <p class="text-center my-10">No open tickets.</p>
+    <p class="text-center my-10"><%= t(".empty") %></p>
   <% end %>
 </div>

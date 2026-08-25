@@ -2,7 +2,7 @@
   <% flash.each do |type, message| %>
     <div class="alert <%= type == "alert" ? "alert-error" : "alert-success" %>" data-controller="flash">
       <span><%= message %></span>
-      <button type="button" class="btn btn-sm btn-circle btn-ghost" data-action="flash#dismiss" aria-label="Dismiss">&times;</button>
+      <button type="button" class="btn btn-sm btn-circle btn-ghost" data-action="flash#dismiss" aria-label="<%= t("shared.flash.dismiss") %>">&times;</button>
     </div>
   <% end %>
 </div>

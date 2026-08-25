@@ -2,7 +2,7 @@
 <% recent = recent_notifications %>
 
 <details class="dropdown dropdown-end" data-controller="dropdown">
-  <summary class="btn btn-ghost btn-circle" aria-label="Notifications">
+  <summary class="btn btn-ghost btn-circle" aria-label="<%= t("shared.notification_bell.aria_label") %>">
     <div class="indicator">
       <%= lucide_icon("bell", class: "size-5") %>
       <% if unread_count.positive? %>
@@ -12,9 +12,9 @@
   </summary>
   <div class="dropdown-content bg-base-100 rounded-box z-10 mt-3 w-80 p-2 shadow">
     <div class="flex items-center justify-between px-2 py-1">
-      <span class="font-semibold">Notifications</span>
+      <span class="font-semibold"><%= t("shared.notification_bell.title") %></span>
       <% if unread_count.positive? %>
-        <%= button_to "Mark all read", mark_all_read_notifications_path, method: :patch, class: "btn btn-ghost btn-xs" %>
+        <%= button_to t("shared.notification_bell.mark_all_read"), mark_all_read_notifications_path, method: :patch, class: "btn btn-ghost btn-xs" %>
       <% end %>
     </div>
     <ul class="menu w-full">
@@ -26,13 +26,13 @@
         <li>
           <div class="flex flex-col items-center gap-2 py-6 text-base-content/60">
             <%= lucide_icon("bell-off", class: "size-6") %>
-            <span>You're all caught up</span>
+            <span><%= t("shared.notification_bell.empty") %></span>
           </div>
         </li>
       <% end %>
     </ul>
     <div class="text-center mt-2">
-      <%= link_to "See all", notifications_path, class: "link link-sm" %>
+      <%= link_to t("shared.notification_bell.see_all"), notifications_path, class: "link link-sm" %>
     </div>
   </div>
 </details>

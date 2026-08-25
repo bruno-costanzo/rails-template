@@ -13,9 +13,9 @@ class LocaleDetectionTest < ActionDispatch::IntegrationTest
     assert_select "h1", "Sign in"
   end
 
-  test "falls back to the default locale without an Accept-Language header" do
+  test "falls back to the default locale (Spanish) without an Accept-Language header" do
     get new_session_url
 
-    assert_select "h1", "Sign in"
+    assert_select "h1", "Iniciar sesión"
   end
 end

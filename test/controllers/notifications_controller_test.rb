@@ -15,7 +15,7 @@ class NotificationsControllerTest < ActionDispatch::IntegrationTest
     get notifications_url
 
     assert_response :success
-    assert_includes @response.body, "You're all caught up"
+    assert_select "p", text: I18n.t("notifications.index.empty")
   end
 
   test "lists only the current user's notifications" do

@@ -10,7 +10,7 @@ module Admin
 
     def resolve
       Feedback.find(params[:id]).resolve!
-      redirect_to admin_feedbacks_path, notice: "Ticket resolved."
+      redirect_to admin_feedbacks_path, notice: t("admin.feedbacks.resolve.notice")
     end
   end
 end
