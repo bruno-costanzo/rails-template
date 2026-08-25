@@ -105,3 +105,5 @@ gem "onlylogs", "~> 0.7"
 gem "pundit", "~> 2.5"
 
 gem "madmin", "~> 2.0"
+
+gem "mission_control-jobs", "~> 1.1"

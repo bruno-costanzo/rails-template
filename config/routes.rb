@@ -34,6 +34,7 @@ Rails.application.routes.draw do
 
   mount SolidErrors::Engine => "/errors"
   mount Onlylogs::Engine, at: "/onlylogs"
+  mount MissionControl::Jobs::Engine, at: "/jobs"
   mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html

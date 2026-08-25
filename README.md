@@ -119,7 +119,7 @@ console1984 protects and audits the Rails console in production. Every console s
 
 ## Superadmin access
 
-Every developer-only panel — `/errors`, `/onlylogs`, `/admin/feedbacks`, and the `/madmin` resource browser — is gated by a single HTTP basic-auth credential pair, independent of the app's own session-based login, through the `SuperadminAuthentication` concern (`app/controllers/concerns/superadmin_authentication.rb`). A controller only needs `include SuperadminAuthentication`; the concern's `included` hook registers the `before_action`. Credentials resolve credentials-first then ENV, read live on every request (so tests can flip ENV per example):
+Every developer-only panel — `/errors`, `/onlylogs`, `/admin/feedbacks`, the `/jobs` Solid Queue dashboard, and the `/madmin` resource browser — is gated by a single HTTP basic-auth credential pair, independent of the app's own session-based login, through the `SuperadminAuthentication` concern (`app/controllers/concerns/superadmin_authentication.rb`). A controller only needs `include SuperadminAuthentication`; the concern's `included` hook registers the `before_action`. Credentials resolve credentials-first then ENV, read live on every request (so tests can flip ENV per example):
 
 - `Rails.application.credentials.dig(:superadmin, :username)` / `:password`, falling back to `ENV["SUPERADMIN_USER"]` / `ENV["SUPERADMIN_PASSWORD"]`
 
@@ -132,6 +132,10 @@ superadmin:
 ```
 
 To reuse one shared pair across every app born from this template, keep the values out of every repo and inject them at deploy time: store them once in your password manager, then list `SUPERADMIN_USER`/`SUPERADMIN_PASSWORD` under `env.secret` in `config/deploy.yml` and resolve them in `.kamal/secrets` (for example via `kamal secrets fetch --adapter 1password`, next to `RAILS_MASTER_KEY` and `OPENAI_API_KEY`). Rotating the credential is a redeploy — no repo ever contains the values.
+
+### Background jobs (Mission Control)
+
+`/jobs` is [Mission Control — Jobs](https://github.com/rails/mission_control-jobs), the dashboard for Solid Queue: browse queues, inspect and retry failed jobs, pause and resume queues. It's gated by the same superadmin auth — `config/initializers/mission_control_jobs.rb` sets `MissionControl::Jobs.base_controller_class = "MissionControlJobsBaseController"` (which just `include SuperadminAuthentication`) and `MissionControl::Jobs.http_basic_auth_enabled = false`, so the gem's own basic auth stands down and only the superadmin gate applies.
 
 ### Resource browser (madmin)
 
