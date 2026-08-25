@@ -92,6 +92,7 @@ gem "sqlite-vec", "~> 0.1.9"
 gem "console1984", "~> 0.2.4"
 
 gem "simplecov", "~> 1.1", group: :test, require: false
+gem "simplecov-console", "~> 0.9", group: :test, require: false
 
 gem "money-rails", "~> 3.0"
 

@@ -1,12 +1,17 @@
 unless ENV["SKIP_COVERAGE"]
   require "simplecov"
+  require "simplecov-console"
   SimpleCov.start "rails" do
     enable_coverage :branch
-    add_filter "app/madmin"
-    add_filter "app/controllers/madmin"
-    add_filter "app/controllers/concerns/superadmin_authentication"
-    add_filter "app/controllers/concerns/railspress_admin_auth"
+    skip "app/madmin"
+    skip "app/controllers/madmin"
+    skip "app/controllers/concerns/superadmin_authentication"
+    skip "app/controllers/concerns/railspress_admin_auth"
     minimum_coverage line: 100, branch: 100
+    formatter SimpleCov::Formatter::MultiFormatter.new([
+      SimpleCov::Formatter::HTMLFormatter,
+      SimpleCov::Formatter::Console
+    ])
   end
 end
 
