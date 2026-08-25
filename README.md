@@ -6,7 +6,7 @@ CharcoTemplate is a Rails 8.1.3.1 starter template. It is a fully working app on
 
 ## Features
 
-- Native Rails authentication (sign up, sign in/out, password reset) plus a custom registration flow and a profile page
+- Native Rails authentication (sign up, sign in/out, password reset) plus a custom registration flow, email confirmation on signup, and a profile page
 - Avatars via Active Storage variants, with an initials fallback when no avatar is uploaded
 - An AI chat UI (RubyLLM + OpenAI) scoped per signed-in user, with streaming responses and automatic chat titling
 - A `Document` model with Lexxy rich text editing and semantic search over embeddings (Neighbor + sqlite-vec)
@@ -76,6 +76,22 @@ OPENAI_API_KEY=sk-your-key-here
 ```
 
 `.env` is gitignored; `.env.example` (checked in) documents the required variables. `.env.test` carries a fake test key (`OPENAI_API_KEY=test-key`) so the app boots in the test environment before WebMock installs its network stubs.
+
+### Email
+
+Signing up requires **email confirmation**. A new account is created unconfirmed and **cannot sign in until it confirms** — registration sends a confirmation link (`EmailConfirmationsMailer`) and redirects to the sign-in page with a "check your email" notice; `SessionsController#create` rejects sign-in until `user.confirmed?`. Clicking `GET /email_confirmations/:token` confirms the account (the token, from `User.generates_token_for :email_confirmation`, expires in a day and is tied to the address). There's a resend form at `/email_confirmations/new` (rate-limited, and it never reveals whether an address exists). This block-until-confirmed behavior is the strict default; to allow sign-in but keep the account marked unconfirmed instead, change the `user.confirmed?` guard in `SessionsController#create`.
+
+For production delivery, the template ships an active, **provider-agnostic SMTP scaffold** in `config/environments/production.rb` — you only fill the secrets. It reads `Rails.application.credentials.dig(:smtp, :user_name)` / `:password` first, then falls back to environment variables, so pick either:
+
+```
+APP_HOST=your-app.com
+SMTP_ADDRESS=smtp.your-provider.com
+SMTP_PORT=587
+SMTP_USER_NAME=your-smtp-username
+SMTP_PASSWORD=your-smtp-password
+```
+
+`APP_HOST` is the domain used in mailer links (and feedback photo links) — **set it before deploying**, or they fall back to the `example.com` placeholder. `SMTP_*` work with any provider (SendGrid, Postmark, Mailgun, SES, Resend, …); prefer storing the username/password in credentials (`smtp/user_name`, `smtp/password`) over `.env`. Choosing a provider and its credentials is a per-app decision — the template ships the wiring, not the secrets. In development, email is not sent — it's caught in the [letter_opener_web](#development-email-preview) inbox at `/letter_opener`; tests use the `:test` delivery method.
 
 ## Internationalization
 
@@ -238,7 +254,7 @@ This is stage 1 of a two-stage plan. Stage 2 — streaming logs from all apps to
 
 [letter_opener_web](https://github.com/fgrehm/letter_opener_web) catches every email the app sends in development and lists them in a browsable inbox at `/letter_opener`, instead of trying to reach a real SMTP server. This is where password-reset emails (`PasswordsMailer`) and Solid Errors notification emails land while developing locally.
 
-The gem lives in the `development` group of the `Gemfile`, so it never loads in test or production; `config/routes.rb` also mounts it only `if Rails.env.development?`, and `config/environments/development.rb` sets `config.action_mailer.delivery_method = :letter_opener_web`. Test and production delivery are untouched — `config/environments/test.rb` still uses `:test`, and production keeps whatever SMTP settings it's configured with.
+The gem lives in the `development` group of the `Gemfile`, so it never loads in test or production; `config/routes.rb` also mounts it only `if Rails.env.development?`, and `config/environments/development.rb` sets `config.action_mailer.delivery_method = :letter_opener_web`. Test and production delivery are untouched here — `config/environments/test.rb` still uses `:test`, and production uses the SMTP scaffold described under [Configuration → Email](#email) (`delivery_method = :smtp`, driven by `APP_HOST` + `SMTP_*` or the `smtp/*` credentials).
 
 ## User feedback
 
