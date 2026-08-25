@@ -16,6 +16,7 @@ CharcoTemplate is a Rails 8.1.3.1 starter template. It is a fully working app on
 - onlylogs: a self-hosted log viewer at `/onlylogs` behind HTTP basic auth, tailing a rotated, size-capped copy of the production log on the storage volume
 - A signed-in feedback form that always saves locally and, when configured, opens a labeled GitHub Issue
 - A floating AI support assistant that turns a conversation into a refined, human-friendly ticket, filed through the same feedback pipeline
+- A blog / CMS (RailsPress): an authoring back-office at `/railspress/admin` and a reader-facing blog at `/blog` styled with DaisyUI
 - Tailwind v4 + DaisyUI 5 (vendored, no Node/npm needed), Hotwire (Turbo + Stimulus)
 - Lucide icons rendered inline through a helper, no icon font or CDN
 - Kamal deployment configuration ready to point at your own server
@@ -163,6 +164,46 @@ bin/rails g madmin:resource Widget
 Then trim the generated route/resource/controller the same way if the generator pulls in extras you don't want exposed. (This ordering is why a "create the model, get the dashboard for free" hook isn't wired: right after `rails g model` the table hasn't been migrated yet, so the resource generator would fail.)
 
 Two integration points with the template's conventions: madmin's generated files are excluded from the 100%-coverage gate (`add_filter "app/madmin"` / `add_filter "app/controllers/madmin"` in `test/test_helper.rb`), since they're generated boilerplate; and `Madmin::ApplicationController` disables Bullet for the duration of each madmin request (`around_action :without_bullet if defined?(Bullet)`), because madmin's index views intentionally lazy-load associations and would otherwise trip the strict N+1 gate — acceptable for a dev-only panel over bounded data.
+
+## Blog & content (RailsPress)
+
+The template ships a blog and lightweight CMS through the [`railspress-engine`](https://github.com/aviflombaum/railspress-engine) gem, mounted at `/railspress`. RailsPress owns the **back-office**: an admin UI at `/railspress/admin` for drafting, scheduling and publishing posts (with Lexxy rich text), categories, tags, optional authors, auto-generated slugs, per-post SEO (`meta_title`/`meta_description`), header images and galleries, plus custom Entities, CMS Blocks, and a JSON API. It does not ship any reader-facing pages.
+
+The **public frontend is the template's own**, so it matches your app's look: `BlogController` (`app/controllers/blog_controller.rb`) serves `/blog` (a list of published posts, newest first, with optional `?category=<slug>` and `?tag=<slug>` filters) and `/blog/:slug` (a single post, rendering its Action Text content and setting SEO meta tags). The views live in `app/views/blog/`, are styled with DaisyUI, and their copy is internationalized like the rest of the app — restyle them per project. Drafts and unknown slugs return `404`.
+
+### Who can reach the blog admin (and how to change it)
+
+`/railspress/admin` is gated by the shared [superadmin](#superadmin-access) basic auth **as a safe default only**. Conceptually the blog admin is not a developer panel — the superadmin is the engineer who maintains the app, whereas the blog admin is for an application *content editor* (a real user of the app with a content role). The template gates it behind superadmin simply because it has no content-editor role yet (authorization is capability-only, decided per app) and because open self-registration means gating by a bare "is signed in" check would be unsafe.
+
+Changing that is a one-file edit — `RailspressAdminAuth` is the seam. `config/initializers/railspress.rb` sets `config.admin_auth_concern = "RailspressAdminAuth"`, and today that concern is:
+
+```ruby
+module RailspressAdminAuth
+  extend ActiveSupport::Concern
+
+  include SuperadminAuthentication
+end
+```
+
+To open the admin to a content-editor role instead, replace the include with your own authorization, e.g.:
+
+```ruby
+module RailspressAdminAuth
+  extend ActiveSupport::Concern
+
+  included do
+    before_action :require_content_editor
+  end
+
+  private
+
+  def require_content_editor
+    redirect_to main_app.root_path, alert: "Not authorized." unless Current.user&.content_editor?
+  end
+end
+```
+
+Two integration notes: a narrow Bullet safelist in `config/environments/test.rb` covers `Railspress::Post => :taggings` (a `has_many :through` false positive — the join table is loaded to serve `.tags` but never accessed directly); and `superadmin_authentication.rb` and `railspress_admin_auth.rb` are excluded from the coverage gate (`add_filter` in `test/test_helper.rb`) because the RailsPress engine includes them into its admin controller at boot (`config.to_prepare`), which the parallel test runner's coverage can't attribute — their behavior is still verified by the five superadmin panels' integration tests. (Also note: RailsPress 1.4.4 declares an `excerpt` field but ships no `excerpt` column, so `Railspress::Post#excerpt` doesn't exist.)
 
 ## Error tracking
 
