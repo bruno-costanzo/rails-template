@@ -447,6 +447,17 @@ Deploys use [Kamal](https://kamal-deploy.org). Before your first deploy, edit `c
 kamal setup
 ```
 
+## Backups
+
+Everything lives on that one `storage/` volume — the four SQLite databases (primary plus Solid Queue/Cache/Cable) and the Active Storage uploads — so a lost volume means lost data. The template ships a backup story for exactly that: [kamal-backup](https://github.com/crmne/kamal-backup) (by the author of RubyLLM), wired as a Kamal accessory that takes encrypted, deduplicated, scheduled [restic](https://restic.net) snapshots to any restic/rclone remote (S3, Backblaze B2, SFTP, …). It backs up the four SQLite databases *consistently* (not raw file copies) and the Active Storage files on the volume in one pass — `config/kamal-backup.yml` lists the databases and a `paths: [/rails/storage]` entry for the uploads, and kamal-backup automatically excludes the raw db/WAL/shm files it already snapshots as databases.
+
+Unlike the commented `mysql`/`redis` examples, the `backup` accessory in `config/deploy.yml` is **active by default** — backups are treated as first-class here. Because it's active, it won't boot until you configure it, which is deliberate: it forces the decision before real data exists. To enable it:
+
+- In `config/kamal-backup.yml`, set `restic.repository` (replace `YOUR_RESTIC_REPOSITORY`) and, if you want a smaller data-loss window, tighten `backup.schedule` (default `1d`, e.g. `1h`).
+- In `.kamal/secrets`, uncomment and supply `RESTIC_PASSWORD`, `AWS_ACCESS_KEY_ID`, and `AWS_SECRET_ACCESS_KEY` (pulled from your password manager / ENV, never committed).
+
+Inspect and restore with `bundle exec kamal-backup backup` / `list` / `evidence`; restore drills recover into scratch targets without touching live data.
+
 ## Adding 2FA later
 
 Two-factor authentication is not included, but the native authentication controllers this template ships with (`SessionsController`, `RegistrationsController`) are yours to extend. A minimal approach with [`rotp`](https://github.com/mdp/rotp):
