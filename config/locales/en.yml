@@ -164,7 +164,14 @@ en:
       subject: Reset your password
   profiles:
     edit:
+      confirmation_hint_html: Type %{phrase} to confirm.
+      confirmation_label: Confirmation phrase
+      danger_zone: Danger zone
+      delete_account: Delete my account
+      delete_warning: Deleting your account is permanent and cannot be undone. All
+        your data will be removed.
       meta_title: Profile
+      password_label: Your password
       save: Save
       title: Your profile
     update:
@@ -173,6 +180,10 @@ en:
     create:
       notice: Account created. Check your email to confirm your address before signing
         in.
+    destroy:
+      confirmation_phrase: I WANT TO DELETE MY ACCOUNT
+      error: Account not deleted — check the confirmation phrase and your password.
+      notice: Your account and all its data have been permanently deleted.
     new:
       meta_title: Sign up
       sign_up: Sign up

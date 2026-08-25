@@ -166,7 +166,14 @@ es:
       subject: Restablece tu contraseña
   profiles:
     edit:
+      confirmation_hint_html: Escribe %{phrase} para confirmar.
+      confirmation_label: Frase de confirmación
+      danger_zone: Zona de peligro
+      delete_account: Eliminar mi cuenta
+      delete_warning: Eliminar tu cuenta es permanente y no se puede deshacer. Se
+        borrarán todos tus datos.
       meta_title: Perfil
+      password_label: Tu contraseña
       save: Guardar
       title: Tu perfil
     update:
@@ -175,6 +182,10 @@ es:
     create:
       notice: Cuenta creada. Revisa tu correo para confirmar tu dirección antes de
         iniciar sesión.
+    destroy:
+      confirmation_phrase: QUIERO BORRAR MI CUENTA
+      error: No se eliminó la cuenta — revisa la frase de confirmación y tu contraseña.
+      notice: Tu cuenta y todos sus datos se eliminaron permanentemente.
     new:
       meta_title: Registrarse
       sign_up: Registrarse

@@ -1,5 +1,5 @@
 class RegistrationsController < ApplicationController
-  allow_unauthenticated_access
+  allow_unauthenticated_access only: %i[ new create ]
 
   def new
     @user = User.new
@@ -12,6 +12,16 @@ class RegistrationsController < ApplicationController
       redirect_to new_session_path, notice: t("registrations.create.notice")
     else
       render :new, status: :unprocessable_entity
+    end
+  end
+
+  def destroy
+    if params[:confirmation].to_s.strip == t("registrations.destroy.confirmation_phrase") && Current.user.authenticate(params[:password])
+      Current.user.destroy
+      terminate_session
+      redirect_to new_session_path, notice: t("registrations.destroy.notice")
+    else
+      redirect_to edit_profile_path, alert: t("registrations.destroy.error")
     end
   end
 

@@ -1,5 +1,5 @@
 <% set_meta_tags title: t(".meta_title") %>
-<div class="flex justify-center py-16">
+<div class="flex flex-col items-center gap-6 py-16">
   <div class="card bg-base-100 shadow w-full max-w-md">
     <div class="card-body">
       <%= render "users/avatar", user: @user %>
@@ -19,6 +19,21 @@
         <%= form.label :password_confirmation, class: "label" %>
         <%= form.password_field :password_confirmation, class: "input input-bordered w-full" %>
         <%= form.submit t(".save"), class: "btn btn-primary w-full mt-4" %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="card bg-base-100 border border-error w-full max-w-md">
+    <div class="card-body">
+      <h2 class="card-title text-error"><%= t(".danger_zone") %></h2>
+      <p class="text-sm text-base-content/70"><%= t(".delete_warning") %></p>
+      <%= form_with url: registration_path, method: :delete, class: "contents" do |form| %>
+        <p class="text-sm mt-2"><%= t(".confirmation_hint_html", phrase: tag.strong(t("registrations.destroy.confirmation_phrase"))) %></p>
+        <%= form.label :confirmation, t(".confirmation_label"), class: "label" %>
+        <%= form.text_field :confirmation, required: true, autocomplete: "off", class: "input input-bordered w-full" %>
+        <%= form.label :password, t(".password_label"), class: "label" %>
+        <%= form.password_field :password, required: true, autocomplete: "current-password", class: "input input-bordered w-full" %>
+        <%= form.submit t(".delete_account"), class: "btn btn-error w-full mt-4" %>
       <% end %>
     </div>
   </div>
