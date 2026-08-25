@@ -458,6 +458,14 @@ Unlike the commented `mysql`/`redis` examples, the `backup` accessory in `config
 
 Inspect and restore with `bundle exec kamal-backup backup` / `list` / `evidence`; restore drills recover into scratch targets without touching live data.
 
+## Security headers
+
+A [Content Security Policy](https://guides.rubyonrails.org/security.html#content-security-policy-header) is active (`config/initializers/content_security_policy.rb`) — the Rails initializer, normally shipped commented out, is turned on and configured. Everything loads from the app's own origin (`default-src 'self'`), with `object-src 'none'` and `frame-ancestors 'self'` for clickjacking protection, `img-src` widened to `data:`/`blob:`/`https:` for Active Storage and blog/user content, and `connect-src 'self'` covering the same-origin WebSocket behind Turbo Streams.
+
+The posture is **strict scripts, inline styles allowed**: `script-src` is `'self'` plus a fresh per-request nonce (scripts are the real XSS vector), while `style-src` keeps `'unsafe-inline'` because Lexxy (the rich-text editor) and Turbo inject inline styles at runtime that can't carry a nonce. The nonce uses `SecureRandom` rather than the session id, so public, logged-out pages (sign-in, `/blog`) still get one without a session being created just for the header; `javascript_importmap_tags` and the layout's `csp_meta_tag` carry the nonce through, so importmap, Turbo, and Stimulus keep working. It's verified by the browser system tests (a broken CSP would stop the front end from booting and fail them) and a guard test at `test/integration/content_security_policy_test.rb`.
+
+One caveat: the policy is applied globally, so it also covers the mounted admin engine UIs (`/madmin`, `/railspress/admin`, `/jobs`, `/errors`, `/onlylogs`). Those are behind the superadmin gate and aren't exercised by the system tests, so their JavaScript isn't validated under the CSP — if a panel's scripts break, relax the policy for that path or add nonces.
+
 ## Adding 2FA later
 
 Two-factor authentication is not included, but the native authentication controllers this template ships with (`SessionsController`, `RegistrationsController`) are yours to extend. A minimal approach with [`rotp`](https://github.com/mdp/rotp):
