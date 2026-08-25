@@ -76,6 +76,19 @@ OPENAI_API_KEY=sk-your-key-here
 
 `.env` is gitignored; `.env.example` (checked in) documents the required variables. `.env.test` carries a fake test key (`OPENAI_API_KEY=test-key`) so the app boots in the test environment before WebMock installs its network stubs.
 
+## Internationalization
+
+The UI is bilingual. **Spanish is the default; English is served when the visitor's browser prefers it** — the locale is read from the `Accept-Language` header on every request (`ApplicationController#set_locale`), picking the first language it recognizes (`es`/`en`) and otherwise falling back to Spanish. There is **no in-app language switcher, and the locale is not user-configurable** — that's deliberate: you get English only if your browser is set to English. Framework strings (dates, numbers, Active Record error messages) come from the `rails-i18n` gem; `config/application.rb` sets `default_locale = :es`, `available_locales = [:es, :en]`, and `fallbacks = [:en]`.
+
+No user-facing copy is hardcoded — it all lives in `config/locales/es.yml` and `config/locales/en.yml`, which are kept perfectly in sync. Two gates enforce that, in the same spirit as the coverage and N+1 gates:
+
+- `config.i18n.raise_on_missing_translations = true` (in `config/environments/test.rb`): a `t()` lookup with a missing key raises during the test suite, so an untranslated string fails the build.
+- An `i18n-tasks health` step in `config/ci.rb` (configured in `config/i18n-tasks.yml`) fails CI on any missing key, unused key, or inconsistent interpolation between the two locales.
+
+There is intentionally no static "hardcoded string in a view" linter — no maintained tool detects literal text inside ERB reliably, so a fragile one was left out; the two gates above plus review cover it.
+
+To add a new string: wrap it in a translation lookup (views use the lazy form `t(".key")`, which resolves to `<controller>.<action>.key`), add that key to **both** `config/locales/es.yml` and `config/locales/en.yml`, then run `bin/i18n-tasks normalize` to canonicalize the files (and `bin/i18n-tasks health` to confirm the two locales are in sync). Tests assert against `I18n.t(key)` rather than English literals, so they stay locale-independent.
+
 ## Testing
 
 Run `bin/ci` before every commit — it is the pre-commit gate and exactly what CI runs. It's Rails' native CI runner, configured in `config/ci.rb`: rubocop, brakeman, then `bin/rails test` and `bin/rails test:system`.
