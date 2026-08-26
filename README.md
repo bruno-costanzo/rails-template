@@ -153,6 +153,42 @@ Only add an entry to the safelist (`Bullet.add_safelist`) when you've verified t
 Bullet.add_safelist type: :unused_eager_loading, class_name: "TestNotifier::Notification", association: :event
 ```
 
+### Accessibility
+
+Every `visit` in a system test audits the rendered page with **axe-core** against the WCAG 2.1 A and AA rulesets, and any violation fails the test. The audit lives in `test/test_helpers/accessibility_helper.rb` (`assert_accessible`) and is wired into `ApplicationSystemTestCase#visit`, right after `assert_turbo_ready`, so it is automatic rather than opt-in — the same stance as the coverage and Bullet gates: you cannot forget to call it, and a regression is a red test rather than a report someone has to read. It costs roughly 1.2s across the whole system suite (about 7%), because axe is injected once per page load and Turbo keeps `window.axe` alive across in-page navigations.
+
+A failure names the rule, its impact, the Deque help URL, and the offending selectors:
+
+```
+2 accessibility violations on /support_chat:
+
+  label (critical) — Form elements must have labels
+    https://dequeuniversity.com/rules/axe/4.13/label
+    #chat_pending_photos
+```
+
+**Only `axe-core-api` is installed, and only as the delivery vehicle for the vendored `axe.min.js`.** The gem's own runner is unusable here: its default path (`Axe::API::Run#analyze_post_43x`) is Selenium-specific — it calls `manage.timeouts`, `switch_to.window`, and rescues `Selenium::WebDriver::Error` — and even its legacy path calls `execute_async_script`, which cuprite does not implement (cuprite exposes `evaluate_async_script`). So the helper injects `Axe::Configuration.instance.jslib` and drives `axe.run` through Capybara's own `evaluate_async_script`. The companion `axe-core-capybara` gem is deliberately **not** installed: its only entry point forces `Capybara::Selenium::Driver` and requires `selenium-webdriver`, which is not in this bundle.
+
+Two environment facts worth knowing before you read a result:
+
+- **The CSP does not block the audit.** axe is injected over the DevTools protocol, which is not subject to the page's `script-src 'self'` policy. No nonce or policy relaxation is needed.
+- **Headless Chrome reports `prefers-color-scheme: dark`**, so the suite audits DaisyUI's *dark* theme. Contrast in the light theme is therefore not covered by these tests today.
+
+That second fact surfaced a real defect: **DaisyUI 5's default dark theme does not meet WCAG AA** — `--color-primary-content` on `--color-primary` measures 4.12:1 where 4.5:1 is required, so any `chat-bubble-primary` (or other primary-on-primary text) fails. `app/assets/tailwind/application.css` overrides just that one token back to white, which measures 4.66:1:
+
+```css
+@plugin "./daisyui-theme.mjs" {
+  name: "dark";
+  prefersdark: true;
+  color-scheme: dark;
+  --color-primary-content: oklch(100% 0 0);
+}
+```
+
+Declaring a theme by the name of a built-in one merges over it (`{ ...builtinTheme, ...customThemeTokens }` in `daisyui-theme.mjs`), so every other token keeps its default. The lesson generalises to any theme an app ships: semantic tokens buy consistency, not contrast. Verify every color/`-content` pair against AA when you replace this theme.
+
+The mounted engine panels (`/madmin`, `/jobs`, `/errors`, `/onlylogs`, `/railspress/admin`) are not system-tested, so their third-party markup is never audited. If you add a system test that visits one, give the audit an escape hatch rather than weakening the rule for the whole app.
+
 ## Console auditing
 
 console1984 protects and audits the Rails console in production. Every console session and every command run inside it is recorded to the database (`console1984_sessions`, `console1984_commands` tables), and by default only the `production` environment is protected — development and test consoles are unrestricted. This requires Active Record encryption to be configured (see the Quickstart's credentials step above). If you want a web UI for browsing the audit trail, console1984's companion gem [`audits1984`](https://github.com/basecamp/audits1984) is not installed by default but can be added later.

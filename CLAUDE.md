@@ -16,7 +16,7 @@ Rails starter template. This repo is both a working app and the template new app
 - madmin superadmin resource panel at `/madmin`, plus Mission Control (`mission_control-jobs`) Solid Queue dashboard at `/jobs` — both gated by the shared superadmin basic auth (see Superadmin panels)
 - `railspress-engine` blog/CMS engine mounted at `/railspress` (admin/CMS UI at `/railspress/admin`); the reader-facing frontend is the template's own `BlogController` at `/blog` (see Blog / content)
 - Bilingual UI via Rails i18n + `rails-i18n` (framework strings): Spanish default, English fallback, locale detected from the browser's `Accept-Language` header (no in-app switcher) — see Internationalization
-- Minitest + fixtures + WebMock (tests NEVER hit the network), Capybara + cuprite (Ferrum/CDP driver) for system tests, bullet for N+1 detection (raises in test, logs in development), Kamal deploys
+- Minitest + fixtures + WebMock (tests NEVER hit the network), Capybara + cuprite (Ferrum/CDP driver) for system tests, axe-core (`axe-core-api`) for the accessibility gate, bullet for N+1 detection (raises in test, logs in development), Kamal deploys
 
 ## Commands
 - `bin/setup` — install and prepare everything
@@ -36,6 +36,7 @@ All Ruby/Rails commands run under `mise exec ruby@4.0.6 -- <command>` in non-mis
 - Background work goes to Solid Queue jobs (see `GenerateDocumentEmbeddingJob`).
 - 100% line and branch coverage is enforced by SimpleCov; `bin/rails test` fails below 100%. Write the test first; never delete a failing coverage gate. System tests run with `SKIP_COVERAGE=1` and are excluded from measurement. `simplecov-console` (test-group gem, wired in `test/test_helper.rb` via a `MultiFormatter` alongside the HTML formatter) prints a terminal table on every run: when coverage drops it lists each sub-100% file with the exact uncovered line numbers (`missing` column) and uncovered branches — no need to open the HTML report. Coverage exclusions use `skip` (not the deprecated `add_filter`).
 - N+1 queries fail tests: `Bullet.raise = true` in `config/environments/test.rb` turns any detected N+1 into a test failure (strict mode, applies to unit/controller/integration/system tests alike, see README's "N+1 detection"). Fix real N+1s with `includes`/`preload`/counter cache; only safelist a verified false positive, as narrowly as possible, with the reasoning recorded.
+- Accessibility failures fail tests: `ApplicationSystemTestCase#visit` calls `assert_accessible` (`test/test_helpers/accessibility_helper.rb`) on every page, auditing it with axe-core against WCAG 2.1 A/AA. Automatic, not opt-in, in the same spirit as the coverage and Bullet gates. `axe-core-api` is installed only as the vendored `axe.min.js`; its own runner is Selenium-only and `axe-core-capybara` is deliberately absent (see README's "Accessibility"). Fix the violation; never widen the ruleset to make it pass.
 - Commits: short imperative messages, no co-author trailers.
 
 ## Subsystem map

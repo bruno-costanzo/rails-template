@@ -91,7 +91,10 @@ local porque DaisyUI está vendorizado):
   Nada de texto dentro de imágenes o SVG.
 - **Accesibilidad.** Contraste AA como mínimo en cada par color/`-content`, foco
   visible en todo lo interactivo, labels asociados a cada input, HTML semántico
-  (`<nav>`, `<main>`, `<dialog>`, `<form>`).
+  (`<nav>`, `<main>`, `<dialog>`, `<form>`). Esto se verifica automáticamente en cada
+  test de sistema: una violación WCAG 2.1 AA rompe el build. Y no se cumple sola por
+  usar tokens semánticos — el tema por defecto de DaisyUI 5 no llega a AA en
+  primary/primary-content (4.12:1 medidos, se exigen 4.5:1). Verificá cada par.
 - **Responsive mobile-first**, con los breakpoints de Tailwind (sm/md/lg/xl).
 - **Convivencia con Lexxy.** El editor de rich text trae su propio CSS y renderiza un
   `<lexxy-editor>`. El sistema tiene que armonizar con él, no pelearse.
