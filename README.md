@@ -267,6 +267,18 @@ end
 
 Two integration notes: a narrow Bullet safelist in `config/environments/test.rb` covers `Railspress::Post => :taggings` (a `has_many :through` false positive — the join table is loaded to serve `.tags` but never accessed directly); and `superadmin_authentication.rb` and `railspress_admin_auth.rb` are excluded from the coverage gate (`skip` in `test/test_helper.rb`) because the RailsPress engine includes them into its admin controller at boot (`config.to_prepare`), which the parallel test runner's coverage can't attribute — their behavior is still verified by the five superadmin panels' integration tests. (Also note: RailsPress 1.4.4 declares an `excerpt` field but ships no `excerpt` column, so `Railspress::Post#excerpt` doesn't exist.)
 
+## Background jobs
+
+Production runs Solid Queue inside Puma (`SOLID_QUEUE_IN_PUMA: true` in `config/deploy.yml`, which activates `plugin :solid_queue` in `config/puma.rb`). Development runs the same adapter, but as its **own process**: `Procfile.dev` has a `jobs: bin/jobs` line, so `bin/dev` starts the web server, the Tailwind watcher, and the queue supervisor side by side.
+
+A separate process rather than the Puma plugin is a development-ergonomics choice, not a behavioural one. The adapter, the database, retries, and the `/jobs` dashboard are identical either way; what differs is that foreman prefixes and colours each stream, so job output does not interleave with request logs, and the supervisor does not restart every time Puma reloads. Note that Solid Queue logs to `log/development.log`, not to stdout, so the `jobs` stream in your terminal stays quiet even while it works.
+
+This requires the queue tables to exist outside production, so `config/database.yml` gives **development and test** their own `queue` database (`storage/development_queue.sqlite3`, `storage/test_queue.sqlite3`, migrated from `db/queue_migrate`), and `config/environments/development.rb` and `test.rb` set `config.solid_queue.connects_to`. `bin/setup` and `bin/rails db:prepare` create both.
+
+Development also sets `config.active_job.queue_adapter = :solid_queue`; **the test environment deliberately does not**. Tests keep Rails' `:test` adapter (and system tests use `:inline`), so the suite's job behaviour is unchanged — the queue database is there only so code that reads Solid Queue's own tables, like the health check, can be tested against real rows.
+
+Two consequences worth knowing while developing. Jobs now **persist across restarts**, so a job that keeps failing will still be retrying tomorrow; that is more faithful to production and occasionally surprising. And before this, with no adapter configured, Rails defaulted to `:async` — jobs ran in-process, in memory, with no persistence, no retries, and no dashboard.
+
 ## Health checks
 
 Two endpoints, with deliberately different jobs.
@@ -290,7 +302,12 @@ The jobs check exists because of how this template deploys. `config/deploy.yml` 
 
 The check is only included when the app actually runs Solid Queue (`ActiveJob::Base.queue_adapter` is the Solid Queue adapter). `config.solid_queue.connects_to` is set in `config/environments/production.rb` only, and the development/test database is a single SQLite file with no queue tables, so outside production there is no queue to be down and reporting one would be a lie. Locally `/health` answers `{ "status": "ok", "checks": { "database": "ok" } }`.
 
-One honest limitation in the test suite: because the queue tables exist only in production, `test/models/health_check_test.rb` covers the branch that matters — with Solid Queue selected as the adapter and the queue unreachable, the check reports `false` — but cannot exercise a live supervisor returning `true`. Verify that path against a real deployment the first time you wire up a monitor.
+Two details of the jobs check are easy to get wrong:
+
+- **The supervisor's `kind` is never plain `"Supervisor"`.** `SolidQueue::Supervisor#kind` returns `"Supervisor(#{mode})"`, so the row reads `Supervisor(fork)` or `Supervisor(async)` depending on how it was started (`bin/jobs` and the Puma plugin both default to `fork`). The check matches `kind LIKE 'Supervisor%'`. An exact match on `"Supervisor"` compiles, passes review, and silently reports the queue as dead forever.
+- **Detection lags by up to `SolidQueue.process_alive_threshold`** (5 minutes by default). A supervisor that shuts down gracefully deregisters itself and the check goes red immediately; one that is killed abruptly leaves its row behind with a recent heartbeat, and the check stays green until that heartbeat goes stale. That is inherent to heartbeat checks — size your monitor's alert window accordingly.
+
+Both paths are covered by `test/models/health_check_test.rb`, which registers a real `SolidQueue::Process` row: the development *and* test environments both have a `queue` database (see "Background jobs"), so the check is exercised against real rows rather than stubs.
 
 ## Error tracking
 
