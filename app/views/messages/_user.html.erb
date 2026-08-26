@@ -2,7 +2,7 @@
 <div id="message_<%= user.id %>" data-version="<%= user.broadcast_version %>" class="chat chat-end">
   <div class="chat-header">
     <%= t(".role") %>
-    <time class="text-xs opacity-50"><%= user.created_at&.strftime("%I:%M %p") %></time>
+    <time class="text-xs opacity-70"><%= user.created_at&.strftime("%I:%M %p") %></time>
   </div>
   <div id="message_<%= user.id %>_content" class="chat-bubble chat-bubble-primary whitespace-pre-wrap"><%= user.content %></div>
 </div>
