@@ -267,6 +267,31 @@ end
 
 Two integration notes: a narrow Bullet safelist in `config/environments/test.rb` covers `Railspress::Post => :taggings` (a `has_many :through` false positive — the join table is loaded to serve `.tags` but never accessed directly); and `superadmin_authentication.rb` and `railspress_admin_auth.rb` are excluded from the coverage gate (`skip` in `test/test_helper.rb`) because the RailsPress engine includes them into its admin controller at boot (`config.to_prepare`), which the parallel test runner's coverage can't attribute — their behavior is still verified by the five superadmin panels' integration tests. (Also note: RailsPress 1.4.4 declares an `excerpt` field but ships no `excerpt` column, so `Railspress::Post#excerpt` doesn't exist.)
 
+## Health checks
+
+Two endpoints, with deliberately different jobs.
+
+`/up` is Rails' built-in liveness probe: 200 if the app boots and serves a request, 500 otherwise. **Kamal's proxy uses it** to gate deploys and to pull containers out of rotation, so it must stay shallow — make it strict and a momentarily lagging dependency will block a deploy or restart the container in a loop. Leave it alone.
+
+`GET /health` is the deeper check, meant for an external uptime monitor. It is public (no session, no basic auth) and answers JSON:
+
+```json
+{ "status": "ok", "checks": { "database": "ok", "jobs": "ok" } }
+```
+
+It returns `200` when every check passes and `503` when any fails, with the failing check marked `"error"` — so a monitor only has to watch the status code. It is public because monitors are dumb: gating it behind the superadmin basic auth would work, but `SuperadminAuthentication` is deny-by-default, so a freshly cloned app with no credentials set would answer `401` and every monitor would read that as an outage. The information it discloses — whether the queue is alive — is not worth that. To gate it anyway, `include SuperadminAuthentication` in `HealthController` and give the monitor the credentials.
+
+The checks live in `HealthCheck` (`app/models/health_check.rb`), which returns a `{ name => boolean }` hash; the controller only renders it. Add a check by adding a line to `HealthCheck#call`. Two ship today:
+
+- **`database`** — a `SELECT 1` on the primary connection.
+- **`jobs`** — that a Solid Queue supervisor has sent a heartbeat recently. "Recently" reuses `SolidQueue.process_alive_threshold`, the same window Solid Queue itself uses to decide a process is dead and prune it, rather than a number invented here.
+
+The jobs check exists because of how this template deploys. `config/deploy.yml` sets `SOLID_QUEUE_IN_PUMA: true`, so the queue supervisor runs *inside* the Puma process. If it dies, Puma keeps serving, `/up` keeps answering 200, and everything that depends on background work stops silently: transactional email (`deliver_later`), document embeddings, streamed chat responses, data exports, and feedback tickets forwarded to GitHub. That is the failure `/health` is for.
+
+The check is only included when the app actually runs Solid Queue (`ActiveJob::Base.queue_adapter` is the Solid Queue adapter). `config.solid_queue.connects_to` is set in `config/environments/production.rb` only, and the development/test database is a single SQLite file with no queue tables, so outside production there is no queue to be down and reporting one would be a lie. Locally `/health` answers `{ "status": "ok", "checks": { "database": "ok" } }`.
+
+One honest limitation in the test suite: because the queue tables exist only in production, `test/models/health_check_test.rb` covers the branch that matters — with Solid Queue selected as the adapter and the queue unreachable, the check reports `false` — but cannot exercise a live supervisor returning `true`. Verify that path against a real deployment the first time you wire up a monitor.
+
 ## Error tracking
 
 [Solid Errors](https://github.com/fractaledmind/solid_errors) captures uncaught exceptions through Rails' native error reporter (`Rails.error`) and stores them, deduplicated by fingerprint, in the primary SQLite database (`solid_errors`/`solid_errors_occurrences` tables, migrated alongside everything else — no separate database needed). Browse them at `/errors`.
