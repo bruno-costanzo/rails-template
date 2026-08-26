@@ -16,3 +16,6 @@ production:
   purge_expired_data_exports:
     command: "DataExport.purge_expired"
     schedule: every hour at minute 27
+  purge_expired_visits:
+    command: "Ahoy::Visit.purge_expired"
+    schedule: every day at 4am

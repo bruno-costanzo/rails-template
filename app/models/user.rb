@@ -5,6 +5,8 @@ class User < ApplicationRecord
   has_many :documents, dependent: :destroy
   has_many :feedbacks, dependent: :destroy
   has_many :notifications, as: :recipient, dependent: :destroy, class_name: "Noticed::Notification"
+  has_many :ahoy_visits, dependent: :destroy, class_name: "Ahoy::Visit"
+  has_many :ahoy_events, dependent: :destroy, class_name: "Ahoy::Event"
 
   normalizes :email_address, with: ->(e) { e.strip.downcase }
 

@@ -118,3 +118,6 @@ gem "madmin", "~> 2.0"
 gem "mission_control-jobs", "~> 1.1"
 
 gem "railspress-engine", "~> 1.4"
+
+# First-party analytics: visits and events stored in this app's own database [https://github.com/ankane/ahoy]
+gem "ahoy_matey", "~> 5.4"

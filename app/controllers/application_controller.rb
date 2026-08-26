@@ -1,6 +1,10 @@
 class ApplicationController < ActionController::Base
   include Authentication
   include Pundit::Authorization
+
+  skip_before_action :track_ahoy_visit
+  before_action :resume_session
+  before_action :track_ahoy_visit
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
   allow_browser versions: :modern
 
