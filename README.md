@@ -40,6 +40,8 @@ bin/rename my_app
 bin/setup
 ```
 
+`bin/rename` does two things: it rewrites the app's name throughout the tree, and then **removes the tooling that only serves the template** — itself, `bin/smoke-rename`, `lib/template/`, their tests, the smoke step in `config/ci.rb`, this repo's own planning documents under `docs/superpowers/`, and the template-specific parts of this README. An app has no use for a tool that renames it again, and carrying the renamer's unit tests is worse than useless: renaming rewrites their fixtures into nonsense and the app is born with a red `bin/ci`.
+
 New apps need their own credentials — `config/master.key` is gitignored on purpose and never travels with the repo, and console1984 depends on Active Record encryption keys that live inside `config/credentials.yml.enc`. Before running the app for real, regenerate both:
 
 ```bash
@@ -145,7 +147,7 @@ bin/ci
 
 That last step is a **smoke test of the template's core promise** — that you can clone this repo, rename it, and get an app that boots *and serves*. It exports the tracked tree to a temp dir, runs `bin/rename smoke_app` on it, asserts no reference to the old name survived (outside `docs/`, which is intentionally preserved), boots the renamed copy with `db:prepare` + `zeitwerk:check` so a single leftover `CharcoTemplate` constant fails loudly, and then **starts a real server and requests the public pages**: `/`, `/session/new`, `/registration/new`, `/blog`, `/sitemap.xml`, `/robots.txt`, plus `/health` (asserting the body reports a healthy database — `jobs` is legitimately down there, since no supervisor runs alongside).
 
-Loading is not serving, and the gap between them is where the expensive bugs live: `zeitwerk:check` catches a leftover constant, but a broken route, a view calling a helper that no longer exists, or an initializer that raises on the first request only surface when something actually asks for a page. It reuses the existing bundle (renaming never touches the `Gemfile`), so the whole step costs a few seconds. The boot doesn't decrypt credentials, so it needs no master key — locally, if `config/master.key` is present it's copied into the copy as a safety belt, but CI (where the key is absent) still passes. Override the port with `SMOKE_PORT` if 3987 is taken.
+It also **runs the renamed copy's own test suite**, which is the check that matters most: the template's promise is not just that a new app boots, but that its quality gates are green on day one. Loading is not serving, and passing is not the same as being checkable: `zeitwerk:check` catches a leftover constant, a real request catches a broken route or a view calling a helper that no longer exists, and running the copy's suite catches a test that renaming turned into nonsense. It reuses the existing bundle (renaming never touches the `Gemfile`), so the whole step costs a few seconds. The boot doesn't decrypt credentials, so it needs no master key — locally, if `config/master.key` is present it's copied into the copy as a safety belt, but CI (where the key is absent) still passes. Override the port with `SMOKE_PORT` if 3987 is taken.
 
 Tests never hit the network. `test/test_helper.rb` calls `WebMock.disable_net_connect!(allow_localhost: true)`, so any real HTTP call from a test fails loudly instead of silently reaching OpenAI. Stub RubyLLM calls with the helpers in `test/test_helpers/openai_stubs.rb`:
 

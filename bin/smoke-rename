@@ -48,6 +48,10 @@ echo "→ Booting renamed app (zeitwerk:check)"
 ( cd "$tmp" && bin/rails zeitwerk:check )
 echo "✓ Renamed app boots"
 
+echo "→ Running the renamed app's own suite"
+( cd "$tmp" && bin/rails db:test:prepare test >/dev/null )
+echo "✓ Renamed app's tests pass"
+
 echo "→ Building stylesheets"
 ( cd "$tmp" && bin/rails tailwindcss:build >/dev/null )
 

@@ -1,10 +1,16 @@
 #!/usr/bin/env ruby
 require "bundler/setup"
 require "pathname"
+require "fileutils"
 require "active_support"
 require "active_support/core_ext/string/inflections"
 require_relative "../lib/template/renamer"
+require_relative "../lib/template/cleanup"
 
 new_name = ARGV[0] or abort("Usage: bin/rename <new_app_name>")
-Template::Renamer.new(root: File.expand_path("..", __dir__), new_name: new_name).run
-puts "Renamed to #{new_name}. Review with: git diff"
+root = File.expand_path("..", __dir__)
+
+Template::Renamer.new(root: root, new_name: new_name).run
+Template::Cleanup.new(root: root, app_name: new_name.underscore.camelize).run
+
+puts "Renamed to #{new_name} and removed the template tooling. Review with: git diff"
