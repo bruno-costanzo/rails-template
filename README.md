@@ -61,7 +61,30 @@ Finally, start the app:
 bin/dev
 ```
 
-`bin/dev` runs both the Rails server and the Tailwind watcher (see `Procfile.dev`).
+`bin/dev` runs three processes side by side (see `Procfile.dev`): the Rails server, the Tailwind watcher, and the Solid Queue supervisor. See [Background jobs](#background-jobs) — note that the queue logs to `log/development.log`, not to your terminal.
+
+## Starting a new app
+
+Each item below is documented in depth in its own section — this is the order to do them in, and the list of things nobody else can do for you.
+
+**Before you write code**
+
+1. Clone, `bin/rename <name>`, `bin/setup`, and regenerate credentials plus Active Record encryption keys — see [Quickstart](#quickstart) above. The app will not run for real until you do.
+2. Put `OPENAI_API_KEY` in `.env` if this app uses the AI chat, semantic search or support assistant — see [Configuration](#configuration).
+3. **Delete what this app will not use.** The template ships a blog, an AI chat, documents with semantic search and a support assistant; an app that needs none of them should carry none of them. Whatever you remove, remove from the screen list in `docs/design-substrate.md` too.
+4. **Design system.** Connect *this app's* repo — pruned, not the template's — to your design tool, paste `docs/design-substrate.md` unchanged, and fill in `docs/brand-brief-template.md`. What comes back is a DaisyUI theme block that goes into `app/assets/tailwind/application.css`. See [Accessibility](#accessibility) for the contrast rules the theme has to satisfy: the audit runs on every system test, in both colour schemes.
+5. **Decide what is worth measuring** and add the events — see [Analytics](#analytics). The template ships the plumbing and zero events on purpose.
+
+**Before you deploy**
+
+6. `APP_HOST` and the SMTP secrets — see [Email](#email). Without them every mailer link and feedback photo link points at `example.com`.
+7. `SUPERADMIN_USER` and `SUPERADMIN_PASSWORD` — see [Superadmin access](#superadmin-access). Deny-by-default: while they are unset, every developer panel answers `401`.
+8. Replace the `YOUR_*` placeholders in `config/deploy.yml` — see [Deployment](#deployment).
+9. Set `restic.repository` in `config/kamal-backup.yml` and uncomment the backup secrets in `.kamal/secrets` — see [Backups](#backups). **The backup accessory is active by default, so the deploy fails until you do this.** That is deliberate: decide about backups before there is real data to lose.
+
+**After you deploy**
+
+10. Point an uptime monitor at `https://your-app/health` — see [Health checks](#health-checks). The endpoint exists and reports on the database and the job supervisor, but nothing watches it until you wire a monitor up. This is the one piece that cannot live in the template.
 
 ## Configuration
 
@@ -116,13 +139,13 @@ To add a new string: wrap it in a translation lookup (views use the lazy form `t
 
 Run `bin/ci` before every commit — it is the pre-commit gate and exactly what CI runs. It's Rails' native CI runner, configured in `config/ci.rb`: rubocop, brakeman, `bin/bundler-audit`, `i18n-tasks health`, `bin/rails test`, `bin/rails test:system`, and a `bin/smoke-rename` step.
 
-`bin/smoke-rename` guards the template's core promise. It exports the tracked tree to a temporary directory, runs `bin/rename smoke_app`, asserts no old-name reference survives (outside the intentionally-skipped `docs/`), boots the copy with `zeitwerk:check`, and then **starts a real server and requests the public pages** — `/`, `/session/new`, `/registration/new`, `/blog`, `/sitemap.xml`, `/robots.txt`, plus `/health` (checking the body reports a healthy database, since no job supervisor runs alongside it). Loading is not serving: a leftover constant fails `zeitwerk:check`, but a broken route, a view referencing a helper that no longer exists, or an initializer that raises on the first request only surface when something actually asks for a page. Override the port with `SMOKE_PORT` if 3987 is taken.
-
 ```bash
 bin/ci
 ```
 
-That last step is a **smoke test of the template's core promise** — that you can clone this repo, rename it, and get an app that boots. It exports the tracked tree to a temp dir, runs `bin/rename smoke_app` on it, asserts no reference to the old name survived (outside `docs/`, which is intentionally preserved), then boots the renamed copy with `db:prepare` + `zeitwerk:check` so a single leftover `CharcoTemplate` constant fails loudly instead of surfacing only when someone actually renames the app. It reuses the existing bundle (renaming never touches the `Gemfile`), so it adds only a few seconds. The `zeitwerk:check` boot doesn't decrypt credentials, so it needs no master key — locally, if `config/master.key` is present it's copied into the copy as a safety belt, but CI (where the key is absent) still boots fine.
+That last step is a **smoke test of the template's core promise** — that you can clone this repo, rename it, and get an app that boots *and serves*. It exports the tracked tree to a temp dir, runs `bin/rename smoke_app` on it, asserts no reference to the old name survived (outside `docs/`, which is intentionally preserved), boots the renamed copy with `db:prepare` + `zeitwerk:check` so a single leftover `CharcoTemplate` constant fails loudly, and then **starts a real server and requests the public pages**: `/`, `/session/new`, `/registration/new`, `/blog`, `/sitemap.xml`, `/robots.txt`, plus `/health` (asserting the body reports a healthy database — `jobs` is legitimately down there, since no supervisor runs alongside).
+
+Loading is not serving, and the gap between them is where the expensive bugs live: `zeitwerk:check` catches a leftover constant, but a broken route, a view calling a helper that no longer exists, or an initializer that raises on the first request only surface when something actually asks for a page. It reuses the existing bundle (renaming never touches the `Gemfile`), so the whole step costs a few seconds. The boot doesn't decrypt credentials, so it needs no master key — locally, if `config/master.key` is present it's copied into the copy as a safety belt, but CI (where the key is absent) still passes. Override the port with `SMOKE_PORT` if 3987 is taken.
 
 Tests never hit the network. `test/test_helper.rb` calls `WebMock.disable_net_connect!(allow_localhost: true)`, so any real HTTP call from a test fails loudly instead of silently reaching OpenAI. Stub RubyLLM calls with the helpers in `test/test_helpers/openai_stubs.rb`:
 
