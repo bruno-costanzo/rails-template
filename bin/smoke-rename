@@ -1,15 +1,23 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Smoke test for the template's core promise: a freshly renamed copy must boot.
-# Exports the tracked tree, runs bin/rename, asserts no old-name references
-# survive (outside the intentionally-skipped docs/), then boots the renamed app
-# via zeitwerk:check so any leftover constant reference fails loudly.
+# Smoke test for the template's core promise: a freshly renamed copy must boot
+# AND serve. Exports the tracked tree, runs bin/rename, asserts no old-name
+# references survive (outside the intentionally-skipped docs/), boots the renamed
+# app via zeitwerk:check so any leftover constant reference fails loudly, then
+# starts a real server and requests the public pages — loading is not serving,
+# and a broken route, view or initializer only shows up on a real request.
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
 name="smoke_app"
 tmp="$(mktemp -d)"
-trap 'rm -rf "$tmp"' EXIT
+port="${SMOKE_PORT:-3987}"
+server_pid=""
+cleanup() {
+  [ -n "$server_pid" ] && kill "$server_pid" 2>/dev/null || true
+  rm -rf "$tmp"
+}
+trap cleanup EXIT
 
 echo "→ Exporting working tree"
 ref="$(git -C "$root" stash create || true)"
@@ -39,3 +47,50 @@ echo "✓ No residual references"
 echo "→ Booting renamed app (zeitwerk:check)"
 ( cd "$tmp" && bin/rails zeitwerk:check )
 echo "✓ Renamed app boots"
+
+echo "→ Building stylesheets"
+( cd "$tmp" && bin/rails tailwindcss:build >/dev/null )
+
+echo "→ Serving requests on port $port"
+( cd "$tmp" && exec bin/rails server -p "$port" ) >"$tmp/server.log" 2>&1 &
+server_pid=$!
+disown "$server_pid" 2>/dev/null || true
+
+ready=""
+for _ in $(seq 1 60); do
+  if curl -sf -o /dev/null "http://127.0.0.1:$port/up"; then ready=1; break; fi
+  sleep 0.5
+done
+
+if [ -z "$ready" ]; then
+  echo "✗ Renamed app never answered on port $port"
+  tail -40 "$tmp/server.log"
+  exit 1
+fi
+
+expect() {
+  local path="$1" expected="$2" code
+  code="$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:$port$path")"
+  if [ "$code" != "$expected" ]; then
+    echo "✗ $path returned $code, expected $expected"
+    tail -40 "$tmp/server.log"
+    exit 1
+  fi
+}
+
+expect / 200
+expect /session/new 200
+expect /registration/new 200
+expect /blog 200
+expect /sitemap.xml 200
+expect /robots.txt 200
+
+# /health is 503 here because no job supervisor runs alongside this server; what
+# matters is that the endpoint answers and reports on the database.
+if ! curl -s "http://127.0.0.1:$port/health" | grep -q '"database":"ok"'; then
+  echo "✗ /health did not report a healthy database"
+  tail -40 "$tmp/server.log"
+  exit 1
+fi
+
+echo "✓ Renamed app serves its public pages"

@@ -114,7 +114,9 @@ To add a new string: wrap it in a translation lookup (views use the lazy form `t
 
 ## Testing
 
-Run `bin/ci` before every commit — it is the pre-commit gate and exactly what CI runs. It's Rails' native CI runner, configured in `config/ci.rb`: rubocop, brakeman, `i18n-tasks health`, `bin/rails test`, `bin/rails test:system`, and a `bin/smoke-rename` step.
+Run `bin/ci` before every commit — it is the pre-commit gate and exactly what CI runs. It's Rails' native CI runner, configured in `config/ci.rb`: rubocop, brakeman, `bin/bundler-audit`, `i18n-tasks health`, `bin/rails test`, `bin/rails test:system`, and a `bin/smoke-rename` step.
+
+`bin/smoke-rename` guards the template's core promise. It exports the tracked tree to a temporary directory, runs `bin/rename smoke_app`, asserts no old-name reference survives (outside the intentionally-skipped `docs/`), boots the copy with `zeitwerk:check`, and then **starts a real server and requests the public pages** — `/`, `/session/new`, `/registration/new`, `/blog`, `/sitemap.xml`, `/robots.txt`, plus `/health` (checking the body reports a healthy database, since no job supervisor runs alongside it). Loading is not serving: a leftover constant fails `zeitwerk:check`, but a broken route, a view referencing a helper that no longer exists, or an initializer that raises on the first request only surface when something actually asks for a page. Override the port with `SMOKE_PORT` if 3987 is taken.
 
 ```bash
 bin/ci
