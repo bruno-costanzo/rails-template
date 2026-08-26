@@ -241,6 +241,7 @@ en:
         image under 5MB.
   support_chats:
     photos:
+      attach: Attach photos
       attached:
         one: "%{count} photo attached"
         other: "%{count} photos attached"

@@ -69,6 +69,9 @@ group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"
   gem "cuprite"
+
+  # Accessibility auditing (axe-core) inside system tests [https://github.com/dequelabs/axe-core-gems]
+  gem "axe-core-api"
 end
 
 gem "meta-tags", "~> 2.23"

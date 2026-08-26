@@ -244,6 +244,7 @@ es:
         menos de 5MB.
   support_chats:
     photos:
+      attach: Adjuntar fotos
       attached:
         one: "%{count} foto adjunta"
         other: "%{count} fotos adjuntas"

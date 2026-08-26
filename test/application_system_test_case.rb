@@ -7,6 +7,8 @@ Capybara.server = :puma, { Threads: "2:8" }
 Capybara.disable_animation = true
 
 class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
+  include AccessibilityHelper
+
   driven_by :cuprite, screen_size: [ 1400, 1400 ], options: {
     process_timeout: 30,
     timeout: 15,
@@ -18,6 +20,7 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   def visit(...)
     super
     assert_turbo_ready
+    assert_accessible
   end
 
   def assert_turbo_ready
