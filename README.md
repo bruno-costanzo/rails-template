@@ -172,7 +172,7 @@ A failure names the rule, its impact, the Deque help URL, and the offending sele
 Two environment facts worth knowing before you read a result:
 
 - **The CSP does not block the audit.** axe is injected over the DevTools protocol, which is not subject to the page's `script-src 'self'` policy. No nonce or policy relaxation is needed.
-- **Headless Chrome reports `prefers-color-scheme: dark`**, so the suite audits DaisyUI's *dark* theme. Contrast in the light theme is therefore not covered by these tests today.
+- **Every page is audited twice, once per colour scheme.** `assert_accessible` drives Chrome's `Emulation.setEmulatedMedia` over CDP to force `prefers-color-scheme: light` and then `dark`, running axe against each, and resets the emulation afterwards. The failure message names the scheme. This is not a nicety: headless Chrome's default scheme differs between machines — locally it reported `dark` while the GitHub Actions runner reported `light` — so a single-scheme audit passed on one and failed on the other. Auditing both makes the gate deterministic and removes the blind spot, at a cost of roughly 5s across the system suite.
 
 That second fact surfaced a real defect: **DaisyUI 5's default dark theme does not meet WCAG AA** — `--color-primary-content` on `--color-primary` measures 4.12:1 where 4.5:1 is required, so any `chat-bubble-primary` (or other primary-on-primary text) fails. `app/assets/tailwind/application.css` overrides just that one token back to white, which measures 4.66:1:
 
