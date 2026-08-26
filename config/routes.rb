@@ -50,6 +50,11 @@ Rails.application.routes.draw do
 
   get "health" => "health#show", as: :health
 
+  get "/sitemap.xml" => "sitemaps#show", as: :sitemap, defaults: { format: "xml" }
+  get "/robots.txt" => "sitemaps#robots", as: :robots, defaults: { format: "text" }
+
+  resource :javascript_errors, only: [ :create ]
+
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 

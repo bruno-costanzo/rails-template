@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc><%= root_url %></loc>
+  </url>
+  <url>
+    <loc><%= blog_url %></loc>
+  </url>
+<% @posts.each do |post| %>
+  <url>
+    <loc><%= blog_post_url(post.slug) %></loc>
+    <lastmod><%= post.updated_at.iso8601 %></lastmod>
+  </url>
+<% end %>
+</urlset>
