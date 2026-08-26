@@ -279,6 +279,66 @@ Development also sets `config.active_job.queue_adapter = :solid_queue`; **the te
 
 Two consequences worth knowing while developing. Jobs now **persist across restarts**, so a job that keeps failing will still be retrying tomorrow; that is more faithful to production and occasionally surprising. And before this, with no adapter configured, Rails defaulted to `:async` — jobs ran in-process, in memory, with no persistence, no retries, and no dashboard.
 
+## Analytics
+
+`ahoy_matey` ships as a **capability, not as instrumentation** — the same stance as noticed and pundit. The tables, the privacy configuration, the retention job and the wiring are all here; **zero events are tracked**, because what is worth measuring is a per-app product decision, not a template one.
+
+### What it records
+
+- `Ahoy::Visit` — one row per visit, created automatically on the server: referrer, referring domain, landing page, UTM parameters, browser, OS, device type, masked IP, and the user if one is signed in.
+- `Ahoy::Event` — only what an app chooses to track, with arbitrary JSON properties.
+
+Both live in the primary SQLite database and are ordinary Active Record models, so you query behaviour with the same tools you query everything else — including joins against your own tables, which is the whole point of first-party analytics.
+
+### The recipe
+
+Adding a measurement to a child app is three steps.
+
+**1. Track it where it happens.** In any controller, `ahoy` is available:
+
+```ruby
+def create
+  @document = Current.user.documents.create!(document_params)
+  ahoy.track "Document created", document_id: @document.id
+  redirect_to @document
+end
+```
+
+Use a stable, human-readable name — it is the key you will query by forever, so `"Document created"` ages better than `"doc_create_v2"`. Properties should be identifiers and small scalars, not whole records.
+
+**2. Query it.** No dashboard ships; the data is yours to ask questions of:
+
+```ruby
+Ahoy::Event.where(name: "Document created", time: 1.week.ago..).count
+Ahoy::Event.where_event("Document created", document_id: 42)
+Ahoy::Event.where(name: "Document created").group(:user_id).count
+```
+
+The queries worth writing are the ones a third-party tool cannot answer, because they join analytics to your domain: how many people who created a document in their first week still have an active session a month later, for instance.
+
+**3. Decide retention.** `Ahoy::Visit::RETENTION` defaults to 90 days and a `purge_expired_visits` task in `config/recurring.yml` runs `Ahoy::Visit.purge_expired` nightly, deleting expired visits and their events in bulk. These are the fastest-growing tables in any app that uses them, and this is SQLite on a single volume — shorten the window rather than lengthen it.
+
+To see the data in a UI, generate a madmin dashboard (`bin/rails g madmin:resource Ahoy::Visit`) and route it, following the pattern in "Resource browser".
+
+### Privacy defaults
+
+Configured in `config/initializers/ahoy.rb`, and chosen so the template does not contradict its own data-export and account-deletion promises:
+
+- `Ahoy.cookies = :none` — no tracking cookie is set at all; visitors are grouped into anonymity sets instead. **This is what makes a cookie-consent banner unnecessary.**
+- `Ahoy.mask_ips = true` — the last octet (IPv4) or last 80 bits (IPv6) is zeroed before storage.
+- `Ahoy.geocode = false` — no location lookup, and the generated migration was trimmed of the `country`/`region`/`city`/`latitude`/`longitude` columns it would have filled, plus the native-app columns this template has no use for. Ahoy slices data to the columns that exist, so removing them is safe.
+- `Ahoy.api = false` — tracking is **server-side only**. No JavaScript is loaded, no public `POST /ahoy/events` endpoint is exposed, and there is nothing extra for the Content Security Policy to allow. To add client-side tracking, set `Ahoy.api = true`, vendor the JS with `bin/importmap pin ahoy.js --download`, and `import "ahoy"` in `app/javascript/application.js` — it is same-origin, so the CSP still holds.
+- Bots are excluded (`Ahoy.track_bots` defaults to false). This is why integration tests that do not send a browser `User-Agent` create no visits.
+
+Behavioural data about a person is personal data, so `User` declares `has_many :ahoy_visits` and `has_many :ahoy_events` with `dependent: :destroy`. That single choice puts analytics inside **both** existing guarantees for free: `DataExport` walks `dependent: :destroy` associations, so a person's visits and events appear in their export, and deleting an account erases them.
+
+### Two wiring details that would otherwise fail silently
+
+Both are template-specific and neither raises an error when wrong — the data just comes out anonymous.
+
+1. **`Ahoy.user_method` is overridden to `Current.user`.** Ahoy looks for a `current_user` method by default, which this app does not have. This is the same override as `pundit_user` in `ApplicationController`, and for the same reason.
+2. **`ApplicationController` resolves the session eagerly.** Ahoy registers its `before_action` on `ActionController::Base`, so by default it runs *before* authentication and sees no user. `ApplicationController` therefore re-orders it (`skip_before_action :track_ahoy_visit` then `before_action :track_ahoy_visit`) and adds `before_action :resume_session` ahead of it. That second line matters more than it looks: this app resolves sessions lazily — on pages with `allow_unauthenticated_access`, `Current.session` was previously set only when the layout called `authenticated?` during rendering, which is after every `before_action` has run. Resolving it once, early, costs no extra queries (`Current.session ||=` memoises) and means anything that needs to know who is making a request — analytics, auditing, per-user rate limiting — can rely on it.
+
 ## Health checks
 
 Two endpoints, with deliberately different jobs.
