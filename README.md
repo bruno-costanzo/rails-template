@@ -339,6 +339,16 @@ Both are template-specific and neither raises an error when wrong — the data j
 1. **`Ahoy.user_method` is overridden to `Current.user`.** Ahoy looks for a `current_user` method by default, which this app does not have. This is the same override as `pundit_user` in `ApplicationController`, and for the same reason.
 2. **`ApplicationController` resolves the session eagerly.** Ahoy registers its `before_action` on `ActionController::Base`, so by default it runs *before* authentication and sees no user. `ApplicationController` therefore re-orders it (`skip_before_action :track_ahoy_visit` then `before_action :track_ahoy_visit`) and adds `before_action :resume_session` ahead of it. That second line matters more than it looks: this app resolves sessions lazily — on pages with `allow_unauthenticated_access`, `Current.session` was previously set only when the layout called `authenticated?` during rendering, which is after every `before_action` has run. Resolving it once, early, costs no extra queries (`Current.session ||=` memoises) and means anything that needs to know who is making a request — analytics, auditing, per-user rate limiting — can rely on it.
 
+## Sitemap and robots.txt
+
+Both are served dynamically by `SitemapsController` rather than sitting in `public/`, and the static `public/robots.txt` was deleted.
+
+The reason is the `Sitemap:` directive: it requires an **absolute** URL, and a file checked into `public/` cannot know which host is serving it. A template that ships a static `robots.txt` either omits the directive or hardcodes a host that is wrong in every app born from it — the same footgun as `APP_HOST`. Rendering it from a controller means `sitemap_url` is always right, on any host, with nothing to remember.
+
+`/sitemap.xml` lists the home page, the blog index, and every **published** RailsPress post with its `lastmod`; drafts are excluded, because `Railspress::Post.published` is the same scope the public blog uses. `/robots.txt` points crawlers at the sitemap and disallows the developer panels (`/admin`, `/errors`, `/jobs`, `/madmin`, `/onlylogs`, `/railspress`) — they are behind basic auth anyway, so this is hygiene rather than protection.
+
+Nothing is cached. For a blog of a few hundred posts the query is trivial; if an app grows past that, add `fresh_when(@posts.maximum(:updated_at))` to the action rather than reaching for a generator gem.
+
 ## Health checks
 
 Two endpoints, with deliberately different jobs.
@@ -378,6 +388,17 @@ The dashboard is behind the shared superadmin basic auth (see [Superadmin access
 - `Rails.application.credentials.dig(:solid_errors, :email_to)`, falling back to `ENV["SOLID_ERRORS_EMAIL_TO"]`
 
 Email notification is off unless `email_to` resolves to a value; when it does, Solid Errors emails that address (via the app's already-configured Action Mailer) every time a new error occurs.
+
+### Browser errors
+
+Server-side exceptions are only half the picture: a Stimulus controller that throws, a failed fetch, a rejected promise — none of that reaches the server on its own. `app/javascript/error_reporting.js` listens for `error` and `unhandledrejection` on `window` and posts to `POST /javascript_errors`, which wraps the report in a `JavascriptError` (`app/errors/`) carrying the browser's stack as its backtrace and hands it to `Rails.error.report(handled: true)`. Solid Errors picks it up like any other exception, so browser and server failures land in the same `/errors` dashboard, deduplicated the same way. The occurrence context records the page URL, the user agent, and the signed-in user's id.
+
+This is a public write endpoint, so it is fenced on both sides. The client caps itself at five reports per page load (a render loop that throws on every frame cannot flood the store), truncates the message to 1000 characters and the stack to 4000, and swallows its own fetch failures so a failing report can never trigger another one. The server rejects a blank message with `400`, rate-limits to 30 reports per minute, truncates the message again and keeps at most 20 backtrace lines.
+
+Two things about it are easy to get wrong:
+
+- **The CSRF token is sent when present, not required.** `csrf_meta_tags` renders nothing when `allow_forgery_protection` is off — which is the case in the test environment — so a client that refused to report without a token would silently drop every report there, and the wiring could never be tested. The client attaches the token if the meta tag exists and lets the **server** be the enforcement point, which is where it belongs.
+- **An error thrown from `page.execute_script` is masked.** The browser treats CDP-executed scripts as cross-origin, so the `error` event arrives with the message `"Script error."` and a null `error` object. That is why `test/system/javascript_error_reporting_test.rb` dispatches a synthetic `ErrorEvent` instead of throwing: it exercises the listener, the payload, the request and the recording, without fighting a browser security rule. Real errors in this app are not masked, because the CSP forbids cross-origin scripts in the first place.
 
 ## Log viewer
 
