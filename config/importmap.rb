@@ -8,6 +8,7 @@ pin_all_from "app/javascript/controllers", under: "controllers"
 pin "lexxy", to: "lexxy.js"
 pin "confirm_dialog"
 pin "discard_stale_stream_updates"
+pin "error_reporting"
 
 # ActiveStorage for file uploads
 pin "@rails/activestorage", to: "activestorage.esm.js"

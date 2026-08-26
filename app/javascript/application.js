@@ -6,12 +6,14 @@ import "lexxy"
 
 import confirmDialog from "confirm_dialog"
 import discardStaleStreamUpdates from "discard_stale_stream_updates"
+import reportJavascriptErrors from "error_reporting"
 
 Turbo.config.forms.confirm = confirmDialog
 document.addEventListener("turbo:load", () => {
   controllersLoaded().then(() => document.body.setAttribute("data-turbo-ready", ""))
 })
 discardStaleStreamUpdates()
+reportJavascriptErrors()
 
 function controllersLoaded() {
   const importmap = JSON.parse(document.querySelector("script[type=importmap]").text)

@@ -1,0 +1,2 @@
+class JavascriptError < StandardError
+end
