@@ -23,7 +23,7 @@ class HealthCheck
   end
 
   def jobs_alive?
-    SolidQueue::Process.where(kind: "Supervisor", last_heartbeat_at: SolidQueue.process_alive_threshold.ago..).exists?
+    SolidQueue::Process.where("kind LIKE ?", "Supervisor%").where(last_heartbeat_at: SolidQueue.process_alive_threshold.ago..).exists?
   end
 
   def solid_queue?
