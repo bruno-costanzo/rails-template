@@ -37,6 +37,21 @@ All Ruby/Rails commands run under `mise exec ruby@4.0.6 -- <command>` in non-mis
 - 100% line and branch coverage is enforced by SimpleCov; `bin/rails test` fails below 100%. Write the test first; never delete a failing coverage gate. System tests run with `SKIP_COVERAGE=1` and are excluded from measurement. `simplecov-console` (test-group gem, wired in `test/test_helper.rb` via a `MultiFormatter` alongside the HTML formatter) prints a terminal table on every run: when coverage drops it lists each sub-100% file with the exact uncovered line numbers (`missing` column) and uncovered branches — no need to open the HTML report. Coverage exclusions use `skip` (not the deprecated `add_filter`).
 - N+1 queries fail tests: `Bullet.raise = true` in `config/environments/test.rb` turns any detected N+1 into a test failure (strict mode, applies to unit/controller/integration/system tests alike, see README's "N+1 detection"). Fix real N+1s with `includes`/`preload`/counter cache; only safelist a verified false positive, as narrowly as possible, with the reasoning recorded.
 - Accessibility failures fail tests: `ApplicationSystemTestCase#visit` calls `assert_accessible` (`test/test_helpers/accessibility_helper.rb`) on every page, auditing it with axe-core against WCAG 2.1 A/AA **in both colour schemes** (it forces `prefers-color-scheme` light and dark via CDP `Emulation.setEmulatedMedia`, then resets it). Auditing both is required, not thorough: headless Chrome's default scheme differs per machine (dark locally, light on the CI runner), so a single-scheme audit is non-deterministic across environments. Automatic, not opt-in, in the same spirit as the coverage and Bullet gates. `axe-core-api` is installed only as the vendored `axe.min.js`; its own runner is Selenium-only and `axe-core-capybara` is deliberately absent (see README's "Accessibility"). Fix the violation; never widen the ruleset to make it pass.
+- User-facing business rules have exactly one owner: the code that enforces them. A rule the person needs to know — a grace period, a cancellation window, an eligibility threshold — is a constant (or a method) on the model that applies it, and the sentence they read is generated from that value through i18n interpolation. Never restate the value as a literal in copy:
+
+  ```ruby
+  class Membership
+    GRACE_PERIOD = 2.months
+  end
+  ```
+  ```yaml
+  es:
+    memberships:
+      rules:
+        grace_period: "Con %{months} meses de atraso perdés los beneficios."
+  ```
+
+  Surface the same key in both places it is needed — a rules page for whoever wants to read them all, and a snippet in context where it actually matters (under the balance, next to the button that is disabled) — so saying it twice costs nothing and cannot diverge. The reason is not tidiness: a stated rule that drifts from the enforced one is not a stale doc, it is a broken promise to someone who paid. This is a convention, not a rules engine; reach for a real engine only when rules must change without a deploy, which is a much larger problem.
 - Commits: short imperative messages, no co-author trailers.
 
 ## Subsystem map
