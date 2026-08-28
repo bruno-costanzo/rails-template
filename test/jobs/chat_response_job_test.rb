@@ -8,7 +8,8 @@ class ChatResponseJobTest < ActiveJob::TestCase
     stub_openai_chat(content: "Sure, here is how.")
 
     assert_enqueued_with(job: GenerateChatTitleJob, args: [ chat ]) do
-      ChatResponseJob.perform_now(chat.id, "How do I deploy Rails with Kamal?")
+      chat.messages.create!(role: :user, content: "How do I deploy Rails with Kamal?")
+      ChatResponseJob.perform_now(chat.id)
     end
   end
 
@@ -16,8 +17,9 @@ class ChatResponseJobTest < ActiveJob::TestCase
     chat = users(:one).chats.create!(model: "gpt-4o-mini")
     stub_openai_chat_stream(chunks: [ "", "Sure", ", here", " is how." ])
 
-    assert_broadcasts("chat_#{chat.id}", 7) do
-      ChatResponseJob.perform_now(chat.id, "How do I deploy Rails with Kamal?")
+    assert_broadcasts("chat_#{chat.id}", 6) do
+      chat.messages.create!(role: :user, content: "How do I deploy Rails with Kamal?")
+      ChatResponseJob.perform_now(chat.id)
     end
 
     assert_equal "Sure, here is how.", chat.messages.order(:created_at).last.content
@@ -27,7 +29,8 @@ class ChatResponseJobTest < ActiveJob::TestCase
     chat = users(:one).chats.create!(model: "gpt-4o-mini")
     stub_openai_chat(content: "Sure, here is how.")
 
-    ChatResponseJob.perform_now(chat.id, "How do I deploy with Kamal?")
+    chat.messages.create!(role: :user, content: "How do I deploy with Kamal?")
+      ChatResponseJob.perform_now(chat.id)
 
     assert_nil chat.messages.find_by(role: "system")
   end
@@ -36,7 +39,8 @@ class ChatResponseJobTest < ActiveJob::TestCase
     chat = users(:one).chats.create!(support: true)
     stub_openai_chat(content: "Sure, tell me more about what happened.")
 
-    ChatResponseJob.perform_now(chat.id, "The chat page is slow for me")
+    chat.messages.create!(role: :user, content: "The chat page is slow for me")
+      ChatResponseJob.perform_now(chat.id)
 
     assert_requested :post, "https://api.openai.com/v1/chat/completions" do |request|
       instructions_message = JSON.parse(request.body)["messages"].find { |message| message["role"] != "user" }
@@ -51,7 +55,8 @@ class ChatResponseJobTest < ActiveJob::TestCase
     chat.messages.create!(role: "system", content: "Stale instructions from before this refactor")
     stub_openai_chat(content: "Sure, tell me more about what happened.")
 
-    ChatResponseJob.perform_now(chat.id, "The chat page is slow for me")
+    chat.messages.create!(role: :user, content: "The chat page is slow for me")
+      ChatResponseJob.perform_now(chat.id)
 
     assert_requested :post, "https://api.openai.com/v1/chat/completions" do |request|
       request.body.scan(SupportContext::BINDING_RULE).count == 1
@@ -63,7 +68,8 @@ class ChatResponseJobTest < ActiveJob::TestCase
     stub_openai_chat(content: "Sure, tell me more about what happened.")
 
     assert_no_enqueued_jobs(only: GenerateChatTitleJob) do
-      ChatResponseJob.perform_now(chat.id, "The chat page is slow for me")
+      chat.messages.create!(role: :user, content: "The chat page is slow for me")
+      ChatResponseJob.perform_now(chat.id)
     end
   end
 
@@ -76,7 +82,8 @@ class ChatResponseJobTest < ActiveJob::TestCase
     )
 
     assert_difference("users(:one).feedbacks.count", 1) do
-      ChatResponseJob.perform_now(chat.id, "The chat page loads slowly for me")
+      chat.messages.create!(role: :user, content: "The chat page loads slowly for me")
+      ChatResponseJob.perform_now(chat.id)
     end
 
     feedback = users(:one).feedbacks.last

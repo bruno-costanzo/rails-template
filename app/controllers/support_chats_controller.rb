@@ -1,10 +1,11 @@
 class SupportChatsController < ApplicationController
   CONTEXT_KEYS = %i[page_url user_agent viewport].freeze
   CONTEXT_VALUE_LIMIT = 2.kilobytes
+  RECENT_CONVERSATIONS = 5
 
   def index
     @context = context_params
-    @chats = conversations.includes(:messages).order(created_at: :desc)
+    @chats = conversations.includes(:messages).order(created_at: :desc).limit(RECENT_CONVERSATIONS)
   end
 
   def show

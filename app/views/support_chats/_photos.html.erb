@@ -1,5 +1,5 @@
-<%= turbo_frame_tag "support_chat_photos" do %>
-  <%= form_with model: chat, url: support_chat_photos_path(chat), method: :post, data: { controller: "support-chat-photos" }, class: "flex items-center gap-2 mb-2" do |form| %>
+<%= turbo_frame_tag "support_chat_photos", class: "shrink-0" do %>
+  <%= form_with model: chat, url: support_chat_photos_path(chat), method: :post, data: { controller: "support-chat-photos" }, class: "contents" do |form| %>
     <%= form.label :pending_photos, class: "btn btn-ghost btn-xs btn-square", title: t(".attach") do %>
       <%= lucide_icon("paperclip", class: "size-4") %>
       <span class="sr-only"><%= t(".attach") %></span>

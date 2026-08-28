@@ -1,4 +1,7 @@
-<% if defined?(@chat) && @chat.present? %>
+<% if defined?(@chat) && @chat.present? && @user_message.present? %>
+  <%= turbo_stream.append "chat_#{@chat.id}_messages" do %>
+    <%= render @user_message %>
+  <% end %>
   <%= turbo_stream.replace "new_message" do %>
     <%= render @chat.support? ? "support_chats/composer" : "messages/form",
       chat: @chat,

@@ -21,7 +21,9 @@
       </div>
     </div>
 
-    <%= render "support_chats/photos", chat: @chat, error: nil %>
-    <%= render "support_chats/composer", chat: @chat, message: @message %>
+    <div class="flex items-end gap-2">
+      <%= render "support_chats/photos", chat: @chat, error: nil %>
+      <%= render "support_chats/composer", chat: @chat, message: @message %>
+    </div>
   </div>
 <% end %>

@@ -13,7 +13,7 @@ class MessagesControllerTest < ActionDispatch::IntegrationTest
     sign_in_as users(:one)
     chat = users(:one).chats.create!(model: "gpt-4o-mini")
 
-    assert_enqueued_with(job: ChatResponseJob, args: [ chat.id, "How do I deploy with Kamal?" ]) do
+    assert_enqueued_with(job: ChatResponseJob, args: [ chat.id ]) do
       post chat_messages_url(chat), params: { message: { content: "How do I deploy with Kamal?" } }
     end
 
@@ -24,7 +24,7 @@ class MessagesControllerTest < ActionDispatch::IntegrationTest
     sign_in_as users(:one)
     chat = users(:one).chats.create!(model: "gpt-4o-mini")
 
-    assert_enqueued_with(job: ChatResponseJob, args: [ chat.id, "How do I deploy with Kamal?" ]) do
+    assert_enqueued_with(job: ChatResponseJob, args: [ chat.id ]) do
       post chat_messages_url(chat), params: { message: { content: "How do I deploy with Kamal?" } }, as: :turbo_stream
     end
 
