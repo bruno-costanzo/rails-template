@@ -14,8 +14,11 @@ tmp="$(mktemp -d)"
 port="${SMOKE_PORT:-3987}"
 server_pid=""
 cleanup() {
-  [ -n "$server_pid" ] && kill "$server_pid" 2>/dev/null || true
-  rm -rf "$tmp"
+  if [ -n "$server_pid" ]; then
+    kill "$server_pid" 2>/dev/null || true
+    wait "$server_pid" 2>/dev/null || true
+  fi
+  rm -rf "$tmp" 2>/dev/null || true
 }
 trap cleanup EXIT
 
