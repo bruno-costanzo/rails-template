@@ -169,4 +169,17 @@ class SupportChatsControllerTest < ActionDispatch::IntegrationTest
 
     assert_nil users(:one).chats.support.sole.ticket_context
   end
+
+  test "a closed conversation is shown without a way to keep writing" do
+    sign_in_as users(:one)
+    chat = users(:one).chats.create!(support: true, closed_at: Time.current)
+    chat.messages.create!(role: :user, content: "Ya lo resolvimos")
+
+    get support_chat_url(chat)
+
+    assert_response :success
+    assert_match "Ya lo resolvimos", @response.body
+    assert_no_match "new_message", @response.body
+    assert_match I18n.t("support_chats.show.closed"), @response.body
+  end
 end

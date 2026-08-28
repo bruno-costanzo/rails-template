@@ -21,9 +21,16 @@
       </div>
     </div>
 
-    <div class="flex items-end gap-2">
-      <%= render "support_chats/photos", chat: @chat, error: nil %>
-      <%= render "support_chats/composer", chat: @chat, message: @message %>
-    </div>
+    <% if @chat.closed? %>
+      <div class="flex flex-col gap-2 border-t border-base-300 pt-3">
+        <p class="text-sm opacity-70"><%= t(".closed") %></p>
+        <%= button_to t(".start_another"), support_chats_path, class: "btn btn-primary btn-sm btn-block" %>
+      </div>
+    <% else %>
+      <div class="flex items-end gap-2">
+        <%= render "support_chats/photos", chat: @chat, error: nil %>
+        <%= render "support_chats/composer", chat: @chat, message: @message %>
+      </div>
+    <% end %>
   </div>
 <% end %>

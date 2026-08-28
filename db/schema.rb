@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_26_111250) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_28_184129) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.text "body"
     t.datetime "created_at", null: false
@@ -85,6 +85,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_111250) do
   end
 
   create_table "chats", force: :cascade do |t|
+    t.datetime "closed_at"
     t.datetime "created_at", null: false
     t.integer "model_id"
     t.boolean "support", default: false, null: false
@@ -140,6 +141,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_111250) do
   end
 
   create_table "feedbacks", force: :cascade do |t|
+    t.integer "chat_id"
     t.json "context"
     t.datetime "created_at", null: false
     t.text "message", null: false
@@ -147,6 +149,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_111250) do
     t.string "status", default: "open", null: false
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
+    t.index ["chat_id"], name: "index_feedbacks_on_chat_id"
     t.index ["user_id"], name: "index_feedbacks_on_user_id"
   end
 
@@ -474,6 +477,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_111250) do
   add_foreign_key "chats", "models"
   add_foreign_key "chats", "users"
   add_foreign_key "documents", "users"
+  add_foreign_key "feedbacks", "chats"
   add_foreign_key "feedbacks", "users"
   add_foreign_key "messages", "chats"
   add_foreign_key "messages", "models"

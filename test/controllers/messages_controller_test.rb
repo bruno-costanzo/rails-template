@@ -49,4 +49,15 @@ class MessagesControllerTest < ActionDispatch::IntegrationTest
     post chat_messages_url(other_chat), params: { message: { content: "Hi" } }
     assert_response :not_found
   end
+  test "a closed conversation refuses new messages" do
+    sign_in_as users(:one)
+    chat = users(:one).chats.create!(support: true, closed_at: Time.current)
+
+    assert_no_enqueued_jobs(only: ChatResponseJob) do
+      post chat_messages_url(chat), params: { message: { content: "¿Hola?" } }
+    end
+
+    assert_response :forbidden
+    assert_equal 0, chat.messages.count
+  end
 end

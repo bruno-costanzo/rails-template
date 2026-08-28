@@ -1,5 +1,6 @@
 class MessagesController < ApplicationController
   before_action :set_chat
+  before_action :ensure_open, only: :create
 
   def create
     content = params.dig(:message, :content)
@@ -15,6 +16,10 @@ class MessagesController < ApplicationController
   end
 
   private
+
+  def ensure_open
+    head :forbidden if @chat.closed?
+  end
 
   def set_chat
     @chat = Current.user.chats.find(params[:chat_id])

@@ -1,5 +1,6 @@
 class Feedback < ApplicationRecord
   belongs_to :user
+  belongs_to :chat, optional: true
   has_many_attached :photos
 
   enum :status, { open: "open", resolved: "resolved" }
@@ -13,6 +14,7 @@ class Feedback < ApplicationRecord
     return if resolved?
 
     update!(status: :resolved, resolved_at: Time.current)
+    chat&.close!
   end
 
   private

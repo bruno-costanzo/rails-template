@@ -271,7 +271,9 @@ en:
         other: "%{count} photos attached"
     show:
       back: Back
+      closed: This conversation is closed. Start a new one if you need anything else.
       pending: Writing a reply
+      start_another: New conversation
     widget:
       close: close
       support: Support

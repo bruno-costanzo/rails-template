@@ -274,7 +274,9 @@ es:
         other: "%{count} fotos adjuntas"
     show:
       back: Volver
+      closed: Esta conversación se cerró. Si necesitás algo más, abrí una nueva.
       pending: Escribiendo una respuesta
+      start_another: Nueva consulta
     widget:
       close: cerrar
       support: Soporte
