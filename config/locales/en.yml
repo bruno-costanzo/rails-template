@@ -240,11 +240,23 @@ en:
       upload_error: That photo couldn't be attached. Please use a JPG, PNG, or WEBP
         image under 5MB.
   support_chats:
+    composer:
+      label: Your message
+      placeholder: Write your message…
+      send: Send
+    index:
+      intro: Tell us what you need and we will help.
+      previous: Previous conversations
+      start: New conversation
+      untitled: Conversation with no messages
     photos:
       attach: Attach photos
       attached:
         one: "%{count} photo attached"
         other: "%{count} photos attached"
+    show:
+      back: Back
+      pending: Writing a reply
     widget:
       close: close
       support: Support

@@ -1,13 +1,27 @@
 <%= turbo_frame_tag "support_chat" do %>
-  <%= turbo_stream_from "chat_#{@chat.id}" %>
-
-  <div id="chat_<%= @chat.id %>_messages" class="max-h-64 overflow-y-auto space-y-3 mb-3">
-    <% @messages.each do |message| %>
-      <%= render message %>
+  <div class="flex flex-col gap-3" data-controller="support-conversation">
+    <%= link_to support_chats_path, class: "btn btn-ghost btn-xs self-start gap-1" do %>
+      <%= lucide_icon("chevron-left", class: "size-4") %>
+      <%= t(".back") %>
     <% end %>
+
+    <div id="chat_<%= @chat.id %>_messages"
+         class="max-h-72 overflow-y-auto pr-1 space-y-2"
+         data-support-conversation-target="messages">
+      <%= turbo_stream_from "chat_#{@chat.id}" %>
+      <% @messages.each do |message| %>
+        <%= render message %>
+      <% end %>
+    </div>
+
+    <div class="chat chat-start hidden" data-support-conversation-target="pending">
+      <div class="chat-bubble flex items-center gap-2">
+        <span class="loading loading-dots loading-sm"></span>
+        <span class="sr-only"><%= t(".pending") %></span>
+      </div>
+    </div>
+
+    <%= render "support_chats/photos", chat: @chat, error: nil %>
+    <%= render "support_chats/composer", chat: @chat, message: @message %>
   </div>
-
-  <%= render "support_chats/photos", chat: @chat, error: nil %>
-
-  <%= render "messages/form", chat: @chat, message: @message %>
 <% end %>

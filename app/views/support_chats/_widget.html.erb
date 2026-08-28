@@ -1,12 +1,22 @@
-<div data-controller="support-chat" data-support-chat-url-value="<%= support_chat_path %>">
-  <button type="button" data-action="support-chat#open" class="btn btn-primary fixed bottom-4 right-4 z-50 shadow-lg">
+<div data-controller="support-chat" data-support-chat-url-value="<%= support_chats_path %>">
+  <button type="button" data-action="support-chat#open" class="btn btn-primary rounded-full gap-2 fixed bottom-4 right-4 z-50 shadow-lg">
+    <%= lucide_icon("message-circle", class: "size-4") %>
     <%= t(".support") %>
   </button>
 
-  <dialog data-support-chat-target="dialog" class="modal">
-    <div class="modal-box">
-      <h3 class="font-bold text-lg mb-3"><%= t(".support") %></h3>
-      <%= turbo_frame_tag "support_chat", data: { support_chat_target: "frame" } %>
+  <dialog data-support-chat-target="dialog" class="modal modal-bottom sm:modal-middle">
+    <div class="modal-box sm:max-w-md p-0 overflow-hidden">
+      <div class="flex items-center justify-between border-b border-base-300 px-4 py-3">
+        <h3 class="font-bold"><%= t(".support") %></h3>
+        <form method="dialog" data-turbo="false">
+          <button class="btn btn-ghost btn-sm btn-square" aria-label="<%= t(".close") %>">
+            <%= lucide_icon("x", class: "size-4") %>
+          </button>
+        </form>
+      </div>
+      <div class="p-4">
+        <%= turbo_frame_tag "support_chat", data: { support_chat_target: "frame" } %>
+      </div>
     </div>
     <form method="dialog" class="modal-backdrop" data-turbo="false">
       <button><%= t(".close") %></button>

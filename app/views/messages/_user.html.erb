@@ -1,7 +1,7 @@
 <% user ||= local_assigns[:message] %>
 <div id="message_<%= user.id %>" data-version="<%= user.broadcast_version %>" class="chat chat-end">
   <div class="chat-header">
-    <%= t(".role") %>
+    <span class="sr-only"><%= t(".role") %></span>
     <time class="text-xs opacity-70"><%= user.created_at&.strftime("%I:%M %p") %></time>
   </div>
   <div id="message_<%= user.id %>_content" class="chat-bubble chat-bubble-primary whitespace-pre-wrap"><%= user.content %></div>

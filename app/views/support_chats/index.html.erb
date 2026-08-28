@@ -1,0 +1,36 @@
+<%= turbo_frame_tag "support_chat" do %>
+  <div class="flex flex-col gap-4">
+    <p class="text-sm opacity-70"><%= t(".intro") %></p>
+
+    <%= form_with url: support_chats_path, class: "contents" do %>
+      <% @context.each do |key, value| %>
+        <%= hidden_field_tag "context[#{key}]", value %>
+      <% end %>
+      <button type="submit" class="btn btn-primary btn-block">
+        <%= lucide_icon("message-circle-plus", class: "size-4") %>
+        <%= t(".start") %>
+      </button>
+    <% end %>
+
+    <% if @chats.any? %>
+      <div class="flex flex-col gap-1">
+        <h4 class="text-xs font-semibold uppercase opacity-60"><%= t(".previous") %></h4>
+        <ul class="menu menu-sm bg-base-200 rounded-box p-1 max-h-64 overflow-y-auto">
+          <% @chats.each do |chat| %>
+            <li>
+              <%= link_to support_chat_path(chat), class: "flex items-center gap-2" do %>
+                <span class="flex-1 min-w-0 flex flex-col items-start">
+                  <span class="truncate w-full font-medium">
+                    <%= chat.messages.detect { |message| message.role.to_s == "user" }&.content&.truncate(60).presence || t(".untitled") %>
+                  </span>
+                  <span class="text-xs opacity-70"><%= l(chat.created_at.to_date, format: :long) %></span>
+                </span>
+                <%= lucide_icon("chevron-right", class: "size-4 opacity-50 shrink-0") %>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+  </div>
+<% end %>

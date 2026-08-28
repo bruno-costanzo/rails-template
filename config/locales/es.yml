@@ -243,11 +243,23 @@ es:
       upload_error: No se pudo adjuntar esa foto. Usa una imagen JPG, PNG o WEBP de
         menos de 5MB.
   support_chats:
+    composer:
+      label: Tu mensaje
+      placeholder: Escribí tu mensaje…
+      send: Enviar
+    index:
+      intro: Contanos qué necesitás y te ayudamos.
+      previous: Conversaciones anteriores
+      start: Nueva consulta
+      untitled: Consulta sin mensajes
     photos:
       attach: Adjuntar fotos
       attached:
         one: "%{count} foto adjunta"
         other: "%{count} fotos adjuntas"
+    show:
+      back: Volver
+      pending: Escribiendo una respuesta
     widget:
       close: cerrar
       support: Soporte

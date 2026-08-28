@@ -12,6 +12,11 @@ export default function discardStaleStreamUpdates() {
 
     if (newStream.action !== "append") return
 
+    if (targetsSettledMessage(newStream.target)) {
+      event.preventDefault()
+      return
+    }
+
     const children = Array.from(newStream.templateElement.content.children)
     const incoming = children[0]
     if (!incoming?.id || !incoming.dataset.version) return
@@ -44,8 +49,16 @@ function applyVersionedChild(child, targetElements, knownVersions, tombstonedIds
   const existing = id ? document.getElementById(id) : null
 
   if (existing) {
+    content.dataset.settled = "true"
     existing.replaceWith(content)
   } else {
     targetElements.forEach((target) => target.append(content))
   }
+}
+
+function targetsSettledMessage(target) {
+  const match = /^(message_\d+)_content$/.exec(target || "")
+  if (!match) return false
+
+  return document.getElementById(match[1])?.dataset.settled === "true"
 }

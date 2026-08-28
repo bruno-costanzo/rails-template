@@ -1,9 +1,11 @@
 <%= turbo_frame_tag "support_chat_photos" do %>
-  <%= form_with model: chat, url: support_chat_photos_path, method: :post, data: { controller: "support-chat-photos" }, class: "flex items-center gap-2 mb-2" do |form| %>
-    <%= lucide_icon("paperclip", class: "size-4 opacity-70") %>
-    <%= form.label :pending_photos, t(".attach"), class: "sr-only" %>
+  <%= form_with model: chat, url: support_chat_photos_path(chat), method: :post, data: { controller: "support-chat-photos" }, class: "flex items-center gap-2 mb-2" do |form| %>
+    <%= form.label :pending_photos, class: "btn btn-ghost btn-xs btn-square", title: t(".attach") do %>
+      <%= lucide_icon("paperclip", class: "size-4") %>
+      <span class="sr-only"><%= t(".attach") %></span>
+    <% end %>
     <%= form.file_field :pending_photos, multiple: true, accept: "image/*",
-        class: "file-input file-input-bordered file-input-xs w-full",
+        class: "hidden",
         data: { action: "change->support-chat-photos#submit" } %>
   <% end %>
 

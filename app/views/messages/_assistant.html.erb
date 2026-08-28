@@ -1,7 +1,7 @@
 <% assistant ||= local_assigns[:message] %>
 <div id="message_<%= assistant.id %>" data-version="<%= assistant.broadcast_version %>" class="chat chat-start">
   <div class="chat-header">
-    <%= t(".role") %>
+    <span class="sr-only"><%= t(".role") %></span>
     <time class="text-xs opacity-70"><%= assistant.created_at&.strftime("%I:%M %p") %></time>
   </div>
   <div id="message_<%= assistant.id %>_content" class="chat-bubble whitespace-pre-wrap"><%= assistant.content %></div>

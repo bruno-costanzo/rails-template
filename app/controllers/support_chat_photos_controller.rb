@@ -1,6 +1,6 @@
 class SupportChatPhotosController < ApplicationController
   def create
-    @chat = Current.user.chats.find_by!(support: true)
+    @chat = Current.user.chats.support.find(params[:support_chat_id])
     @chat.pending_photos.attach(photo_params)
 
     if @chat.errors[:pending_photos].any?
