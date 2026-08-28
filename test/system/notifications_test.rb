@@ -11,7 +11,7 @@ class NotificationsTest < ApplicationSystemTestCase
     assert_selector ".badge-primary", text: "1"
     assert_text "Test notification"
 
-    click_button "Mark all read"
+    click_button t("notifications.index.mark_all_read")
 
     assert_no_selector ".badge-primary"
   end
@@ -47,6 +47,6 @@ class NotificationsTest < ApplicationSystemTestCase
 
     find("[aria-label='Notifications']").click
 
-    assert_text "You're all caught up"
+    assert_text t("shared.notification_bell.empty")
   end
 end

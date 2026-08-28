@@ -11,9 +11,9 @@ class ConfirmDialogTest < ApplicationSystemTestCase
     visit chats_url
     assert_selector "#chat_#{chat.id}"
 
-    click_button "Destroy"
+    click_button t("chats.index.destroy")
     find("dialog#turbo-confirm", visible: true)
-    assert_text "Are you sure?"
+    assert_text t("chats.index.confirm")
 
     click_dialog_button "cancel"
     assert_no_selector "dialog#turbo-confirm", visible: true
@@ -25,9 +25,9 @@ class ConfirmDialogTest < ApplicationSystemTestCase
     visit chats_url
     assert_selector "#chat_#{chat.id}"
 
-    click_button "Destroy"
+    click_button t("chats.index.destroy")
     find("dialog#turbo-confirm", visible: true)
-    assert_text "Are you sure?"
+    assert_text t("chats.index.confirm")
 
     click_dialog_button "confirm"
     assert_no_selector "#chat_#{chat.id}"

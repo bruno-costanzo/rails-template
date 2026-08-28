@@ -151,6 +151,21 @@ en:
       empty: You're all caught up.
       mark_all_read: Mark all read
       title: Notifications
+  pages:
+    home:
+      features:
+      - body: Sessions, registration and profiles out of the box.
+        title: Authentication
+      - body: RubyLLM chat, structured outputs and semantic search.
+        title: AI toolkit
+      - body: Kamal ships it to any server with SQLite persistence.
+        title: One-command deploy
+      headline: Build your next idea faster
+      meta_description: A Rails starter template with AI batteries included
+      meta_title: Home
+      start: Get started
+      subheadline: Rails, SQLite, Hotwire, DaisyUI and an AI toolkit ready on day
+        one.
   passwords:
     create:
       notice: Password reset instructions sent (if user with that email address exists).

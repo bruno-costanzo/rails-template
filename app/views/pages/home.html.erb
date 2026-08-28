@@ -1,21 +1,19 @@
-<% set_meta_tags title: "Home", description: "A Rails starter template with AI batteries included" %>
+<% set_meta_tags title: t(".meta_title"), description: t(".meta_description") %>
 <div class="hero bg-base-200 min-h-[70vh]">
   <div class="hero-content text-center">
     <div class="max-w-xl">
-      <h1 class="text-5xl font-bold">Build your next idea faster</h1>
-      <p class="py-6">Rails, SQLite, Hotwire, DaisyUI and an AI toolkit ready on day one.</p>
-      <%= link_to "Get started", new_registration_path, class: "btn btn-primary" %>
+      <h1 class="text-5xl font-bold"><%= t(".headline") %></h1>
+      <p class="py-6"><%= t(".subheadline") %></p>
+      <%= link_to t(".start"), new_registration_path, class: "btn btn-primary" %>
     </div>
   </div>
 </div>
 <div class="grid gap-6 md:grid-cols-3 p-10">
-  <% [["Authentication", "Sessions, registration and profiles out of the box."],
-      ["AI toolkit", "RubyLLM chat, structured outputs and semantic search."],
-      ["One-command deploy", "Kamal ships it to any server with SQLite persistence."]].each do |title, body| %>
+  <% t(".features").each do |feature| %>
     <div class="card bg-base-100 shadow">
       <div class="card-body">
-        <h2 class="card-title"><%= title %></h2>
-        <p><%= body %></p>
+        <h2 class="card-title"><%= feature[:title] %></h2>
+        <p><%= feature[:body] %></p>
       </div>
     </div>
   <% end %>

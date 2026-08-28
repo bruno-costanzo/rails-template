@@ -7,7 +7,7 @@ class SupportChatTest < ApplicationSystemTestCase
     frame = find("turbo-frame#support_chat", visible: :all)
     assert_nil frame[:src]
 
-    click_button "Support"
+    click_button t("support_chats.widget.support")
     assert_selector "dialog.modal", visible: true
 
     frame_src = URI.parse(find("turbo-frame#support_chat", visible: :all)[:src])
@@ -18,7 +18,7 @@ class SupportChatTest < ApplicationSystemTestCase
     assert context["viewport"].present?
 
     within "dialog.modal" do
-      click_button "New conversation"
+      click_button t("support_chats.index.start")
       assert_selector "#new_message"
     end
 
@@ -31,11 +31,11 @@ class SupportChatTest < ApplicationSystemTestCase
 
     stub_openai_chat_stream(chunks: [ "Thanks for reaching out, let's sort this out together." ])
 
-    click_button "Support"
+    click_button t("support_chats.widget.support")
     within "dialog.modal" do
-      click_button "New conversation"
-      fill_in "Your message", with: "The chat page loads slowly for me"
-      click_button "Send"
+      click_button t("support_chats.index.start")
+      fill_in t("support_chats.composer.label"), with: "The chat page loads slowly for me"
+      click_button t("support_chats.composer.send")
 
       assert_text "The chat page loads slowly for me"
       assert_text "Thanks for reaching out, let's sort this out together."
@@ -49,7 +49,7 @@ class SupportChatTest < ApplicationSystemTestCase
 
     sign_in_via_browser(user)
 
-    click_button "Support"
+    click_button t("support_chats.widget.support")
     within "dialog.modal" do
       click_link "Mi factura salio mal"
       assert_selector "#new_message"
@@ -66,15 +66,15 @@ class SupportChatTest < ApplicationSystemTestCase
       chunks: [ "Got it - I've passed this along to the team. Thank you!" ]
     )
 
-    click_button "Support"
+    click_button t("support_chats.widget.support")
     within "dialog.modal" do
-      click_button "New conversation"
+      click_button t("support_chats.index.start")
       chat = users(:one).chats.support.sole
       attach_file "chat_pending_photos", file_fixture("avatar.png"), make_visible: true
-      assert_text "1 photo attached"
+      assert_text t("support_chats.photos.attached", count: 1)
 
-      fill_in "Your message", with: "The layout looks broken on this page"
-      click_button "Send"
+      fill_in t("support_chats.composer.label"), with: "The layout looks broken on this page"
+      click_button t("support_chats.composer.send")
 
       assert_text "Got it - I've passed this along to the team. Thank you!"
       assert chat

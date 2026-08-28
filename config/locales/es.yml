@@ -153,6 +153,21 @@ es:
       empty: Estás al día.
       mark_all_read: Marcar todo como leído
       title: Notificaciones
+  pages:
+    home:
+      features:
+      - body: Sesiones, registro y perfiles listos de entrada.
+        title: Autenticación
+      - body: Chat con RubyLLM, salidas estructuradas y búsqueda semántica.
+        title: Herramientas de IA
+      - body: Kamal la publica en cualquier servidor, con persistencia en SQLite.
+        title: Deploy en un comando
+      headline: Construí tu próxima idea más rápido
+      meta_description: Un template de Rails con IA incluida desde el primer día
+      meta_title: Inicio
+      start: Empezar
+      subheadline: Rails, SQLite, Hotwire, DaisyUI y herramientas de IA listas desde
+        el día uno.
   passwords:
     create:
       notice: Enviamos las instrucciones para restablecer la contraseña (si existe

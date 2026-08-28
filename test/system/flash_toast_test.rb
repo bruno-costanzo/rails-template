@@ -35,7 +35,7 @@ class FlashToastTest < ApplicationSystemTestCase
     visit new_session_url
     fill_in "email_address", with: @user.email_address
     fill_in "password", with: "wrong-password"
-    click_button "Sign in"
+    click_button t("sessions.new.sign_in")
     assert_turbo_ready
   end
 end
