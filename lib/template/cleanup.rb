@@ -7,6 +7,7 @@ module Template
     INTRO_SECTION = /^## What is this\n\n.*?(?=\n## )/m
     TEMPLATE_SECTION = /^## Updating this template\n\n.*?\n\n(?=## )/m
     TEMPLATE_URL = "https://github.com/bruno-costanzo/rails-template"
+    TEMPLATE_SLUG = "rails-template"
 
     def initialize(root:, app_name:)
       @root = Pathname.new(root)
@@ -15,11 +16,25 @@ module Template
 
     def run
       REMOVED_PATHS.each { |path| FileUtils.rm_rf(@root.join(path)) }
+      detach_from_template
       rewrite("config/ci.rb") { |content| content.gsub(CI_STEP, "") }
       rewrite("README.md") { |content| clean_readme(content) }
     end
 
     private
+
+    def detach_from_template
+      return unless @root.join(".git").directory?
+
+      template_remotes.each do |remote|
+        system("git", "-C", @root.to_s, "remote", "remove", remote, out: File::NULL, err: File::NULL)
+      end
+    end
+
+    def template_remotes
+      `git -C #{@root} remote -v`.lines.filter_map { |line| line.split.first if line.include?(TEMPLATE_SLUG) }.uniq
+    end
+
 
     def rewrite(relative_path)
       path = @root.join(relative_path)

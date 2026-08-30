@@ -60,6 +60,26 @@ class Template::CleanupTest < ActiveSupport::TestCase
     assert_match Template::Cleanup::CI_STEP, Rails.root.join("config/ci.rb").read
   end
 
+  test "cuts the git link to the template so a stray push cannot reach it" do
+    in_fixture_tree do |dir|
+      system("git", "-C", dir, "init", "--quiet")
+      system("git", "-C", dir, "remote", "add", "template", "git@github.com:bruno-costanzo/rails-template.git")
+      system("git", "-C", dir, "remote", "add", "origin", "git@github.com:someone/demo.git")
+
+      Template::Cleanup.new(root: dir, app_name: "Demo").run
+
+      remotes = `git -C #{dir} remote`.split
+      assert_not_includes remotes, "template"
+      assert_includes remotes, "origin", "an app's own remote must survive"
+    end
+  end
+
+  test "a tree with no git repository is left alone" do
+    in_fixture_tree do |dir|
+      assert_nothing_raised { Template::Cleanup.new(root: dir, app_name: "Demo").run }
+    end
+  end
+
   private
 
   def in_fixture_tree

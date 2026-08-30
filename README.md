@@ -72,21 +72,35 @@ Each item below is documented in depth in its own section — this is the order 
 **Before you write code**
 
 1. Clone, `bin/rename <name>`, `bin/setup`, and regenerate credentials plus Active Record encryption keys — see [Quickstart](#quickstart) above. The app will not run for real until you do.
-2. Put `OPENAI_API_KEY` in `.env` if this app uses the AI chat, semantic search or support assistant — see [Configuration](#configuration).
-3. **Delete what this app will not use.** The template ships a blog, an AI chat, documents with semantic search and a support assistant; an app that needs none of them should carry none of them. Whatever you remove, remove from the screen list in `docs/design-substrate.md` too.
-4. **Design system.** Connect *this app's* repo — pruned, not the template's — to your design tool, paste `docs/design-substrate.md` unchanged, and fill in `docs/brand-brief-template.md`. What comes back is a DaisyUI theme block that goes into `app/assets/tailwind/application.css`. See [Accessibility](#accessibility) for the contrast rules the theme has to satisfy: the audit runs on every system test, in both colour schemes.
-5. **Decide what is worth measuring** and add the events — see [Analytics](#analytics). The template ships the plumbing and zero events on purpose.
+2. **Give the app its own repository, immediately.** `bin/rename` removes any git remote pointing at this template, so a fresh app has *no* remote at all — that is deliberate: an app must never be able to push into the template it came from. But it also means nothing is backed up until you create its repo and add `origin`:
+
+   ```bash
+   gh repo create my_app --private --source=. --remote=origin --push
+   ```
+
+   Do this on day one. Commits pile up fast and a clean `git log` looks identical whether or not it exists anywhere but your disk. To port an improvement from the template later you do not need a permanent remote — fetch it on demand:
+
+   ```bash
+   git fetch https://github.com/bruno-costanzo/rails-template main
+   git cherry-pick <sha>
+   ```
+
+   Cherry-pick rather than copying files: where both repos changed the same file — `config/routes.rb`, the locale files, `db/schema.rb` — git stops and asks instead of silently overwriting your work.
+3. Put `OPENAI_API_KEY` in `.env` if this app uses the AI chat, semantic search or support assistant — see [Configuration](#configuration).
+4. **Delete what this app will not use.** The template ships a blog, an AI chat, documents with semantic search and a support assistant; an app that needs none of them should carry none of them. Whatever you remove, remove from the screen list in `docs/design-substrate.md` too.
+5. **Design system.** Connect *this app's* repo — pruned, not the template's — to your design tool, paste `docs/design-substrate.md` unchanged, and fill in `docs/brand-brief-template.md`. What comes back is a DaisyUI theme block that goes into `app/assets/tailwind/application.css`. See [Accessibility](#accessibility) for the contrast rules the theme has to satisfy: the audit runs on every system test, in both colour schemes.
+6. **Decide what is worth measuring** and add the events — see [Analytics](#analytics). The template ships the plumbing and zero events on purpose.
 
 **Before you deploy**
 
-6. `APP_HOST` and the SMTP secrets — see [Email](#email). Without them every mailer link and feedback photo link points at `example.com`.
-7. `SUPERADMIN_USER` and `SUPERADMIN_PASSWORD` — see [Superadmin access](#superadmin-access). Deny-by-default: while they are unset, every developer panel answers `401`.
-8. Replace the `YOUR_*` placeholders in `config/deploy.yml` — see [Deployment](#deployment).
-9. Set `restic.repository` in `config/kamal-backup.yml` and uncomment the backup secrets in `.kamal/secrets` — see [Backups](#backups). **The backup accessory is active by default, so the deploy fails until you do this.** That is deliberate: decide about backups before there is real data to lose.
+7. `APP_HOST` and the SMTP secrets — see [Email](#email). Without them every mailer link and feedback photo link points at `example.com`.
+8. `SUPERADMIN_USER` and `SUPERADMIN_PASSWORD` — see [Superadmin access](#superadmin-access). Deny-by-default: while they are unset, every developer panel answers `401`.
+9. Replace the `YOUR_*` placeholders in `config/deploy.yml` — see [Deployment](#deployment).
+10. Set `restic.repository` in `config/kamal-backup.yml` and uncomment the backup secrets in `.kamal/secrets` — see [Backups](#backups). **The backup accessory is active by default, so the deploy fails until you do this.** That is deliberate: decide about backups before there is real data to lose.
 
 **After you deploy**
 
-10. Point an uptime monitor at `https://your-app/health` — see [Health checks](#health-checks). The endpoint exists and reports on the database and the job supervisor, but nothing watches it until you wire a monitor up. This is the one piece that cannot live in the template.
+11. Point an uptime monitor at `https://your-app/health` — see [Health checks](#health-checks). The endpoint exists and reports on the database and the job supervisor, but nothing watches it until you wire a monitor up. This is the one piece that cannot live in the template.
 
 ## Configuration
 
@@ -695,11 +709,12 @@ Apps born from this template do not receive updates automatically — "Use this 
 Individual improvements port well with cherry-pick:
 
 ```bash
-git remote add template git@github.com:bruno-costanzo/rails-template.git
-git fetch template
-git log template/main --oneline
+git fetch https://github.com/bruno-costanzo/rails-template main
+git log FETCH_HEAD --oneline
 git cherry-pick <sha>
 ```
+
+Fetch it on demand rather than adding a permanent remote: `bin/rename` removes the template remote precisely so an app cannot push into the template it came from, and a URL you fetch once carries no such risk.
 
 What applies cleanly: commits that never mention the app name — JavaScript fixes, jobs, POROs, migrations, test helpers, gem bumps. Recent examples of this kind: streaming-race fixes, upload validations, N+1 guards.
 
