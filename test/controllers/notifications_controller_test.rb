@@ -2,7 +2,6 @@ require "test_helper"
 
 class NotificationsControllerTest < ActionDispatch::IntegrationTest
   include SessionTestHelper
-  include QueryCountHelper
 
   test "requires authentication" do
     get notifications_url
@@ -53,9 +52,7 @@ class NotificationsControllerTest < ActionDispatch::IntegrationTest
     sign_in_as users(:one)
     3.times { TestNotifier.deliver(users(:one)) }
 
-    queries = count_queries(matching: /noticed_notifications|noticed_events/) { get root_url }
-
-    assert_operator queries, :<=, 3
+    assert_queries_match(/noticed_notifications|noticed_events/, count: 3) { get root_url }
   end
 
   test "mark_all_read marks all unread notifications as read and redirects back" do

@@ -153,6 +153,8 @@ To add a new string: wrap it in a translation lookup (views use the lazy form `t
 
 Run `bin/ci` before every commit — it is the pre-commit gate and exactly what CI runs. It's Rails' native CI runner, configured in `config/ci.rb`: rubocop, brakeman, `bin/bundler-audit`, `i18n-tasks health`, `bin/rails test`, `bin/rails test:system`, and a `bin/smoke-rename` step.
 
+`bin/bundler-audit` checks the locked gems against `rubysec/ruby-advisory-db`, which the gem does not vendor: the first run `git clone`s it into `~/.local/share/ruby-advisory-db` (needs network), and every later run — since the binstub never passes `--update` — reuses whatever copy is already on disk, however old. This isn't offline or deterministic, but CI already needs network for `bundle install`, so the fetch is accepted rather than worked around; if a security scan must reflect a specific point in time, cache or pin `~/.local/share/ruby-advisory-db` explicitly. `bin/brakeman --ensure-latest` — Rails' own generated binstub, not something this template added — likewise reaches rubygems.org on every run and can fail CI on the day brakeman ships a new release, unrelated to any code change here.
+
 ```bash
 bin/ci
 ```

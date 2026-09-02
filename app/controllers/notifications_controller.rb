@@ -5,6 +5,6 @@ class NotificationsController < ApplicationController
 
   def mark_all_read
     Current.user.notifications.unread.mark_as_read
-    redirect_back fallback_location: notifications_path
+    redirect_back_or_to notifications_path
   end
 end

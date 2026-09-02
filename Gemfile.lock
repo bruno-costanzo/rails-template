@@ -563,6 +563,7 @@ DEPENDENCIES
   rubocop-rails-omakase
   ruby-vips (~> 2.3)
   ruby_llm (~> 1.16)
+  rubyzip (~> 3.0)
   schematist (~> 1.1)
   simplecov (~> 1.1)
   simplecov-console (~> 0.9)

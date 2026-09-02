@@ -18,7 +18,7 @@ class HealthCheck
   end
 
   def database_alive?
-    ActiveRecord::Base.connection.select_value("SELECT 1")
+    ActiveRecord::Base.with_connection { |connection| connection.select_value("SELECT 1") }
     true
   end
 
