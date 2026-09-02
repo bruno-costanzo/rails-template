@@ -1,11 +1,17 @@
 class ProfilesController < ApplicationController
+  SECURITY_FIELDS = %w[ unconfirmed_email password password_confirmation password_challenge ].freeze
+
   def edit
     @user = Current.user
   end
 
   def update
     @user = Current.user
-    if @user.update(profile_params)
+    @user.assign_attributes(profile_params)
+
+    if @user.save(context: :profile)
+      EmailConfirmationsMailer.change(@user).deliver_later if @user.saved_change_to_unconfirmed_email?
+      @user.sessions.where.not(id: Current.session.id).delete_all if @user.saved_change_to_password_digest?
       redirect_to edit_profile_url, notice: t("profiles.update.notice")
     else
       render :edit, status: :unprocessable_entity
@@ -15,9 +21,8 @@ class ProfilesController < ApplicationController
   private
 
   def profile_params
-    permitted = params.expect(user: [ :name, :email_address, :avatar, :password, :password_confirmation ])
-    permitted.delete(:password) if permitted[:password].blank?
-    permitted.delete(:password_confirmation) if permitted[:password_confirmation].blank?
-    permitted
+    params
+      .expect(user: [ :name, :avatar, :unconfirmed_email, :password, :password_confirmation, :password_challenge ])
+      .reject { |key, value| SECURITY_FIELDS.include?(key) && value.blank? }
   end
 end

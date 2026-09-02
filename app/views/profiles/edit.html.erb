@@ -1,23 +1,40 @@
 <% set_meta_tags title: t(".meta_title") %>
 <div class="flex flex-col items-center gap-6 py-16">
+  <% if @user.errors.any? %>
+    <div class="alert alert-error w-full max-w-md"><%= @user.errors.full_messages.to_sentence %></div>
+  <% end %>
+
   <div class="card bg-base-100 shadow w-full max-w-md">
     <div class="card-body">
       <%= render "users/avatar", user: @user %>
       <h1 class="card-title"><%= t(".title") %></h1>
       <%= form_with model: @user, url: profile_path, method: :patch do |form| %>
-        <% if @user.errors.any? %>
-          <div class="alert alert-error mb-4"><%= @user.errors.full_messages.to_sentence %></div>
-        <% end %>
         <%= form.label :name, class: "label" %>
         <%= form.text_field :name, class: "input input-bordered w-full", required: true %>
-        <%= form.label :email_address, class: "label" %>
-        <%= form.email_field :email_address, class: "input input-bordered w-full", required: true %>
         <%= form.label :avatar, class: "label" %>
         <%= form.file_field :avatar, class: "file-input file-input-bordered w-full" %>
-        <%= form.label :password, class: "label" %>
-        <%= form.password_field :password, class: "input input-bordered w-full" %>
-        <%= form.label :password_confirmation, class: "label" %>
-        <%= form.password_field :password_confirmation, class: "input input-bordered w-full" %>
+        <%= form.submit t(".save"), class: "btn btn-primary w-full mt-4" %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="card bg-base-100 shadow w-full max-w-md">
+    <div class="card-body">
+      <h2 class="card-title"><%= t(".security_title") %></h2>
+      <p class="text-sm text-base-content/70"><%= t(".current_email", email: @user.email_address) %></p>
+      <% if @user.unconfirmed_email.present? %>
+        <p class="text-sm text-warning"><%= t(".pending_email", email: @user.unconfirmed_email) %></p>
+      <% end %>
+      <%= form_with model: @user, url: profile_path, method: :patch do |form| %>
+        <%= form.label :unconfirmed_email, t(".new_email_label"), class: "label" %>
+        <%= form.email_field :unconfirmed_email, value: nil, autocomplete: "email", class: "input input-bordered w-full" %>
+        <%= form.label :password, t(".new_password_label"), class: "label" %>
+        <%= form.password_field :password, autocomplete: "new-password", class: "input input-bordered w-full" %>
+        <%= form.label :password_confirmation, t(".new_password_confirmation_label"), class: "label" %>
+        <%= form.password_field :password_confirmation, autocomplete: "new-password", class: "input input-bordered w-full" %>
+        <p class="text-sm text-base-content/70 mt-2"><%= t(".current_password_hint") %></p>
+        <%= form.label :password_challenge, t(".password_label"), class: "label" %>
+        <%= form.password_field :password_challenge, required: true, autocomplete: "current-password", class: "input input-bordered w-full" %>
         <%= form.submit t(".save"), class: "btn btn-primary w-full mt-4" %>
       <% end %>
     </div>

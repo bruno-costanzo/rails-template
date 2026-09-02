@@ -65,4 +65,97 @@ class UserTest < ActiveSupport::TestCase
 
     assert_equal 0, user.messages_remaining_today
   end
+
+  test "changing the password in the profile context requires the current password" do
+    user = users(:one)
+    user.password = "newpassword123"
+
+    assert_not user.valid?(:profile)
+    assert_equal 1, user.errors[:password_challenge].size
+  end
+
+  test "changing the password outside the profile context needs no challenge" do
+    user = users(:one)
+    user.password = "newpassword123"
+
+    assert user.valid?
+  end
+
+  test "the profile context accepts the matching current password" do
+    user = users(:one)
+    user.password = "newpassword123"
+    user.password_challenge = "password"
+
+    assert user.valid?(:profile)
+  end
+
+  test "the profile context rejects a wrong current password" do
+    user = users(:one)
+    user.password = "newpassword123"
+    user.password_challenge = "wrong"
+
+    assert_not user.valid?(:profile)
+    assert user.errors[:password_challenge].any?
+  end
+
+  test "changing the email requires the current password" do
+    user = users(:one)
+    user.unconfirmed_email = "ada-new@example.com"
+
+    assert_not user.valid?(:profile)
+    assert user.errors[:password_challenge].any?
+  end
+
+  test "an untouched profile needs no challenge" do
+    user = users(:one)
+    user.name = "Ada King"
+
+    assert user.valid?(:profile)
+  end
+
+  test "normalizes unconfirmed_email and blanks it to nil" do
+    user = users(:one)
+
+    user.unconfirmed_email = " ADA-NEW@EXAMPLE.COM "
+    assert_equal "ada-new@example.com", user.unconfirmed_email
+
+    user.unconfirmed_email = "  "
+    assert_nil user.unconfirmed_email
+  end
+
+  test "rejects a malformed unconfirmed_email" do
+    user = users(:one)
+    user.unconfirmed_email = "not-an-email"
+
+    assert_not user.valid?
+    assert user.errors[:unconfirmed_email].any?
+  end
+
+  test "confirm_email_change moves the pending email over" do
+    user = users(:one)
+    user.update!(unconfirmed_email: "ada-new@example.com")
+
+    assert user.confirm_email_change
+    assert_equal "ada-new@example.com", user.reload.email_address
+    assert_nil user.unconfirmed_email
+  end
+
+  test "confirm_email_change fails when the address was taken meanwhile" do
+    user = users(:one)
+    user.update!(unconfirmed_email: "taken@example.com")
+    users(:two).update!(email_address: "taken@example.com")
+
+    assert_not user.confirm_email_change
+    assert_equal "ada@example.com", user.reload.email_address
+  end
+
+  test "the email change token dies when the pending email changes" do
+    user = users(:one)
+    user.update!(unconfirmed_email: "first@example.com")
+    token = user.generate_token_for(:email_change)
+
+    user.update!(unconfirmed_email: "second@example.com")
+
+    assert_nil User.find_by_token_for(:email_change, token)
+  end
 end

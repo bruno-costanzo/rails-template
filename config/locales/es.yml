@@ -1,5 +1,10 @@
 ---
 es:
+  activerecord:
+    attributes:
+      user:
+        password_challenge: Contraseña actual
+        unconfirmed_email: Nuevo correo electrónico
   admin:
     feedbacks:
       index:
@@ -94,6 +99,10 @@ es:
       edit: Editar
     update:
       notice: Documento actualizado
+  email_changes:
+    show:
+      confirmed: Listo, tu nuevo correo quedó confirmado.
+      invalid: Ese enlace de cambio de correo no es válido o ya expiró.
   email_confirmations:
     create:
       notice: Te enviamos un correo de confirmación. Revisa tu bandeja para activar
@@ -107,6 +116,11 @@ es:
       confirmed: Tu correo está confirmado. Ya puedes iniciar sesión.
       invalid: Ese enlace de confirmación no es válido o ha expirado.
   email_confirmations_mailer:
+    change:
+      expiration: Este enlace caduca en %{duration}.
+      lead: 'Confirmá tu nueva dirección de correo:'
+      link_text: confirmar tu nuevo correo
+      subject: Confirmá tu nuevo correo
     confirm:
       expiration: Este enlace caducará en %{duration}.
       lead: 'Confirma tu correo electrónico para activar tu cuenta:'
@@ -203,6 +217,9 @@ es:
     edit:
       confirmation_hint_html: Escribe %{phrase} para confirmar.
       confirmation_label: Frase de confirmación
+      current_email: Tu correo actual es %{email}.
+      current_password_hint: Para cambiar tu correo o tu contraseña, ingresá tu contraseña
+        actual.
       danger_zone: Zona de peligro
       delete_account: Eliminar mi cuenta
       delete_warning: Eliminar tu cuenta es permanente y no se puede deshacer. Se
@@ -211,8 +228,14 @@ es:
       export_hint: Descarga un ZIP con todos tus datos — tus registros y archivos.
       export_title: Tus datos
       meta_title: Perfil
+      new_email_label: Nuevo correo electrónico
+      new_password_confirmation_label: Repetí la nueva contraseña
+      new_password_label: Nueva contraseña
       password_label: Tu contraseña
+      pending_email: Te enviamos un correo a %{email}. El cambio se aplica cuando
+        lo confirmes.
       save: Guardar
+      security_title: Correo y contraseña
       title: Tu perfil
     update:
       notice: Perfil actualizado

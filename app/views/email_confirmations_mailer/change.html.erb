@@ -1,6 +1,6 @@
 <p>
   <%= t(".lead") %>
-  <%= link_to t(".link_text"), email_confirmation_url(@token) %>.
+  <%= link_to t(".link_text"), email_change_url(@token) %>.
 </p>
 
 <p><%= t(".expiration", duration: distance_of_time_in_words(0, User::EMAIL_CONFIRMATION_EXPIRES_IN)) %></p>

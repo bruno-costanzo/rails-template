@@ -1,5 +1,10 @@
 ---
 en:
+  activerecord:
+    attributes:
+      user:
+        password_challenge: Current password
+        unconfirmed_email: New email address
   admin:
     feedbacks:
       index:
@@ -93,6 +98,10 @@ en:
       edit: Edit
     update:
       notice: Document updated
+  email_changes:
+    show:
+      confirmed: Done, your new email is confirmed.
+      invalid: That email change link is invalid or has expired.
   email_confirmations:
     create:
       notice: Confirmation email sent. Check your inbox to activate your account.
@@ -105,6 +114,11 @@ en:
       confirmed: Your email is confirmed. You can sign in now.
       invalid: That confirmation link is invalid or has expired.
   email_confirmations_mailer:
+    change:
+      expiration: This link expires in %{duration}.
+      lead: 'Confirm your new email address:'
+      link_text: confirm your new email
+      subject: Confirm your new email
     confirm:
       expiration: This link will expire in %{duration}.
       lead: 'Confirm your email address to activate your account:'
@@ -200,6 +214,9 @@ en:
     edit:
       confirmation_hint_html: Type %{phrase} to confirm.
       confirmation_label: Confirmation phrase
+      current_email: Your current email is %{email}.
+      current_password_hint: To change your email or your password, enter your current
+        password.
       danger_zone: Danger zone
       delete_account: Delete my account
       delete_warning: Deleting your account is permanent and cannot be undone. All
@@ -208,8 +225,14 @@ en:
       export_hint: Download a ZIP with all your data — your records and files.
       export_title: Your data
       meta_title: Profile
+      new_email_label: New email address
+      new_password_confirmation_label: Repeat the new password
+      new_password_label: New password
       password_label: Your password
+      pending_email: We sent an email to %{email}. The change applies once you confirm
+        it.
       save: Save
+      security_title: Email and password
       title: Your profile
     update:
       notice: Profile updated

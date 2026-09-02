@@ -26,6 +26,7 @@ Rails.application.routes.draw do
   resource :profile, only: %i[edit update]
   resources :passwords, param: :token
   resources :email_confirmations, only: [ :new, :create, :show ], param: :token
+  resources :email_changes, only: [ :show ], param: :token
   resource :feedback, only: %i[new create]
   get "feedback/photos/:signed_id", to: "feedback_photos#show", as: :feedback_photo
 

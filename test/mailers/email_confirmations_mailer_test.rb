@@ -10,4 +10,15 @@ class EmailConfirmationsMailerTest < ActionMailer::TestCase
     assert_equal I18n.t("email_confirmations_mailer.confirm.subject"), email.subject
     assert_match %r{http://example\.com/email_confirmations/[\w.-]+}, email.body.encoded.gsub("=\r\n", "")
   end
+
+  test "change addresses the pending email and includes an email change link" do
+    user = users(:one)
+    user.update!(unconfirmed_email: "ada-new@example.com")
+
+    email = EmailConfirmationsMailer.change(user)
+
+    assert_equal [ "ada-new@example.com" ], email.to
+    assert_equal I18n.t("email_confirmations_mailer.change.subject"), email.subject
+    assert_match %r{http://example\.com/email_changes/[\w.-]+}, email.body.encoded.gsub("=\r\n", "")
+  end
 end

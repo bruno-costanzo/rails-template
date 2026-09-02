@@ -1,5 +1,6 @@
 class User < ApplicationRecord
   DAILY_MESSAGE_LIMIT = 100
+  EMAIL_CONFIRMATION_EXPIRES_IN = 1.day
 
   has_secure_password
   has_many :sessions, dependent: :destroy
@@ -12,9 +13,14 @@ class User < ApplicationRecord
   has_many :ahoy_events, dependent: :destroy, class_name: "Ahoy::Event"
 
   normalizes :email_address, with: ->(e) { e.strip.downcase }
+  normalizes :unconfirmed_email, with: ->(e) { e.strip.downcase.presence }
 
-  generates_token_for :email_confirmation, expires_in: 1.day do
+  generates_token_for :email_confirmation, expires_in: EMAIL_CONFIRMATION_EXPIRES_IN do
     email_address
+  end
+
+  generates_token_for :email_change, expires_in: EMAIL_CONFIRMATION_EXPIRES_IN do
+    unconfirmed_email
   end
 
   has_one_attached :avatar do |attachable|
@@ -26,7 +32,9 @@ class User < ApplicationRecord
 
   validates :name, presence: true
   validates :email_address, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
+  validates :unconfirmed_email, format: { with: URI::MailTo::EMAIL_REGEXP }, allow_nil: true
   validates :password, length: { minimum: 8 }, allow_nil: true
+  validates :password_challenge, presence: true, on: :profile, if: :changing_credentials?
   validates :avatar, content_type: %w[image/png image/jpeg image/webp], size: { less_than: 5.megabytes }
 
   def initials
@@ -43,5 +51,15 @@ class User < ApplicationRecord
 
   def confirm!
     update!(confirmed_at: Time.current) unless confirmed?
+  end
+
+  def confirm_email_change
+    update(email_address: unconfirmed_email, unconfirmed_email: nil)
+  end
+
+  private
+
+  def changing_credentials?
+    password.present? || unconfirmed_email_changed?
   end
 end
