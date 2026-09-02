@@ -27,7 +27,7 @@
       <% end %>
       <%= form_with model: @user, url: profile_path, method: :patch do |form| %>
         <%= form.label :unconfirmed_email, t(".new_email_label"), class: "label" %>
-        <%= form.email_field :unconfirmed_email, value: nil, autocomplete: "email", class: "input input-bordered w-full" %>
+        <%= form.email_field :unconfirmed_email, autocomplete: "email", class: "input input-bordered w-full" %>
         <%= form.label :password, t(".new_password_label"), class: "label" %>
         <%= form.password_field :password, autocomplete: "new-password", class: "input input-bordered w-full" %>
         <%= form.label :password_confirmation, t(".new_password_confirmation_label"), class: "label" %>

@@ -241,11 +241,12 @@ en:
       new_password_confirmation_label: Repeat the new password
       new_password_label: New password
       password_label: Your password
-      pending_email: We sent an email to %{email}. The change applies once you confirm
-        it.
+      pending_email: We sent an email to %{email}. Save again to resend it, or clear
+        the field to cancel the change.
       save: Save
       security_title: Email and password
       title: Your profile
+    rate_limit: Try again later.
     update:
       notice: Profile updated
   registrations:

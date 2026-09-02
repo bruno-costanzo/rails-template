@@ -244,11 +244,12 @@ es:
       new_password_confirmation_label: Repetí la nueva contraseña
       new_password_label: Nueva contraseña
       password_label: Tu contraseña
-      pending_email: Te enviamos un correo a %{email}. El cambio se aplica cuando
-        lo confirmes.
+      pending_email: Te enviamos un correo a %{email}. Guardá de nuevo para reenviarlo,
+        o vaciá el campo para cancelar el cambio.
       save: Guardar
       security_title: Correo y contraseña
       title: Tu perfil
+    rate_limit: Inténtalo de nuevo más tarde.
     update:
       notice: Perfil actualizado
   registrations:

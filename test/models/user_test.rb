@@ -106,6 +106,15 @@ class UserTest < ActiveSupport::TestCase
     assert user.errors[:password_challenge].any?
   end
 
+  test "clearing the pending email also requires the current password" do
+    user = users(:one)
+    user.update!(unconfirmed_email: "ada-new@example.com")
+    user.unconfirmed_email = nil
+
+    assert_not user.valid?(:profile)
+    assert user.errors[:password_challenge].any?
+  end
+
   test "an untouched profile needs no challenge" do
     user = users(:one)
     user.name = "Ada King"

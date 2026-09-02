@@ -95,6 +95,41 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
     assert_nil users(:one).reload.unconfirmed_email
   end
 
+  test "re-submitting the same pending address sends the confirmation email again" do
+    sign_in_as users(:one)
+    users(:one).update!(unconfirmed_email: "ada-new@example.com")
+
+    assert_enqueued_email_with EmailConfirmationsMailer, :change, args: [ users(:one) ] do
+      patch profile_url, params: { user: { unconfirmed_email: "ada-new@example.com", password_challenge: "password" } }
+    end
+
+    assert_redirected_to edit_profile_url
+    assert_equal "ada-new@example.com", users(:one).reload.unconfirmed_email
+  end
+
+  test "a blank new email cancels the pending change and mails nothing" do
+    sign_in_as users(:one)
+    users(:one).update!(unconfirmed_email: "ada-new@example.com")
+
+    assert_no_enqueued_emails do
+      patch profile_url, params: { user: { unconfirmed_email: "", password_challenge: "password" } }
+    end
+
+    assert_redirected_to edit_profile_url
+    assert_nil users(:one).reload.unconfirmed_email
+  end
+
+  test "rate limits repeated profile updates" do
+    sign_in_as users(:one)
+    5.times { patch profile_url, params: { user: { name: "Ada King" } } }
+
+    patch profile_url, params: { user: { name: "Ada Byron" } }
+
+    assert_redirected_to edit_profile_url
+    assert_equal I18n.t("profiles.rate_limit"), flash[:alert]
+    assert_equal "Ada King", users(:one).reload.name
+  end
+
   test "email_address is not mass-assignable" do
     sign_in_as users(:one)
 
