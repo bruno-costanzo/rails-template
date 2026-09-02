@@ -118,6 +118,8 @@ OPENAI_API_KEY=sk-your-key-here
 
 `.env` is gitignored; `.env.example` (checked in) documents the required variables. `.env.test` carries a fake test key (`OPENAI_API_KEY=test-key`) so the app boots in the test environment before WebMock installs its network stubs.
 
+The chat and embedding model names are also configurable, via `OPENAI_CHAT_MODEL` and `OPENAI_EMBEDDING_MODEL` (`config/initializers/ruby_llm.rb`), defaulting to `gpt-4o-mini` and `text-embedding-3-small`. Swapping the embedding model is not just an ENV change: `Document::EMBEDDING_DIMENSIONS = 1536` is tied to `text-embedding-3-small`'s output size, so a different embedding model needs a migration to match its dimension — plan for that before overriding it.
+
 ### Email
 
 Signing up requires **email confirmation**. A new account is created unconfirmed and **cannot sign in until it confirms** — registration sends a confirmation link (`EmailConfirmationsMailer`) and redirects to the sign-in page with a "check your email" notice; `SessionsController#create` rejects sign-in until `user.confirmed?`. Clicking `GET /email_confirmations/:token` confirms the account (the token, from `User.generates_token_for :email_confirmation`, expires in a day and is tied to the address). There's a resend form at `/email_confirmations/new` (rate-limited, and it never reveals whether an address exists). This block-until-confirmed behavior is the strict default; to allow sign-in but keep the account marked unconfirmed instead, change the `user.confirmed?` guard in `SessionsController#create`.

@@ -7,7 +7,7 @@ Rails starter template. This repo is both a working app and the template new app
 - Propshaft + Importmap (no Node), Tailwind v4 + DaisyUI 5 (vendored `app/assets/tailwind/daisyui.mjs`, `app/assets/tailwind/daisyui-theme.mjs`)
 - Hotwire (Turbo + Stimulus), Lexxy for Action Text rich text
 - Lucide icons via `lucide-rails` (`lucide_icon` helper, inline SVG, no icon font/CDN)
-- RubyLLM (OpenAI only: gpt-4o-mini / text-embedding-3-small), Schematist for structured output, Neighbor + sqlite-vec for vector search
+- RubyLLM (OpenAI only: `OPENAI_CHAT_MODEL`/`OPENAI_EMBEDDING_MODEL` ENV, defaulting to gpt-4o-mini / text-embedding-3-small), Schematist for structured output, Neighbor + sqlite-vec for vector search
 - Native Rails authentication (+ custom registration/profile), Active Storage avatars
 - console1984 for audited production console access (depends on Active Record encryption)
 - money-rails for currency handling (default currency USD in `config/initializers/money.rb`, no monetized model ships — apps opt in per-model)
