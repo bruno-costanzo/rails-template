@@ -2,6 +2,7 @@ require "test_helper"
 
 class MessagesControllerTest < ActionDispatch::IntegrationTest
   include SessionTestHelper
+  include MessageQuotaHelper
 
   test "requires authentication" do
     chat = users(:one).chats.create!(model: "gpt-4o-mini")
@@ -75,5 +76,30 @@ class MessagesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :too_many_requests
     assert_equal 20, chat.messages.count
+  end
+
+  test "refuses a message once the daily quota is exhausted" do
+    sign_in_as users(:one)
+    chat = users(:one).chats.create!(model: "gpt-4o-mini")
+    seed_messages(chat, User::DAILY_MESSAGE_LIMIT)
+
+    assert_no_enqueued_jobs(only: ChatResponseJob) do
+      post chat_messages_url(chat), params: { message: { content: "One more" } }
+    end
+
+    assert_response :forbidden
+    assert_equal User::DAILY_MESSAGE_LIMIT, chat.messages.count
+  end
+
+  test "the last message within the quota leaves the composer exhausted" do
+    sign_in_as users(:one)
+    chat = users(:one).chats.create!(model: "gpt-4o-mini")
+    seed_messages(chat, User::DAILY_MESSAGE_LIMIT - 1)
+
+    post chat_messages_url(chat), params: { message: { content: "The last one" } }, as: :turbo_stream
+
+    assert_response :success
+    assert_no_match "new_message", @response.body
+    assert_match I18n.t("messages.composer.exhausted", count: User::DAILY_MESSAGE_LIMIT), @response.body
   end
 end

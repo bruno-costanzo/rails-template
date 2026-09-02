@@ -1,7 +1,10 @@
 class User < ApplicationRecord
+  DAILY_MESSAGE_LIMIT = 100
+
   has_secure_password
   has_many :sessions, dependent: :destroy
   has_many :chats, dependent: :destroy
+  has_many :messages, through: :chats
   has_many :documents, dependent: :destroy
   has_many :feedbacks, dependent: :destroy
   has_many :notifications, as: :recipient, dependent: :destroy, class_name: "Noticed::Notification"
@@ -28,6 +31,10 @@ class User < ApplicationRecord
 
   def initials
     name.to_s.split.first(2).filter_map { |part| part[0] }.join.upcase
+  end
+
+  def messages_remaining_today
+    [ DAILY_MESSAGE_LIMIT - messages.where(role: "user", created_at: Time.current.all_day).count, 0 ].max
   end
 
   def confirmed?

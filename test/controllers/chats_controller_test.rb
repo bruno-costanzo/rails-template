@@ -2,6 +2,7 @@ require "test_helper"
 
 class ChatsControllerTest < ActionDispatch::IntegrationTest
   include SessionTestHelper
+  include MessageQuotaHelper
 
   test "requires authentication" do
     get chats_url
@@ -84,5 +85,27 @@ class ChatsControllerTest < ActionDispatch::IntegrationTest
       delete chat_url(chat)
     end
     assert_redirected_to chats_url
+  end
+
+  test "hides the composer once the daily quota is exhausted" do
+    sign_in_as users(:one)
+    chat = users(:one).chats.create!(model: "gpt-4o-mini")
+    seed_messages(users(:one).chats.create!(model: "gpt-4o-mini"), User::DAILY_MESSAGE_LIMIT)
+
+    get chat_url(chat)
+
+    assert_response :success
+    assert_no_match "new_message", @response.body
+    assert_match I18n.t("messages.composer.exhausted", count: User::DAILY_MESSAGE_LIMIT), @response.body
+  end
+
+  test "shows how many messages are left today on a fresh chat" do
+    sign_in_as users(:one)
+    chat = users(:one).chats.create!(model: "gpt-4o-mini")
+
+    get chat_url(chat)
+
+    assert_response :success
+    assert_match I18n.t("messages.composer.remaining", count: User::DAILY_MESSAGE_LIMIT), @response.body
   end
 end

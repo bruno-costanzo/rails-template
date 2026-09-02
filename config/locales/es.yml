@@ -125,6 +125,12 @@ es:
   messages:
     assistant:
       role: Asistente
+    composer:
+      exhausted: Llegaste al límite de %{count} mensajes por hoy. Volvé mañana para
+        seguir la conversación.
+      remaining:
+        one: Te queda %{count} mensaje por hoy.
+        other: Te quedan %{count} mensajes por hoy.
     error:
       title: Error
     form:

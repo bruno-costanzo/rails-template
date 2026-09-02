@@ -123,6 +123,12 @@ en:
   messages:
     assistant:
       role: Assistant
+    composer:
+      exhausted: You reached the daily limit of %{count} messages. Come back tomorrow
+        to keep the conversation going.
+      remaining:
+        one: You have %{count} message left today.
+        other: You have %{count} messages left today.
     error:
       title: Error
     form:
