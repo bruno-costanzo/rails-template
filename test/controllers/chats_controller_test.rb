@@ -108,4 +108,28 @@ class ChatsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match I18n.t("messages.composer.remaining", count: User::DAILY_MESSAGE_LIMIT), @response.body
   end
+
+  test "refuses a new chat once the daily quota is exhausted" do
+    sign_in_as users(:one)
+    seed_messages(users(:one).chats.create!(model: "gpt-4o-mini"), User::DAILY_MESSAGE_LIMIT)
+
+    assert_no_difference("users(:one).chats.count") do
+      assert_no_enqueued_jobs(only: ChatResponseJob) do
+        post chats_url, params: { chat: { model: "gpt-4o-mini", prompt: "One more" } }
+      end
+    end
+
+    assert_response :forbidden
+  end
+
+  test "the new chat form gives way to the exhausted notice" do
+    sign_in_as users(:one)
+    seed_messages(users(:one).chats.create!(model: "gpt-4o-mini"), User::DAILY_MESSAGE_LIMIT)
+
+    get new_chat_url
+
+    assert_response :success
+    assert_no_match I18n.t("chats.form.submit"), @response.body
+    assert_match I18n.t("messages.composer.exhausted", count: User::DAILY_MESSAGE_LIMIT), @response.body
+  end
 end

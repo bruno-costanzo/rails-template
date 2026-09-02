@@ -23,10 +23,6 @@ class MessagesController < ApplicationController
     head :forbidden if @chat.closed?
   end
 
-  def ensure_within_quota
-    head :forbidden if Current.user.messages_remaining_today.zero?
-  end
-
   def set_chat
     @chat = Current.user.chats.find(params[:chat_id])
   end

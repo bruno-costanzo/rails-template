@@ -3,7 +3,11 @@
 <div class="md:w-2/3 w-full">
   <h1 class="font-bold text-4xl"><%= t(".title") %></h1>
 
-  <%= render "form", chat: @chat %>
+  <% if Current.user.messages_remaining_today.zero? %>
+    <p class="text-sm opacity-70 my-5"><%= t("messages.composer.exhausted", count: User::DAILY_MESSAGE_LIMIT) %></p>
+  <% else %>
+    <%= render "form", chat: @chat %>
+  <% end %>
 
   <%= link_to t(".back"), chats_path, class: "w-full sm:w-auto text-center mt-2 sm:mt-0 sm:ml-2 rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
 </div>

@@ -1,5 +1,6 @@
 class ChatsController < ApplicationController
   before_action :set_chat, only: [ :show, :destroy ]
+  before_action :ensure_within_quota, only: :create
 
   def index
     @chats = Current.user.chats.where(support: false).order(created_at: :desc)
