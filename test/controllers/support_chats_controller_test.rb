@@ -2,6 +2,7 @@ require "test_helper"
 
 class SupportChatsControllerTest < ActionDispatch::IntegrationTest
   include SessionTestHelper
+  include MessageQuotaHelper
 
   test "the conversation list requires authentication" do
     get support_chats_url
@@ -181,5 +182,28 @@ class SupportChatsControllerTest < ActionDispatch::IntegrationTest
     assert_match "Ya lo resolvimos", @response.body
     assert_no_match "new_message", @response.body
     assert_match I18n.t("support_chats.show.closed"), @response.body
+  end
+
+  test "the widget shows the composer without the daily message counter" do
+    sign_in_as users(:one)
+    chat = users(:one).chats.create!(support: true)
+
+    get support_chat_url(chat)
+
+    assert_response :success
+    assert_match "new_message", @response.body
+    assert_no_match I18n.t("messages.composer.remaining", count: User::DAILY_MESSAGE_LIMIT), @response.body
+  end
+
+  test "the widget still hides the composer once the daily quota is exhausted" do
+    sign_in_as users(:one)
+    chat = users(:one).chats.create!(support: true)
+    seed_messages(chat, User::DAILY_MESSAGE_LIMIT)
+
+    get support_chat_url(chat)
+
+    assert_response :success
+    assert_no_match "new_message", @response.body
+    assert_match I18n.t("messages.composer.exhausted", count: User::DAILY_MESSAGE_LIMIT), @response.body
   end
 end
