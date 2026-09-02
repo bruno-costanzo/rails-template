@@ -1,3 +1,4 @@
+---
 lacaniosa:
   path: "../lacaniosa"
   born_from: 5192abe772bb2f256feffa2e57884544eea8e716
@@ -6,3 +7,7 @@ club:
   path: "../club"
   born_from: 5192abe772bb2f256feffa2e57884544eea8e716
   synced_to: 5192abe772bb2f256feffa2e57884544eea8e716
+pioupiou:
+  path: "../pioupiou"
+  born_from: b5098f9e45135e1c6f29db2c795e781656a251fa
+  synced_to: b5098f9e45135e1c6f29db2c795e781656a251fa
