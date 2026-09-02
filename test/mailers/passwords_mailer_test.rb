@@ -8,6 +8,6 @@ class PasswordsMailerTest < ActionMailer::TestCase
 
     assert_equal [ user.email_address ], email.to
     assert_equal I18n.t("passwords_mailer.reset.subject"), email.subject
-    assert_match %r{http://example\.com/passwords/[\w-]+/edit}, email.body.encoded.gsub("=\r\n", "")
+    assert_match %r{http://example\.com/passwords/[\w=-]+/edit}, email.text_part.decoded
   end
 end

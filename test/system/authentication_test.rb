@@ -60,7 +60,7 @@ class AuthenticationTest < ApplicationSystemTestCase
   private
 
   def path_from_last_email(pattern)
-    body = ActionMailer::Base.deliveries.last.body.encoded.gsub("=\r\n", "")
+    body = ActionMailer::Base.deliveries.last.text_part.decoded
     URI.parse(body[pattern]).request_uri
   end
 end

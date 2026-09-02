@@ -9,7 +9,7 @@ class EmailConfirmationsMailerTest < ActionMailer::TestCase
 
     assert_equal [ user.email_address ], email.to
     assert_equal I18n.t("email_confirmations_mailer.confirm.subject"), email.subject
-    assert_match %r{http://example\.com/email_confirmations/[\w.-]+}, email.body.encoded.gsub("=\r\n", "")
+    assert_match %r{http://example\.com/email_confirmations/[\w=-]+}, email.text_part.decoded
 
     retention = I18n.t("email_confirmations_mailer.confirm.retention", duration: distance_of_time_in_words(0, User::UNCONFIRMED_RETENTION))
     assert_includes email.html_part.decoded, retention
@@ -24,6 +24,6 @@ class EmailConfirmationsMailerTest < ActionMailer::TestCase
 
     assert_equal [ "ada-new@example.com" ], email.to
     assert_equal I18n.t("email_confirmations_mailer.change.subject"), email.subject
-    assert_match %r{http://example\.com/email_changes/[\w.-]+}, email.body.encoded.gsub("=\r\n", "")
+    assert_match %r{http://example\.com/email_changes/[\w=-]+}, email.text_part.decoded
   end
 end
