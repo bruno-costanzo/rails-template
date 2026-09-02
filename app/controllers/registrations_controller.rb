@@ -1,5 +1,6 @@
 class RegistrationsController < ApplicationController
   allow_unauthenticated_access only: %i[ new create ]
+  rate_limit to: 10, within: 1.hour, only: :create, with: -> { redirect_to new_registration_path, alert: t("registrations.rate_limit") }
 
   def new
     @user = User.new

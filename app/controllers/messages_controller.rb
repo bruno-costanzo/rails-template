@@ -1,4 +1,5 @@
 class MessagesController < ApplicationController
+  rate_limit to: 20, within: 1.minute, only: :create, by: -> { Current.user.id }, with: -> { head :too_many_requests }
   before_action :set_chat
   before_action :ensure_open, only: :create
 

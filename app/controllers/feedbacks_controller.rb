@@ -1,4 +1,6 @@
 class FeedbacksController < ApplicationController
+  rate_limit to: 5, within: 1.hour, only: :create, by: -> { Current.user.id }, with: -> { redirect_to new_feedback_path, alert: t("feedbacks.rate_limit") }
+
   def new
     @feedback = Current.user.feedbacks.build
   end

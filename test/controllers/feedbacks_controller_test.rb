@@ -53,4 +53,28 @@ class FeedbacksControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
     assert_includes @response.body, "Photos"
   end
+
+  test "rate limits repeated feedback submissions" do
+    sign_in_as users(:one)
+    5.times { post feedback_url, params: { feedback: { message: "The chat page is slow" } } }
+
+    assert_no_difference("Feedback.count") do
+      post feedback_url, params: { feedback: { message: "The chat page is slow" } }
+    end
+
+    assert_redirected_to new_feedback_url
+    assert_equal I18n.t("feedbacks.rate_limit"), flash[:alert]
+  end
+
+  test "the rate limit follows the person, not the session" do
+    sign_in_as users(:one)
+    5.times { post feedback_url, params: { feedback: { message: "The chat page is slow" } } }
+
+    delete session_url
+    sign_in_as users(:two)
+
+    assert_difference("Feedback.count") do
+      post feedback_url, params: { feedback: { message: "The chat page is slow" } }
+    end
+  end
 end

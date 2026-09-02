@@ -70,4 +70,20 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to new_session_url
   end
+
+  test "rate limits repeated sign-up attempts" do
+    10.times do
+      post registration_url, params: { user: { name: "", email_address: "bad", password: "x", password_confirmation: "y" } }
+    end
+
+    assert_no_difference("User.count") do
+      assert_no_enqueued_emails do
+        post registration_url, params: { user: { name: "Joan Clarke", email_address: "joan@example.com",
+          password: "password1234", password_confirmation: "password1234" } }
+      end
+    end
+
+    assert_redirected_to new_registration_url
+    assert_equal I18n.t("registrations.rate_limit"), flash[:alert]
+  end
 end

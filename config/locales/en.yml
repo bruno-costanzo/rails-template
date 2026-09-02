@@ -119,6 +119,7 @@ en:
       photos_label: Attach screenshots (optional)
       submit: Send feedback
       title: Feedback
+    rate_limit: Try again later.
   messages:
     assistant:
       role: Assistant
@@ -218,6 +219,7 @@ en:
       meta_title: Sign up
       sign_up: Sign up
       title: Create your account
+    rate_limit: Try again later.
   sessions:
     create:
       alert: Try another email address or password.

@@ -121,6 +121,7 @@ es:
       photos_label: Adjuntar capturas de pantalla (opcional)
       submit: Enviar comentarios
       title: Comentarios
+    rate_limit: Inténtalo de nuevo más tarde.
   messages:
     assistant:
       role: Asistente
@@ -221,6 +222,7 @@ es:
       meta_title: Registrarse
       sign_up: Registrarse
       title: Crea tu cuenta
+    rate_limit: Inténtalo de nuevo más tarde.
   sessions:
     create:
       alert: Prueba con otro correo electrónico o contraseña.

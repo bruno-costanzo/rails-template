@@ -60,4 +60,20 @@ class MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_response :forbidden
     assert_equal 0, chat.messages.count
   end
+
+  test "rate limits a burst of messages" do
+    sign_in_as users(:one)
+    chat = users(:one).chats.create!(model: "gpt-4o-mini")
+
+    20.times do |i|
+      post chat_messages_url(chat), params: { message: { content: "Message #{i}" } }, as: :turbo_stream
+    end
+
+    assert_no_enqueued_jobs(only: ChatResponseJob) do
+      post chat_messages_url(chat), params: { message: { content: "One too many" } }, as: :turbo_stream
+    end
+
+    assert_response :too_many_requests
+    assert_equal 20, chat.messages.count
+  end
 end
