@@ -65,6 +65,8 @@ bin/dev
 
 `bin/dev` runs three processes side by side (see `Procfile.dev`): the Rails server, the Tailwind watcher, and the Solid Queue supervisor. See [Background jobs](#background-jobs) — note that the queue logs to `log/development.log`, not to your terminal.
 
+`db:prepare` seeds the database only the first time it creates it, so a fresh clone signs in with `dev@example.com` / `password`. On an existing checkout — the database already exists — run `bin/rails db:seed` to get that user.
+
 ## Starting a new app
 
 Each item below is documented in depth in its own section — this is the order to do them in, and the list of things nobody else can do for you.
