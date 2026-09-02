@@ -26,6 +26,7 @@ class ChatsTest < ApplicationSystemTestCase
       fill_in t("messages.form.content_label"), with: "How do I deploy with Kamal?"
       click_button t("messages.form.submit")
 
+      assert_text "How do I deploy with Kamal?"
       assert_text t("messages.failure.body")
     end
   end
