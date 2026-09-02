@@ -38,6 +38,7 @@ class ActiveSessionsControllerTest < ActionDispatch::IntegrationTest
     delete active_session_url(other_session)
 
     assert_response :not_found
+    assert users(:two).sessions.exists?(other_session.id)
   end
 
   test "revokes another session and keeps the current cookie" do
@@ -48,6 +49,7 @@ class ActiveSessionsControllerTest < ActionDispatch::IntegrationTest
       delete active_session_url(other_session)
     end
 
+    assert_response :see_other
     assert_redirected_to active_sessions_url
     assert cookies[:session_id].present?
   end
@@ -58,8 +60,10 @@ class ActiveSessionsControllerTest < ActionDispatch::IntegrationTest
 
     delete active_session_url(current_session)
 
+    assert_response :see_other
     assert_redirected_to new_session_url
     assert_not cookies[:session_id].present?
+    assert_not Session.exists?(current_session.id)
   end
 
   test "revoke_others deletes every other session but keeps the current one and other users' sessions" do
@@ -70,6 +74,7 @@ class ActiveSessionsControllerTest < ActionDispatch::IntegrationTest
 
     delete revoke_others_active_sessions_url
 
+    assert_response :see_other
     assert_redirected_to active_sessions_url
     assert_equal [ current_session ], users(:one).sessions.reload.to_a
     assert users(:two).sessions.exists?(other_user_session.id)
