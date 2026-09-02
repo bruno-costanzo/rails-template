@@ -87,6 +87,9 @@ class Template::CleanupTest < ActiveSupport::TestCase
       %w[bin lib/template test/lib/template docs/superpowers config].each { |path| FileUtils.mkdir_p(File.join(dir, path)) }
       FileUtils.touch(File.join(dir, "bin", "rename"))
       FileUtils.touch(File.join(dir, "bin", "smoke-rename"))
+      FileUtils.touch(File.join(dir, "bin", "spawn"))
+      FileUtils.touch(File.join(dir, "bin", "children"))
+      FileUtils.touch(File.join(dir, "children.yml"))
       FileUtils.touch(File.join(dir, "bin", "setup"))
       FileUtils.touch(File.join(dir, "lib", "template", "renamer.rb"))
       FileUtils.touch(File.join(dir, "test", "lib", "template", "renamer_test.rb"))

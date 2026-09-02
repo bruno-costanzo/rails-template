@@ -1,6 +1,6 @@
 module Template
   class Cleanup
-    REMOVED_PATHS = %w[bin/rename bin/smoke-rename lib/template test/lib/template docs/superpowers].freeze
+    REMOVED_PATHS = %w[bin/rename bin/smoke-rename bin/spawn bin/children children.yml lib/template test/lib/template docs/superpowers].freeze
     SMOKE_MARKERS = %w[smoke_app SMOKE_PORT].freeze
     CI_STEP = /^\s*step "Smoke:[^\n]*\n/
     CI_CLAUSE = ", and a `bin/smoke-rename` step"

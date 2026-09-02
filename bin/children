@@ -1,0 +1,16 @@
+#!/usr/bin/env ruby
+require "bundler/setup"
+require "pathname"
+require "yaml"
+require_relative "../lib/template/children"
+
+root = File.expand_path("..", __dir__)
+children = Template::Children.new(root: root)
+
+if ARGV[0] == "synced"
+  name = ARGV[1] or abort("Usage: bin/children synced <name>")
+  children.mark_synced(name)
+  puts "#{name} marked as synced"
+else
+  puts children.report
+end

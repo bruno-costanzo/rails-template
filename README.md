@@ -73,14 +73,8 @@ Each item below is documented in depth in its own section — this is the order 
 
 **Before you write code**
 
-1. Clone, `bin/rename <name>`, `bin/setup`, and regenerate credentials plus Active Record encryption keys — see [Quickstart](#quickstart) above. The app will not run for real until you do.
-2. **Give the app its own repository, immediately.** `bin/rename` removes any git remote pointing at this template, so a fresh app has *no* remote at all — that is deliberate: an app must never be able to push into the template it came from. But it also means nothing is backed up until you create its repo and add `origin`:
-
-   ```bash
-   gh repo create my_app --private --source=. --remote=origin --push
-   ```
-
-   Do this on day one. Commits pile up fast and a clean `git log` looks identical whether or not it exists anywhere but your disk. To port an improvement from the template later you do not need a permanent remote — fetch it on demand:
+1. From inside this template's own directory: `bin/spawn my_app [--github]`. It clones the template into `../my_app`, runs `bin/rename` inside the clone, removes the clone's `origin` remote (so the new app has *no* remote at all — deliberate: it must never be able to push into the template it came from), commits the rename, and registers the app in the template's `children.yml` for later cherry-picks. Pass `--github` to also create and push a private GitHub repo for it; without the flag, `bin/spawn` prints that same `gh repo create` command for you to run whenever you're ready. Then, inside `../my_app`: `bin/setup`, and regenerate credentials plus Active Record encryption keys — see [Quickstart](#quickstart) above. The app will not run for real until you do.
+2. **If you skipped `--github`, give the app its own repository now.** Do this on day one. Commits pile up fast and a clean `git log` looks identical whether or not it exists anywhere but your disk. To port an improvement from the template later you do not need a permanent remote — fetch it on demand:
 
    ```bash
    git fetch https://github.com/bruno-costanzo/rails-template main
@@ -725,3 +719,5 @@ What applies cleanly: commits that never mention the app name — JavaScript fix
 What conflicts: anything `bin/rename` rewrote — layouts and views carrying the app name, `config/` files, `database.yml`, `deploy.yml`. For those, read the template commit's diff (`git show <sha>`) and apply the change by hand under your app's names.
 
 Pick commits one at a time, run `bin/ci` after each, and skip anything your app has since diverged from — a template improvement is an offer, not an obligation.
+
+The template side of this pairing lives in its own `children.yml`: `bin/spawn` registers every app it creates there, and `bin/children` (run from the template's directory) reports which of them have pending commits with the exact `git fetch`/`cherry-pick` command for each. After applying one, `bin/children synced <name>` records how far that app has been synced.
