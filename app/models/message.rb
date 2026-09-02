@@ -29,7 +29,7 @@ class Message < ApplicationRecord
   end
 
   def broadcast_updated_message
-    broadcast_replace_to "chat_#{chat_id}"
+    broadcast_append_to "chat_#{chat_id}", target: "chat_#{chat_id}_messages"
   end
 
   def broadcast_removed_message

@@ -11,7 +11,7 @@ class MessageTest < ActiveSupport::TestCase
     end
   end
 
-  test "broadcasts a replace synchronously when updated" do
+  test "broadcasts itself synchronously when updated" do
     chat = users(:one).chats.create!(model: "gpt-4o-mini")
     message = chat.messages.create!(role: :assistant, content: "")
 
@@ -20,7 +20,7 @@ class MessageTest < ActiveSupport::TestCase
     end
   end
 
-  test "broadcasts updates as a versioned replace of the message element, not an append" do
+  test "broadcasts updates as a versioned append into the message list, not a replace" do
     chat = users(:one).chats.create!(model: "gpt-4o-mini")
     message = chat.messages.create!(role: :assistant, content: "")
 
@@ -30,8 +30,9 @@ class MessageTest < ActiveSupport::TestCase
 
     assert_equal 1, raw_broadcasts.size
     broadcasted = JSON.parse(raw_broadcasts.first)
-    assert_match(/action="replace"/, broadcasted)
-    assert_match(/target="message_#{message.id}"/, broadcasted)
+    assert_match(/action="append"/, broadcasted)
+    assert_match(/target="chat_#{chat.id}_messages"/, broadcasted)
+    assert_match(/id="message_#{message.id}"/, broadcasted)
     assert_match(/data-version="#{Regexp.escape(message.broadcast_version.to_s)}"/, broadcasted)
   end
 

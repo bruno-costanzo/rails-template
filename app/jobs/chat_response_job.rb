@@ -1,39 +1,29 @@
 class ChatResponseJob < ApplicationJob
-  RETRY_ATTEMPTS = 3
-
-  retry_on RubyLLM::Error, wait: 5.seconds, attempts: RETRY_ATTEMPTS do |job, error|
-    job.broadcast_failure
-    raise error
-  end
-
   def perform(chat_id)
     support = Chat.where(id: chat_id).pick(:support)
     chat = support ? SupportAgent.find(chat_id) : Chat.find(chat_id)
 
-    chat.complete do |chunk|
-      if chunk.content && !chunk.content.empty?
-        message = chat.messages.last
-        message.broadcast_append_chunk(chunk.content)
+    begin
+      chat.complete do |chunk|
+        if chunk.content && !chunk.content.empty?
+          message = chat.messages.last
+          message.broadcast_append_chunk(chunk.content)
+        end
       end
+    rescue RubyLLM::Error
+      broadcast_failure(chat)
+      raise
     end
 
-    enqueue_title(chat)
-  end
-
-  def broadcast_failure
-    chat_id = arguments.first
-
-    Turbo::StreamsChannel.broadcast_append_to "chat_#{chat_id}",
-      target: "chat_#{chat_id}_messages",
-      partial: "messages/failure",
-      locals: { chat_id: chat_id }
+    GenerateChatTitleJob.perform_later(chat) unless chat.support?
   end
 
   private
 
-  def enqueue_title(chat)
-    GenerateChatTitleJob.perform_later(chat) unless chat.support?
-  rescue RubyLLM::Error => error
-    Rails.error.report(error, handled: true, source: "chat_response_job")
+  def broadcast_failure(chat)
+    Turbo::StreamsChannel.broadcast_append_to "chat_#{chat.id}",
+      target: "chat_#{chat.id}_messages",
+      partial: "messages/failure",
+      locals: { chat_id: chat.id }
   end
 end

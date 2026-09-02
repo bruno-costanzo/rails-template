@@ -33,8 +33,14 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     assert_selector "body[data-turbo-ready]"
   end
 
-  def perform_chat_response_with_retries_spent(chat)
-    I18n.with_locale(BROWSER_LOCALE) { chat_response_job_with_retries_spent(chat).perform_now }
+  def without_raising_server_errors
+    previous = Capybara.raise_server_errors
+    Capybara.raise_server_errors = false
+    yield
+  ensure
+    Capybara.current_session.server&.wait_for_pending_requests
+    Capybara.current_session.raise_server_error!
+    Capybara.raise_server_errors = previous
   end
 
   def sign_in_via_browser(user)

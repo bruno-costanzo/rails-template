@@ -21,11 +21,12 @@ class ChatsTest < ApplicationSystemTestCase
     stub_openai_chat_error(status: 500)
 
     visit chat_url(chat)
-    chat.create_user_message("How do I deploy with Kamal?")
 
-    assert_raises(RubyLLM::Error) { perform_chat_response_with_retries_spent(chat) }
+    without_raising_server_errors do
+      fill_in t("messages.form.content_label"), with: "How do I deploy with Kamal?"
+      click_button t("messages.form.submit")
 
-    assert_text "How do I deploy with Kamal?"
-    assert_text t("messages.failure.body")
+      assert_text t("messages.failure.body")
+    end
   end
 end

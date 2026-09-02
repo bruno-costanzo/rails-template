@@ -53,14 +53,14 @@ class SupportChatTest < ApplicationSystemTestCase
       assert_selector "#new_message"
     end
 
-    chat = users(:one).chats.support.sole
-    chat.create_user_message("The chat page loads slowly for me")
+    without_raising_server_errors do
+      within "dialog.modal" do
+        fill_in t("support_chats.composer.label"), with: "The chat page loads slowly for me"
+        click_button t("support_chats.composer.send")
 
-    assert_raises(RubyLLM::Error) { perform_chat_response_with_retries_spent(chat) }
-
-    within "dialog.modal" do
-      assert_selector ".chat-start .chat-bubble", text: t("messages.failure.body")
-      assert_selector "[data-support-conversation-target='pending'].hidden", visible: :all
+        assert_selector ".chat-start .chat-bubble", text: t("messages.failure.body")
+        assert_selector "[data-support-conversation-target='pending'].hidden", visible: :all
+      end
     end
   end
 
