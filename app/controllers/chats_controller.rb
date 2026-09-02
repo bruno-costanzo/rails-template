@@ -15,7 +15,8 @@ class ChatsController < ApplicationController
     prompt = params.dig(:chat, :prompt)
     if prompt.present?
       @chat = Current.user.chats.create!(model: params.dig(:chat, :model).presence)
-      ChatResponseJob.perform_later(@chat.id, prompt)
+      @chat.messages.create!(role: :user, content: prompt)
+      ChatResponseJob.perform_later(@chat.id)
 
       redirect_to @chat, notice: t("chats.create.notice")
     end

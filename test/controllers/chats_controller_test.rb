@@ -55,12 +55,16 @@ class ChatsControllerTest < ActionDispatch::IntegrationTest
 
   test "creates a chat and enqueues the first response when a prompt is given" do
     sign_in_as users(:one)
+    prompt = "How do I deploy with Kamal?"
+
     assert_difference("users(:one).chats.count", 1) do
-      assert_enqueued_with(job: ChatResponseJob) do
-        post chats_url, params: { chat: { model: "gpt-4o-mini", prompt: "How do I deploy with Kamal?" } }
-      end
+      post chats_url, params: { chat: { model: "gpt-4o-mini", prompt: prompt } }
     end
-    assert_redirected_to Chat.last
+
+    chat = Chat.last
+    assert_equal [ [ "user", prompt ] ], chat.messages.pluck(:role, :content)
+    assert_enqueued_with(job: ChatResponseJob, args: [ chat.id ])
+    assert_redirected_to chat
   end
 
   test "does not create a chat when the prompt is blank" do
