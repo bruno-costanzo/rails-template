@@ -44,8 +44,10 @@ module Template
     end
 
     def register
-      sha, = Open3.capture2("git", "-C", @root.to_s, "rev-parse", "HEAD")
-      Children.new(root: @root).register(@name, path: "../#{@name}", sha: sha.strip)
+      stdout, stderr, status = Open3.capture3("git", "-C", @root.to_s, "rev-parse", "HEAD")
+      raise "git rev-parse HEAD failed: #{stderr}" unless status.success?
+
+      Children.new(root: @root).register(@name, path: "../#{@name}", sha: stdout.strip)
     end
 
     def create_github_repo

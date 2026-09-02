@@ -720,4 +720,4 @@ What conflicts: anything `bin/rename` rewrote — layouts and views carrying the
 
 Pick commits one at a time, run `bin/ci` after each, and skip anything your app has since diverged from — a template improvement is an offer, not an obligation.
 
-The template side of this pairing lives in its own `children.yml`: `bin/spawn` registers every app it creates there, and `bin/children` (run from the template's directory) reports which of them have pending commits with the exact `git fetch`/`cherry-pick` command for each. After applying one, `bin/children synced <name>` records how far that app has been synced.
+The template side of this pairing lives in its own `children.yml`: `bin/spawn` registers every app it creates there, and `bin/children` (run from the template's directory) reports which of them have pending commits, one at a time — the ready-made `cherry-pick` command always targets the OLDEST pending commit, so applying it and running the `bin/children synced <name> <sha>` line right after advances the sync pointer by exactly that one commit, never skipping the rest. Run the report again to get the next one.

@@ -8,8 +8,15 @@ root = File.expand_path("..", __dir__)
 children = Template::Children.new(root: root)
 
 if ARGV[0] == "synced"
-  name = ARGV[1] or abort("Usage: bin/children synced <name>")
-  children.mark_synced(name)
+  name = ARGV[1] or abort("Usage: bin/children synced <name> [sha]")
+  sha = ARGV[2]
+
+  if sha
+    children.mark_synced(name, sha)
+  else
+    children.mark_synced(name)
+  end
+
   puts "#{name} marked as synced"
 else
   puts children.report

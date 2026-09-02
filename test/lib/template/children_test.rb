@@ -2,13 +2,10 @@ require "test_helper"
 require "tmpdir"
 
 class Template::ChildrenTest < ActiveSupport::TestCase
-  setup do
-    ENV["GIT_AUTHOR_NAME"] = "Test"
-    ENV["GIT_AUTHOR_EMAIL"] = "test@example.com"
-    ENV["GIT_COMMITTER_NAME"] = "Test"
-    ENV["GIT_COMMITTER_EMAIL"] = "test@example.com"
-    ENV["GIT_CONFIG_GLOBAL"] = "/dev/null"
-  end
+  include GitIdentityHelper
+
+  setup { stub_git_identity }
+  teardown { restore_git_identity }
 
   test "register writes an entry with born_from equal to synced_to" do
     in_tmp_root do |root|
@@ -40,11 +37,47 @@ class Template::ChildrenTest < ActiveSupport::TestCase
       File.write(root.join("second.txt"), "second")
       system("git", "-C", root.to_s, "add", "-A", exception: true)
       system("git", "-C", root.to_s, "commit", "--quiet", "-m", "Second commit", exception: true)
+      second_sha = `git -C #{root} rev-parse HEAD`.strip
 
       report = children.report
-      assert_includes report, "pending"
-      assert_includes report, "cherry-pick"
-      assert_includes report, "bin/children synced demo"
+      assert_includes report, "1 pending commit(s)"
+      assert_includes report, "cherry-pick #{second_sha}"
+      assert_includes report, "bin/children synced demo #{second_sha}"
+    end
+  end
+
+  test "report targets the oldest pending commit, not the newest" do
+    in_git_root do |root|
+      children = Template::Children.new(root: root)
+      first_sha = `git -C #{root} rev-parse HEAD`.strip
+      FileUtils.mkdir_p(root.parent.join("demo"))
+      children.register("demo", path: "../demo", sha: first_sha)
+
+      shas = %w[second third fourth].map do |name|
+        File.write(root.join("#{name}.txt"), name)
+        system("git", "-C", root.to_s, "add", "-A", exception: true)
+        system("git", "-C", root.to_s, "commit", "--quiet", "-m", "#{name.capitalize} commit", exception: true)
+        `git -C #{root} rev-parse HEAD`.strip
+      end
+      oldest_sha = shas.first
+
+      report = children.report
+      assert_includes report, "3 pending commit(s)"
+      assert_includes report, "cherry-pick #{oldest_sha}"
+      assert_includes report, "bin/children synced demo #{oldest_sha}"
+
+      children.mark_synced("demo", oldest_sha)
+      assert_includes children.report, "2 pending commit(s)"
+    end
+  end
+
+  test "report raises when synced_to references a commit that does not exist" do
+    in_git_root do |root|
+      children = Template::Children.new(root: root)
+      FileUtils.mkdir_p(root.parent.join("demo"))
+      children.register("demo", path: "../demo", sha: "0" * 40)
+
+      assert_raises(RuntimeError) { children.report }
     end
   end
 

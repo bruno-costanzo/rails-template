@@ -33,21 +33,32 @@ module Template
       pending = pending_commits(entry["synced_to"])
       return "#{name} (#{entry["path"]}): present, up to date" if pending.empty?
 
+      oldest_sha = pending_shas(entry["synced_to"]).first
+
       lines = [ "#{name} (#{entry["path"]}): present, #{pending.size} pending commit(s)" ]
       lines += pending.map { |commit| "  #{commit}" }
-      lines << "  git -C #{entry["path"]} fetch #{@root} main && git -C #{entry["path"]} cherry-pick #{pending.first.split.first}"
-      lines << "  bin/children synced #{name}"
+      lines << "  git -C #{entry["path"]} fetch #{@root} main && git -C #{entry["path"]} cherry-pick #{oldest_sha}"
+      lines << "  bin/children synced #{name} #{oldest_sha}"
       lines.join("\n")
     end
 
     def pending_commits(synced_to)
-      stdout, = Open3.capture2("git", "-C", @root.to_s, "log", "--oneline", "#{synced_to}..HEAD")
-      stdout.lines.map(&:strip)
+      run_git("log", "--reverse", "--oneline", "#{synced_to}..HEAD").lines.map(&:strip)
+    end
+
+    def pending_shas(synced_to)
+      run_git("rev-list", "--reverse", "#{synced_to}..HEAD").lines.map(&:strip)
     end
 
     def head
-      stdout, = Open3.capture2("git", "-C", @root.to_s, "rev-parse", "HEAD")
-      stdout.strip
+      run_git("rev-parse", "HEAD").strip
+    end
+
+    def run_git(*args)
+      stdout, stderr, status = Open3.capture3("git", "-C", @root.to_s, *args)
+      raise "git #{args.join(" ")} failed: #{stderr}" unless status.success?
+
+      stdout
     end
 
     def load

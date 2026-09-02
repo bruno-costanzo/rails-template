@@ -2,13 +2,10 @@ require "test_helper"
 require "tmpdir"
 
 class Template::SpawnerTest < ActiveSupport::TestCase
-  setup do
-    ENV["GIT_AUTHOR_NAME"] = "Test"
-    ENV["GIT_AUTHOR_EMAIL"] = "test@example.com"
-    ENV["GIT_COMMITTER_NAME"] = "Test"
-    ENV["GIT_COMMITTER_EMAIL"] = "test@example.com"
-    ENV["GIT_CONFIG_GLOBAL"] = "/dev/null"
-  end
+  include GitIdentityHelper
+
+  setup { stub_git_identity }
+  teardown { restore_git_identity }
 
   test "clones the template, renames the clone, and registers it as a child" do
     in_template do |root|
@@ -26,6 +23,16 @@ class Template::SpawnerTest < ActiveSupport::TestCase
       registry = YAML.load(root.join("children.yml").read)
       assert_equal "../demo", registry["demo"]["path"]
       assert_equal registry["demo"]["born_from"], registry["demo"]["synced_to"]
+    end
+  end
+
+  test "register raises when the template is not a git repository" do
+    Dir.mktmpdir do |tmp|
+      root = Pathname.new(tmp).join("root")
+      FileUtils.mkdir_p(root)
+      spawner = Template::Spawner.new(root: root, name: "demo")
+
+      assert_raises(RuntimeError) { spawner.send(:register) }
     end
   end
 
