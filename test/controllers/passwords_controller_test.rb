@@ -26,6 +26,15 @@ class PasswordsControllerTest < ActionDispatch::IntegrationTest
     assert_notice I18n.t("passwords.create.notice")
   end
 
+  test "rate limits repeated password reset requests" do
+    10.times { post passwords_path, params: { email_address: "missing-user@example.com" } }
+
+    post passwords_path, params: { email_address: "missing-user@example.com" }
+
+    assert_redirected_to new_password_path
+    assert_equal I18n.t("passwords.rate_limit"), flash[:alert]
+  end
+
   test "edit" do
     get edit_password_path(@user.password_reset_token)
     assert_response :success

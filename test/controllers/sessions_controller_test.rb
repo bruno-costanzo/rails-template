@@ -23,4 +23,13 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_session_url
     assert cookies[:session_id].blank?
   end
+
+  test "rate limits repeated sign-in attempts" do
+    10.times { post session_url, params: { email_address: "ada@example.com", password: "wrong" } }
+
+    post session_url, params: { email_address: "ada@example.com", password: "wrong" }
+
+    assert_redirected_to new_session_url
+    assert_equal I18n.t("sessions.rate_limit"), flash[:alert]
+  end
 end

@@ -32,6 +32,7 @@ module ActiveSupport
     include ActiveJob::TestHelper
 
     def before_setup
+      Rails.cache.clear
       Bullet.start_request
       super
     end

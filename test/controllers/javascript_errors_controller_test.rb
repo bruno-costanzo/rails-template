@@ -44,4 +44,12 @@ class JavascriptErrorsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :no_content
   end
+
+  test "rate limits repeated error reports" do
+    30.times { post javascript_errors_url, params: { message: "boom" } }
+
+    post javascript_errors_url, params: { message: "boom" }
+
+    assert_response :too_many_requests
+  end
 end

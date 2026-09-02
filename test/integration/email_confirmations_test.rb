@@ -33,6 +33,15 @@ class EmailConfirmationsTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_session_url
   end
 
+  test "rate limits repeated confirmation email resends" do
+    10.times { post email_confirmations_url, params: { email_address: "nobody@example.com" } }
+
+    post email_confirmations_url, params: { email_address: "nobody@example.com" }
+
+    assert_redirected_to new_email_confirmation_url
+    assert_equal I18n.t("email_confirmations.rate_limit"), flash[:alert]
+  end
+
   test "show confirms the account with a valid token" do
     user = User.create!(name: "Unconf", email_address: "unconf2@example.com", password: "password1234")
     token = user.generate_token_for(:email_confirmation)
