@@ -202,7 +202,7 @@ en:
       model: 'Model:'
       provider: 'Provider:'
       start_chat: Start chat with this model
-      title: Showing model
+      title: Model
   notifications:
     index:
       empty: You're all caught up.

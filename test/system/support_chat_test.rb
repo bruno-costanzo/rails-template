@@ -42,6 +42,28 @@ class SupportChatTest < ApplicationSystemTestCase
     end
   end
 
+  test "a failed reply shows a human-friendly failure and leaves no pending spinner" do
+    sign_in_via_browser(users(:one))
+
+    stub_openai_chat_error(status: 500)
+
+    click_button t("support_chats.widget.support")
+    within "dialog.modal" do
+      click_button t("support_chats.index.start")
+      assert_selector "#new_message"
+    end
+
+    chat = users(:one).chats.support.sole
+    chat.create_user_message("The chat page loads slowly for me")
+
+    assert_raises(RubyLLM::Error) { perform_chat_response_with_retries_spent(chat) }
+
+    within "dialog.modal" do
+      assert_selector ".chat-start .chat-bubble", text: t("messages.failure.body")
+      assert_selector "[data-support-conversation-target='pending'].hidden", visible: :all
+    end
+  end
+
   test "past conversations are listed and can be reopened" do
     user = users(:one)
     past = user.chats.create!(support: true)

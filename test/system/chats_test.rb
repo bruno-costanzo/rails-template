@@ -23,9 +23,7 @@ class ChatsTest < ApplicationSystemTestCase
     visit chat_url(chat)
     chat.create_user_message("How do I deploy with Kamal?")
 
-    assert_raises(RubyLLM::Error) do
-      I18n.with_locale(BROWSER_LOCALE) { ChatResponseJob.perform_now(chat.id) }
-    end
+    assert_raises(RubyLLM::Error) { perform_chat_response_with_retries_spent(chat) }
 
     assert_text "How do I deploy with Kamal?"
     assert_text t("messages.failure.body")

@@ -73,26 +73,56 @@ class ChatResponseJobTest < ActiveJob::TestCase
     end
   end
 
-  test "rescues a provider error, broadcasts a human-friendly failure, and re-raises" do
+  test "shows a human-friendly failure to the person once the retries are spent" do
     chat = users(:one).chats.create!(model: "gpt-4o-mini")
     chat.messages.create!(role: :user, content: "How do I deploy with Kamal?")
     stub_openai_chat_error(status: 500)
 
     clear_messages("chat_#{chat.id}")
 
-    assert_raises(RubyLLM::Error) { ChatResponseJob.perform_now(chat.id) }
+    assert_raises(RubyLLM::Error) { chat_response_job_with_retries_spent(chat).perform_now }
 
-    raw_broadcasts = broadcasts("chat_#{chat.id}")
-    failure_broadcasts = raw_broadcasts.map { |raw| JSON.parse(raw) }.select { |broadcasted| broadcasted.include?(I18n.t("messages.failure.body")) }
+    failure_broadcasts = broadcasts("chat_#{chat.id}").map { |raw| JSON.parse(raw) }.select { |broadcasted| broadcasted.include?(I18n.t("messages.failure.body")) }
 
     assert_equal 1, failure_broadcasts.size
     failure_broadcast = failure_broadcasts.first
     assert_match(/action="append"/, failure_broadcast)
     assert_match(/target="chat_#{chat.id}_messages"/, failure_broadcast)
+    assert_match(/id="chat_#{chat.id}_failure"/, failure_broadcast)
+    assert_match(/role="alert"/, failure_broadcast)
     assert_no_match "500", failure_broadcast
     assert_no_match "Internal server error", failure_broadcast
 
     assert_nil chat.messages.reload.find_by(role: :assistant)
+  end
+
+  test "retries a provider error without showing the person a failure while attempts remain" do
+    chat = users(:one).chats.create!(model: "gpt-4o-mini")
+    chat.messages.create!(role: :user, content: "How do I deploy with Kamal?")
+    stub_openai_chat_error(status: 500)
+
+    clear_messages("chat_#{chat.id}")
+
+    assert_enqueued_with(job: ChatResponseJob, args: [ chat.id ]) do
+      ChatResponseJob.perform_now(chat.id)
+    end
+
+    assert_empty broadcasts("chat_#{chat.id}").select { |raw| raw.include?(I18n.t("messages.failure.body")) }
+  end
+
+  test "a failing chat title neither shows a failure nor runs the completion again" do
+    chat = users(:one).chats.create!(model: "gpt-4o-mini")
+    chat.messages.create!(role: :user, content: "How do I deploy with Kamal?")
+    stub_openai_chat_error(status: 500)
+    stub_openai_chat_stream(chunks: [ "Sure, here is how." ])
+
+    clear_messages("chat_#{chat.id}")
+
+    perform_enqueued_jobs { ChatResponseJob.perform_now(chat.id) }
+
+    assert_requested(:post, "https://api.openai.com/v1/chat/completions", times: 1) { |request| request.body.include?('"stream":true') }
+    assert_empty broadcasts("chat_#{chat.id}").select { |raw| raw.include?(I18n.t("messages.failure.body")) }
+    assert_equal "Sure, here is how.", chat.messages.order(:created_at).last.content
   end
 
   test "a support chat's tool call files a refined feedback ticket for the user" do

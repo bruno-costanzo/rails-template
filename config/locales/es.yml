@@ -204,7 +204,7 @@ es:
       model: 'Modelo:'
       provider: 'Proveedor:'
       start_chat: Iniciar chat con este modelo
-      title: Mostrando modelo
+      title: Modelo
   notifications:
     index:
       empty: Estás al día.

@@ -33,6 +33,10 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     assert_selector "body[data-turbo-ready]"
   end
 
+  def perform_chat_response_with_retries_spent(chat)
+    I18n.with_locale(BROWSER_LOCALE) { chat_response_job_with_retries_spent(chat).perform_now }
+  end
+
   def sign_in_via_browser(user)
     visit new_session_url
     fill_in "email_address", with: user.email_address

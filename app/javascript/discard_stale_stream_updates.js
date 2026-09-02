@@ -1,6 +1,8 @@
 export default function discardStaleStreamUpdates() {
   const knownVersions = new Map()
   const tombstonedIds = new Set()
+  const awaitingTarget = new Map()
+  const observer = new MutationObserver(() => renderAwaitedStreams())
 
   document.addEventListener("turbo:before-stream-render", (event) => {
     const newStream = event.detail.newStream
@@ -18,43 +20,59 @@ export default function discardStaleStreamUpdates() {
 
     if (action !== "append" && action !== "replace") return
 
-    const incoming = newStream.templateElement.content.firstElementChild
-    if (!incoming?.id || !incoming.dataset.version) return
+    const incoming = versionedElement(newStream)
+    if (!incoming) return
 
     const version = Number(incoming.dataset.version)
-    if (isStale(incoming.id, version, knownVersions, tombstonedIds)) {
+    if (isStale(incoming.id, version)) {
       event.preventDefault()
       return
     }
 
     knownVersions.set(incoming.id, version)
-    applyMessageElement(incoming, newStream.targetElements)
+    if (action !== "replace") return
+
+    incoming.dataset.settled = "true"
+    if (document.getElementById(incoming.id)) return
+
+    awaitForTarget(incoming.id, newStream)
     event.preventDefault()
   })
-}
 
-function applyMessageElement(incoming, targetElements) {
-  const content = incoming.cloneNode(true)
-  const existing = document.getElementById(incoming.id)
+  function isStale(id, version) {
+    if (tombstonedIds.has(id)) return true
 
-  if (existing) {
-    content.dataset.settled = "true"
-    existing.replaceWith(content)
-    return
+    const knownVersion = knownVersions.get(id)
+    return knownVersion !== undefined && version < knownVersion && Boolean(document.getElementById(id))
   }
 
-  const targets = targetElements.length > 0 ? targetElements : messagesContainer()
-  targets.forEach((target) => target.append(content))
+  function awaitForTarget(id, newStream) {
+    awaitingTarget.set(id, newStream.cloneNode(true))
+    if (awaitingTarget.size === 1) observer.observe(document.body, { childList: true, subtree: true })
+  }
+
+  function renderAwaitedStreams() {
+    awaitingTarget.forEach((stream, id) => {
+      if (!document.getElementById(id)) return
+
+      awaitingTarget.delete(id)
+      document.body.appendChild(stream)
+    })
+
+    if (awaitingTarget.size === 0) observer.disconnect()
+  }
 }
 
-function messagesContainer() {
-  const container = document.querySelector('[id$="_messages"]')
-  return container ? [ container ] : []
-}
+function versionedElement(newStream) {
+  let element
 
-function isStale(id, version, knownVersions, tombstonedIds) {
-  const knownVersion = knownVersions.get(id)
-  return tombstonedIds.has(id) || (knownVersion !== undefined && version < knownVersion)
+  try {
+    element = newStream.templateElement.content.firstElementChild
+  } catch {
+    return null
+  }
+
+  return element?.id && element.dataset.version ? element : null
 }
 
 function targetsSettledMessage(target) {
