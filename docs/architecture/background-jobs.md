@@ -1,0 +1,13 @@
+# Background jobs
+
+Solid Queue runs inside Puma in every environment that processes jobs. `config/puma.rb` activates `plugin :solid_queue` when `SOLID_QUEUE_IN_PUMA` is set — which `config/deploy.yml` does in production — or when the environment is development, so `bin/rails server` and `bin/dev` both start the supervisor alongside the web server. `Procfile.dev` has no jobs line and must not grow one: a second supervisor would run every job twice. `test/integration/development_processes_test.rb` guards both halves of that.
+
+Development uses the same cable adapter as production. `config/cable.yml` sets `solid_cable` in development with its own `cable` database, so a broadcast from a console, a job or a request behaves identically to production; the `async` adapter delivers only within one process and would quietly swallow anything broadcast from elsewhere. The same test asserts development and production agree on the adapter. The system suite cannot catch this, because system tests run jobs inline and always broadcast from the web process.
+
+Development and test each get their own `queue` database in `config/database.yml`, loaded from `db/queue_schema.rb`. Only development sets `queue_adapter = :solid_queue`; test keeps Rails' `:test` adapter and system tests use `:inline`, so the suite's job behaviour is unchanged and the queue database exists purely so code that reads Solid Queue's own tables — the health check — can be tested against real rows.
+
+Solid Queue performs **no automatic retries**. Its own README is explicit that retrying is Active Job's job, not the queue's. A job that raises and declares no `retry_on` lands in `solid_queue_failed_executions` and stays there until someone retries or discards it from `/jobs` or a console, and Solid Errors records the exception. Jobs also persist across restarts in development, which is faithful to production and occasionally surprising.
+
+Solid Queue logs to `log/development.log`, not to stdout, so the terminal stays quiet even while the supervisor works.
+
+Recurring work is declared in `config/recurring.yml`: clearing finished jobs, purging expired data exports, closing inactive support conversations, purging expired analytics visits and purging never-confirmed users. Those run in production only.

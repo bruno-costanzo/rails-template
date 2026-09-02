@@ -47,6 +47,23 @@ class Template::CleanupTest < ActiveSupport::TestCase
     end
   end
 
+  test "rewrites CLAUDE.md so it maps an application rather than a template" do
+    in_fixture_tree do |dir|
+      Template::Cleanup.new(root: dir, app_name: "Demo").run
+
+      claude = File.read(File.join(dir, "CLAUDE.md"))
+      assert_includes claude, "Demo is a Rails application"
+      assert_not_includes claude, "Rails starter template"
+      assert_not_includes claude, "bin/rename"
+      assert_not_includes claude, "bin/smoke-rename"
+      assert_not_includes claude, "bin/spawn"
+      assert_not_includes claude, "bin/children"
+      assert_includes claude, "six steps"
+      assert_includes claude, "- `bin/setup`"
+      assert_includes claude, "## Subsystem map"
+    end
+  end
+
   test "this template's own readme still carries the anchors the cleanup depends on" do
     readme = Rails.root.join("README.md").read
 
@@ -54,6 +71,15 @@ class Template::CleanupTest < ActiveSupport::TestCase
     assert_match Template::Cleanup::TEMPLATE_SECTION, readme
     assert_includes readme, Template::Cleanup::CI_CLAUSE
     Template::Cleanup::SMOKE_MARKERS.each { |marker| assert_includes readme, marker }
+  end
+
+  test "this template's own CLAUDE.md still carries the anchors the cleanup depends on" do
+    claude = Rails.root.join("CLAUDE.md").read
+
+    assert_match Template::Cleanup::CLAUDE_INTRO, claude
+    assert_match Template::Cleanup::CLAUDE_COMMANDS, claude
+    assert_includes claude, Template::Cleanup::CLAUDE_CI_CLAUSE
+    assert_includes claude, Template::Cleanup::CLAUDE_STEP_COUNT
   end
 
   test "this template's own ci script still carries the step the cleanup removes" do
@@ -101,6 +127,24 @@ class Template::CleanupTest < ActiveSupport::TestCase
           step "Smoke: renamed app boots and serves", "bin/smoke-rename"
         end
       RUBY
+      File.write(File.join(dir, "CLAUDE.md"), <<~MARKDOWN)
+        # Demo
+
+        Rails starter template. New apps are born from it with `bin/rename <new_app_name>`.
+
+        ## Commands
+        - `bin/setup` — install and prepare everything.
+        - `bin/ci` — configured in `config/ci.rb` with seven steps: rubocop, `bin/rails test`, `bin/smoke-rename`.
+        - `bin/rename <name>` — turn the template into a new app.
+          It also deletes `lib/template/` and `test/lib/template/`.
+        - `bin/smoke-rename` — export, rename, boot, serve.
+          **Gotcha:** it exports tracked changes only.
+        - `bin/spawn <name>` — clone into `../<name>`.
+        - `bin/children` — report each child's pending commits.
+
+        ## Subsystem map
+        - **Auth** — sign-in blocks until confirmed. → `auth.md`
+      MARKDOWN
       File.write(File.join(dir, "README.md"), <<~MARKDOWN)
         # Demo
 

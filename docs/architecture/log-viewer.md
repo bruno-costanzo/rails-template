@@ -1,0 +1,9 @@
+# Log viewer
+
+onlylogs is mounted at `/onlylogs`, next to Solid Errors. Production logging broadcasts to both STDOUT, so Kamal's capture is unchanged, and `storage/logs/production.log`, rotated by Ruby's own `Logger` to five files of 100 megabytes — a hard ceiling of roughly half a gigabyte on the storage volume. `config/initializers/onlylogs.rb` whitelists exactly that path; the gem also permits the numbered rotation suffixes and lists them. Outside production the environment's own log file is added so the viewer works locally.
+
+Authorization goes through the gem's documented custom-auth hook rather than its built-in basic auth: the initializer disables the built-in gate and points `parent_controller` at `OnlylogsBaseController`, which only includes `SuperadminAuthentication`. The gem's own authenticate method then no-ops and the shared, deny-by-default superadmin gate does the work.
+
+`config.default_log_file_path` is deliberately an empty string, and it must stay that way. The channel's fallback for a blank requested path streams the default path with no decryption and no whitelist check, so pointing it at a real log turns the socket into an unauthenticated tail of that file. `test/channels/onlylogs_logs_channel_test.rb` guards it.
+
+Basic auth covers the HTTP surface only. The live tail runs over Action Cable and the gem's channel never checks onlylogs credentials — its boundary is the app's cable connection, which is any signed-in user given open self-registration, plus the whitelist and the encrypted file-path token. The residual risk is that a signed-in person holding a valid token, which is non-expiring and normally only rendered behind the basic-auth gate, can still stream that whitelisted file. The upstream gap is that the channel has no equivalent of the controller hook.

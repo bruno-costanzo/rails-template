@@ -1,0 +1,9 @@
+# Analytics
+
+`ahoy_matey` ships as a capability, not as instrumentation — the same stance as noticed and pundit. The tables, the privacy configuration, the retention job and the wiring are all here; **zero events are tracked**, because what is worth measuring is a per-app product decision. `Ahoy::Visit` and `Ahoy::Event` (`app/models/ahoy/`) live in the primary database.
+
+`config/initializers/ahoy.rb` sets the privacy defaults: no tracking cookie, so there is nothing to ask consent for; masked IPs; no geocoding, and the migration was trimmed of the location and native-app columns accordingly, which is safe because Ahoy stores unknown attributes through a slice. `api = false` means server-side tracking only — no JavaScript, no public events endpoint, nothing for the Content Security Policy to allow. Bots are excluded by default, which is why integration tests that send no browser user agent create no visits at all.
+
+`User` declares `has_many :ahoy_visits` and `:ahoy_events` with `dependent: :destroy`, which puts analytics inside both the deletion cascade and the data export for free. `Ahoy::Visit::RETENTION` is 90 days and `purge_expired_visits` in `config/recurring.yml` sweeps nightly.
+
+Two wiring details fail silently if changed. `Ahoy.user_method` is overridden to return `Current.user`, because Ahoy looks for a `current_user` method this app does not define — the same override as `pundit_user`. And `ApplicationController` re-registers Ahoy's callback after its own `resume_session`, because sessions here resolve lazily: without that ordering, `Current.session` is not set until the layout renders, long after every `before_action`, and every visit on a publicly reachable page is recorded as anonymous even for a signed-in person.

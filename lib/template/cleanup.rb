@@ -6,6 +6,10 @@ module Template
     CI_CLAUSE = ", and a `bin/smoke-rename` step"
     INTRO_SECTION = /^## What is this\n\n.*?(?=\n## )/m
     TEMPLATE_SECTION = /^## Updating this template\n\n.*?\n\n(?=## )/m
+    CLAUDE_INTRO = /^Rails starter template\.[^\n]*\n/
+    CLAUDE_COMMANDS = /^- `bin\/(?:rename|smoke-rename|spawn|children)(?![\w-])[^\n]*\n(?:[ \t]+[^\n]*\n)*/
+    CLAUDE_CI_CLAUSE = ", `bin/smoke-rename`"
+    CLAUDE_STEP_COUNT = "seven steps"
     TEMPLATE_URL = "https://github.com/bruno-costanzo/rails-template"
     TEMPLATE_SLUG = "rails-template"
 
@@ -19,6 +23,7 @@ module Template
       detach_from_template
       rewrite("config/ci.rb") { |content| content.gsub(CI_STEP, "") }
       rewrite("README.md") { |content| clean_readme(content) }
+      rewrite("CLAUDE.md") { |content| clean_claude(content) }
     end
 
     private
@@ -46,6 +51,16 @@ module Template
       content = content.sub(CI_CLAUSE, "")
       content = content.sub(TEMPLATE_SECTION, "")
       content.split("\n\n").reject { |paragraph| describes_removed_tooling?(paragraph) }.join("\n\n")
+    end
+
+    def clean_claude(content)
+      content = content.sub(CLAUDE_INTRO, claude_intro)
+      content = content.sub(CLAUDE_CI_CLAUSE, "").sub(CLAUDE_STEP_COUNT, "six steps")
+      content.gsub(CLAUDE_COMMANDS, "")
+    end
+
+    def claude_intro
+      "#{@app_name} is a Rails application. This file is the map for agents; each subsystem's detail lives in `docs/architecture/`.\n"
     end
 
     def describes_removed_tooling?(paragraph)

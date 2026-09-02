@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Smoke test for the template's core promise: a freshly renamed copy must boot
 # AND serve. Exports the tracked tree, runs bin/rename, asserts no old-name
-# references survive (outside the intentionally-skipped docs/), boots the renamed
+# references survive anywhere in the tree, boots the renamed
 # app via zeitwerk:check so any leftover constant reference fails loudly, then
 # starts a real server and requests the public pages — loading is not serving,
 # and a broken route, view or initializer only shows up on a real request.
@@ -39,7 +39,7 @@ echo "→ Preparing the database (db:prepare)"
 ( cd "$tmp" && bin/rails db:prepare >/dev/null )
 
 echo "→ Checking for residual template references"
-residual="$(grep -rIl -e CharcoTemplate -e charco_template -e charco-template -e 'Charco Template' "$tmp" --exclude-dir=docs --exclude='*.mjs' || true)"
+residual="$(grep -rIl -e CharcoTemplate -e charco_template -e charco-template -e 'Charco Template' "$tmp" --exclude='*.mjs' || true)"
 if [ -n "$residual" ]; then
   echo "✗ Old name still present after rename in:"
   echo "$residual"
