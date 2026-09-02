@@ -137,6 +137,8 @@ es:
       expiration: Este enlace caducará en %{duration}.
       lead: 'Confirma tu correo electrónico para activar tu cuenta:'
       link_text: confirmar tu correo electrónico
+      retention: Si no confirmás tu correo dentro de %{duration}, vamos a eliminar
+        la cuenta.
       subject: Confirma tu correo
   feedbacks:
     create:

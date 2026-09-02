@@ -1,6 +1,7 @@
 require "test_helper"
 
 class EmailConfirmationsMailerTest < ActionMailer::TestCase
+  include ActionView::Helpers::DateHelper
   test "confirm addresses the user and includes a confirmation link" do
     user = User.create!(name: "Unconf", email_address: "mailer@example.com", password: "password1234")
 
@@ -9,6 +10,10 @@ class EmailConfirmationsMailerTest < ActionMailer::TestCase
     assert_equal [ user.email_address ], email.to
     assert_equal I18n.t("email_confirmations_mailer.confirm.subject"), email.subject
     assert_match %r{http://example\.com/email_confirmations/[\w.-]+}, email.body.encoded.gsub("=\r\n", "")
+
+    retention = I18n.t("email_confirmations_mailer.confirm.retention", duration: distance_of_time_in_words(0, User::UNCONFIRMED_RETENTION))
+    assert_includes email.html_part.decoded, retention
+    assert_includes email.text_part.decoded, retention
   end
 
   test "change addresses the pending email and includes an email change link" do

@@ -1,6 +1,7 @@
 class User < ApplicationRecord
   DAILY_MESSAGE_LIMIT = 100
   EMAIL_CONFIRMATION_EXPIRES_IN = 1.day
+  UNCONFIRMED_RETENTION = 7.days
 
   has_secure_password
   has_many :sessions, dependent: :destroy
@@ -55,6 +56,10 @@ class User < ApplicationRecord
 
   def confirm_email_change
     update(email_address: unconfirmed_email, unconfirmed_email: nil)
+  end
+
+  def self.purge_unconfirmed
+    where(confirmed_at: nil, created_at: ...UNCONFIRMED_RETENTION.ago).find_each(&:destroy)
   end
 
   private

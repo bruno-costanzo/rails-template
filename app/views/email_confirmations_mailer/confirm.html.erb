@@ -4,3 +4,5 @@
 </p>
 
 <p><%= t(".expiration", duration: distance_of_time_in_words(0, User::EMAIL_CONFIRMATION_EXPIRES_IN)) %></p>
+
+<p><%= t(".retention", duration: distance_of_time_in_words(0, User::UNCONFIRMED_RETENTION)) %></p>

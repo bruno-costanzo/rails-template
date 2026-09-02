@@ -135,6 +135,8 @@ en:
       expiration: This link will expire in %{duration}.
       lead: 'Confirm your email address to activate your account:'
       link_text: confirm your email address
+      retention: If you don't confirm your email within %{duration}, we'll delete
+        the account.
       subject: Confirm your email
   feedbacks:
     create:

@@ -2,3 +2,5 @@
 <%= email_confirmation_url(@token) %>
 
 <%= t(".expiration", duration: distance_of_time_in_words(0, User::EMAIL_CONFIRMATION_EXPIRES_IN)) %>
+
+<%= t(".retention", duration: distance_of_time_in_words(0, User::UNCONFIRMED_RETENTION)) %>

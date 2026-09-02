@@ -167,4 +167,40 @@ class UserTest < ActiveSupport::TestCase
 
     assert_nil User.find_by_token_for(:email_change, token)
   end
+
+  test "purge_unconfirmed destroys unconfirmed accounts past the retention window" do
+    old_unconfirmed = unconfirmed_user_at((User::UNCONFIRMED_RETENTION + 1.day).ago)
+
+    assert_difference "User.count", -1 do
+      User.purge_unconfirmed
+    end
+    assert_not User.exists?(old_unconfirmed.id)
+  end
+
+  test "purge_unconfirmed keeps unconfirmed accounts inside the retention window" do
+    recent_unconfirmed = unconfirmed_user_at(1.day.ago)
+
+    assert_no_difference "User.count" do
+      User.purge_unconfirmed
+    end
+    assert User.exists?(recent_unconfirmed.id)
+  end
+
+  test "purge_unconfirmed keeps old confirmed accounts" do
+    old_confirmed = unconfirmed_user_at((User::UNCONFIRMED_RETENTION + 1.day).ago)
+    old_confirmed.confirm!
+
+    assert_no_difference "User.count" do
+      User.purge_unconfirmed
+    end
+    assert User.exists?(old_confirmed.id)
+  end
+
+  private
+
+  def unconfirmed_user_at(created_at)
+    user = User.create!(name: "Unconf", email_address: "unconfirmed-#{SecureRandom.hex(4)}@example.com", password: "password1234")
+    user.update_column(:created_at, created_at)
+    user
+  end
 end

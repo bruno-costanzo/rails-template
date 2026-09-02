@@ -22,3 +22,6 @@ production:
   purge_expired_visits:
     command: "Ahoy::Visit.purge_expired"
     schedule: every day at 4am
+  purge_unconfirmed_users:
+    command: "User.purge_unconfirmed"
+    schedule: every day at 5am
