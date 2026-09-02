@@ -42,6 +42,14 @@ module OpenaiStubs
       )
   end
 
+  def stub_openai_chat_error(status: 500)
+    stub_request(:post, "https://api.openai.com/v1/chat/completions").to_return(
+      status: status,
+      headers: { "Content-Type" => "application/json" },
+      body: { error: { message: "Internal server error" } }.to_json
+    )
+  end
+
   def stub_openai_embedding(vector:)
     stub_request(:post, "https://api.openai.com/v1/embeddings").to_return(
       status: 200,

@@ -1,4 +1,8 @@
 class ModelsController < ApplicationController
+  include SuperadminAuthentication
+
+  allow_unauthenticated_access
+
   def index
     @models = available_chat_models
   end

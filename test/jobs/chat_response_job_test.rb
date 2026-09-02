@@ -73,6 +73,28 @@ class ChatResponseJobTest < ActiveJob::TestCase
     end
   end
 
+  test "rescues a provider error, broadcasts a human-friendly failure, and re-raises" do
+    chat = users(:one).chats.create!(model: "gpt-4o-mini")
+    chat.messages.create!(role: :user, content: "How do I deploy with Kamal?")
+    stub_openai_chat_error(status: 500)
+
+    clear_messages("chat_#{chat.id}")
+
+    assert_raises(RubyLLM::Error) { ChatResponseJob.perform_now(chat.id) }
+
+    raw_broadcasts = broadcasts("chat_#{chat.id}")
+    failure_broadcasts = raw_broadcasts.map { |raw| JSON.parse(raw) }.select { |broadcasted| broadcasted.include?(I18n.t("messages.failure.body")) }
+
+    assert_equal 1, failure_broadcasts.size
+    failure_broadcast = failure_broadcasts.first
+    assert_match(/action="append"/, failure_broadcast)
+    assert_match(/target="chat_#{chat.id}_messages"/, failure_broadcast)
+    assert_no_match "500", failure_broadcast
+    assert_no_match "Internal server error", failure_broadcast
+
+    assert_nil chat.messages.reload.find_by(role: :assistant)
+  end
+
   test "a support chat's tool call files a refined feedback ticket for the user" do
     chat = users(:one).chats.create!(support: true)
     stub_openai_chat_stream_with_tool_call(

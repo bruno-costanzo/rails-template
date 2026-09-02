@@ -1,0 +1,33 @@
+require "application_system_test_case"
+
+class ChatsTest < ApplicationSystemTestCase
+  test "sending a message streams the assistant's reply into the chat" do
+    chat = users(:one).chats.create!(model: "gpt-4o-mini")
+    sign_in_via_browser(users(:one))
+    stub_openai_chat(content: "Deploying with Kamal")
+    stub_openai_chat_stream(chunks: [ "Sure", ", here", " is how." ])
+
+    visit chat_url(chat)
+    fill_in t("messages.form.content_label"), with: "How do I deploy with Kamal?"
+    click_button t("messages.form.submit")
+
+    assert_text "How do I deploy with Kamal?"
+    assert_text "Sure, here is how."
+  end
+
+  test "a failed completion shows a human-friendly failure instead of leaking the error" do
+    chat = users(:one).chats.create!(model: "gpt-4o-mini")
+    sign_in_via_browser(users(:one))
+    stub_openai_chat_error(status: 500)
+
+    visit chat_url(chat)
+    chat.create_user_message("How do I deploy with Kamal?")
+
+    assert_raises(RubyLLM::Error) do
+      I18n.with_locale(BROWSER_LOCALE) { ChatResponseJob.perform_now(chat.id) }
+    end
+
+    assert_text "How do I deploy with Kamal?"
+    assert_text t("messages.failure.body")
+  end
+end

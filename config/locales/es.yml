@@ -59,7 +59,6 @@ es:
       confirm: "¿Estás seguro?"
       destroy: Eliminar
       empty: No se encontraron chats.
-      models: Modelos
       new_chat: Nuevo chat
       show: Ver
       title: Chats
@@ -161,6 +160,8 @@ es:
         other: Te quedan %{count} mensajes por hoy.
     error:
       title: Error
+    failure:
+      body: No pudimos generar la respuesta. Probá de nuevo.
     form:
       content_label: Mensaje
       content_placeholder: Mensaje...
@@ -181,8 +182,29 @@ es:
     user:
       role: Usuario
   models:
+    index:
+      chats: Chats
+      context_window: Ventana de contexto
+      empty: No se encontraron modelos de chat.
+      model: Modelo
+      pricing: "$/1M tokens (entrada/salida)"
+      provider: Proveedor
+      refresh: Actualizar modelos
+      title: Modelos
+    model:
+      start_chat: Iniciar chat
     refresh:
       notice: Modelos actualizados correctamente
+    show:
+      all_models: Todos los modelos
+      capabilities: 'Capacidades:'
+      context_window: 'Ventana de contexto:'
+      id: 'ID:'
+      max_output_tokens: 'Máximo de tokens de salida:'
+      model: 'Modelo:'
+      provider: 'Proveedor:'
+      start_chat: Iniciar chat con este modelo
+      title: Mostrando modelo
   notifications:
     index:
       empty: Estás al día.

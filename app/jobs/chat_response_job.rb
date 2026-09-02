@@ -11,5 +11,16 @@ class ChatResponseJob < ApplicationJob
     end
 
     GenerateChatTitleJob.perform_later(chat) unless chat.support?
+  rescue RubyLLM::Error
+    broadcast_failure(chat_id)
+    raise
+  end
+
+  private
+
+  def broadcast_failure(chat_id)
+    Turbo::StreamsChannel.broadcast_append_to "chat_#{chat_id}",
+      target: "chat_#{chat_id}_messages",
+      partial: "messages/failure"
   end
 end

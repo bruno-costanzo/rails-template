@@ -28,6 +28,7 @@ class SitemapsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "text/plain", response.media_type
     assert_includes response.body, "Sitemap: #{sitemap_url}"
     assert_includes response.body, "Disallow: /madmin"
+    assert_includes response.body, "Disallow: /models"
   end
 
   test "both are reachable without a session" do

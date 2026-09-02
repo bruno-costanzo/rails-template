@@ -1,23 +1,23 @@
-<% content_for :title, "Showing model" %>
+<% content_for :title, t(".title") %>
 
 <div class="md:w-2/3 w-full">
-  <h1 class="font-bold text-4xl">Showing model</h1>
+  <h1 class="font-bold text-4xl"><%= t(".title") %></h1>
 
   <div class="my-5 space-y-3">
-    <p><strong class="block font-medium mb-1">Provider:</strong> <%= @model.provider_class&.name || @model.provider %></p>
-    <p><strong class="block font-medium mb-1">Model:</strong> <%= @model.name %></p>
-    <p><strong class="block font-medium mb-1">ID:</strong> <%= @model.model_id %></p>
-    <p><strong class="block font-medium mb-1">Context Window:</strong> <%= number_with_delimiter(@model.context_window) if @model.context_window %></p>
-    <p><strong class="block font-medium mb-1">Max Output Tokens:</strong> <%= number_with_delimiter(@model.max_output_tokens) if @model.max_output_tokens %></p>
+    <p><strong class="block font-medium mb-1"><%= t(".provider") %></strong> <%= @model.provider_class&.name || @model.provider %></p>
+    <p><strong class="block font-medium mb-1"><%= t(".model") %></strong> <%= @model.name %></p>
+    <p><strong class="block font-medium mb-1"><%= t(".id") %></strong> <%= @model.model_id %></p>
+    <p><strong class="block font-medium mb-1"><%= t(".context_window") %></strong> <%= number_with_delimiter(@model.context_window) if @model.context_window %></p>
+    <p><strong class="block font-medium mb-1"><%= t(".max_output_tokens") %></strong> <%= number_with_delimiter(@model.max_output_tokens) if @model.max_output_tokens %></p>
   </div>
 
   <% if @model.capabilities.any? %>
     <div class="my-5">
-      <strong class="block font-medium mb-1">Capabilities:</strong>
+      <strong class="block font-medium mb-1"><%= t(".capabilities") %></strong>
       <%= @model.capabilities.join(", ") %>
     </div>
   <% end %>
 
-  <%= link_to "Start chat with this model", new_chat_path(model: @model.model_id), class: "w-full sm:w-auto text-center rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
-  <%= link_to "All models", models_path, class: "w-full sm:w-auto text-center mt-2 sm:mt-0 sm:ml-2 rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
+  <%= link_to t(".start_chat"), new_chat_path(model: @model.model_id), class: "btn btn-ghost" %>
+  <%= link_to t(".all_models"), models_path, class: "btn btn-ghost" %>
 </div>

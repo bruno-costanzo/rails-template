@@ -7,7 +7,7 @@ class MessagesController < ApplicationController
   def create
     content = params.dig(:message, :content)
     if content.present?
-      @user_message = @chat.messages.create!(role: :user, content: content)
+      @user_message = @chat.create_user_message(content)
       ChatResponseJob.perform_later(@chat.id)
 
       respond_to do |format|

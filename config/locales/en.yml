@@ -59,7 +59,6 @@ en:
       confirm: Are you sure?
       destroy: Destroy
       empty: No chats found.
-      models: Models
       new_chat: New chat
       show: Show
       title: Chats
@@ -159,6 +158,8 @@ en:
         other: You have %{count} messages left today.
     error:
       title: Error
+    failure:
+      body: We couldn't generate a reply. Try again.
     form:
       content_label: Message
       content_placeholder: Message...
@@ -179,8 +180,29 @@ en:
     user:
       role: User
   models:
+    index:
+      chats: Chats
+      context_window: Context window
+      empty: No chat models found.
+      model: Model
+      pricing: "$/1M tokens (in/out)"
+      provider: Provider
+      refresh: Refresh models
+      title: Models
+    model:
+      start_chat: Start chat
     refresh:
       notice: Models refreshed successfully
+    show:
+      all_models: All models
+      capabilities: 'Capabilities:'
+      context_window: 'Context window:'
+      id: 'ID:'
+      max_output_tokens: 'Max output tokens:'
+      model: 'Model:'
+      provider: 'Provider:'
+      start_chat: Start chat with this model
+      title: Showing model
   notifications:
     index:
       empty: You're all caught up.
