@@ -1,5 +1,17 @@
 ---
 es:
+  active_sessions:
+    destroy:
+      notice: Cerraste esa sesión.
+    index:
+      confirm: "¿Confirmás?"
+      meta_title: Sesiones activas
+      revoke: Cerrar sesión
+      revoke_others: Cerrar las demás
+      this_device: Este dispositivo
+      title: Sesiones activas
+    revoke_others:
+      notice: Cerraste las demás sesiones.
   activerecord:
     attributes:
       user:
@@ -275,6 +287,7 @@ es:
       documents: Documentos
       feedback: Comentarios
       profile: Perfil
+      sessions: Sesiones activas
       sign_in: Iniciar sesión
       sign_out: Cerrar sesión
       sign_up: Registrarse

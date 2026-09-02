@@ -13,6 +13,7 @@
           <li><%= link_to t("shared.navbar.chats"), chats_path %></li>
           <li><%= link_to t("shared.navbar.documents"), documents_path %></li>
           <li><%= link_to t("shared.navbar.profile"), edit_profile_path %></li>
+          <li><%= link_to t("shared.navbar.sessions"), active_sessions_path %></li>
           <li><%= link_to t("shared.navbar.feedback"), new_feedback_path %></li>
           <li><%= button_to t("shared.navbar.sign_out"), session_path, method: :delete %></li>
         </ul>

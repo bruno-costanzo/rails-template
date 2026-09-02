@@ -1,5 +1,17 @@
 ---
 en:
+  active_sessions:
+    destroy:
+      notice: That session was signed out.
+    index:
+      confirm: Are you sure?
+      meta_title: Active sessions
+      revoke: Sign out
+      revoke_others: Sign out other sessions
+      this_device: This device
+      title: Active sessions
+    revoke_others:
+      notice: The other sessions were signed out.
   activerecord:
     attributes:
       user:
@@ -272,6 +284,7 @@ en:
       documents: Documents
       feedback: Feedback
       profile: Profile
+      sessions: Active sessions
       sign_in: Sign in
       sign_out: Sign out
       sign_up: Sign up

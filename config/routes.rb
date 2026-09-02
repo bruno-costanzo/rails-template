@@ -21,6 +21,11 @@ Rails.application.routes.draw do
     end
   end
   resource :session
+  resources :active_sessions, only: %i[index destroy] do
+    collection do
+      delete :revoke_others
+    end
+  end
   resource :registration, only: %i[new create destroy]
   resource :data_export, only: %i[create show]
   resource :profile, only: %i[edit update]
