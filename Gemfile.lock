@@ -378,7 +378,7 @@ GEM
       zeitwerk (~> 2.6)
     rainbow (3.1.1)
     rake (13.4.2)
-    rbs (4.1.3)
+    rbs (4.2.0)
       logger
       prism (>= 1.6.0)
       tsort
@@ -459,7 +459,7 @@ GEM
       activerecord (>= 7.0)
       activesupport (>= 7.0)
       railties (>= 7.0)
-    solid_queue (1.6.0)
+    solid_queue (1.7.0)
       activejob (>= 7.1)
       activerecord (>= 7.1)
       concurrent-ruby (>= 1.3.1)
@@ -712,7 +712,7 @@ CHECKSUMS
   railties (8.1.3.1) sha256=2388a232579a00cefea4487de66c8553c3408c1300abdc6cf1799d86ffb04487
   rainbow (3.1.1) sha256=039491aa3a89f42efa1d6dec2fc4e62ede96eb6acd95e52f1ad581182b79bc6a
   rake (13.4.2) sha256=cb825b2bd5f1f8e91ca37bddb4b9aaf345551b4731da62949be002fa89283701
-  rbs (4.1.3) sha256=0c4474a9751cdc14364bfad0b3e53678323bbdc2c31683b0445932867dbab8c4
+  rbs (4.2.0) sha256=51f7b886dcc05bc09e10b901daa6a81829f6adc03101d6ca9ea4aac6103e0674
   rdoc (8.0.0) sha256=03bf8c08a9639658855a0cfd77c0abca8325c227693f7f33f82957811348c469
   redcarpet (3.6.1) sha256=d444910e6aa55480c6bcdc0cdb057626e8a32c054c29e793fa642ba2f155f445
   regexp_parser (2.12.0) sha256=35a916a1d63190ab5c9009457136ae5f3c0c7512d60291d0d1378ba18ce08ebb
@@ -736,7 +736,7 @@ CHECKSUMS
   solid_cable (4.0.2) sha256=084636a67679ad00d23088b33c84047e614bcf41ee559db24b414d83cdc42d03
   solid_cache (1.0.10) sha256=bc05a2fb3ac78a6f43cbb5946679cf9db67dd30d22939ededc385cb93e120d41
   solid_errors (0.7.0) sha256=a1db96bd6b96cca4444bca4526ce63b1e79ebe114b4d3f4d78af38df3b9a1a9b
-  solid_queue (1.6.0) sha256=b5fc3bb34162e09d8f960df6400d0f9304dc80fe66c2cfface31c32b228de6a1
+  solid_queue (1.7.0) sha256=6566b70b801d1c317c81bba7bcdd5677c019afac584a30374b4164002ca356d3
   sqlite-vec (0.1.9-arm64-darwin) sha256=f319ab08757741811c6f2f7d2b58c1b9009460e899e1b69d99fdab288286d9bf
   sqlite-vec (0.1.9-x86_64-linux) sha256=772389c3bf68e7976cfdd8e7c74e820245007e03294808b9b05cdbbf5b02f398
   sqlite3 (2.9.6-arm64-darwin) sha256=849b5d7f795e60fe25076d62c72dd722beb45b3850b516ad978d60ee848ec15b
