@@ -1,5 +1,8 @@
+require "redcarpet/render_strip"
+
 class Doc
   GUIDES = %w[README.md CLAUDE.md].freeze
+  GUIDE_LABEL_KEYS = { "README.md" => "readme", "CLAUDE.md" => "agent_guide" }.freeze
   ARCHITECTURE = "docs/architecture".freeze
   SUMMARY_LENGTH = 220
   NOT_A_PARAGRAPH = /\A(?:[#>|`\-*+]|\d+\.)/
@@ -23,11 +26,16 @@ class Doc
   end
 
   MARKDOWN = Redcarpet::Markdown.new(
-    Renderer.new(filter_html: true, safe_links_only: true, with_toc_data: true),
+    Renderer.new(filter_html: true, with_toc_data: true),
     fenced_code_blocks: true, tables: true, autolink: true, no_intra_emphasis: true, strikethrough: true
   )
 
   TABLE_OF_CONTENTS = Redcarpet::Markdown.new(Redcarpet::Render::HTML_TOC.new(nesting_level: 2..2))
+
+  PLAIN_TEXT = Redcarpet::Markdown.new(
+    Redcarpet::Render::StripDown,
+    fenced_code_blocks: true, tables: true, autolink: true, no_intra_emphasis: true, strikethrough: true
+  )
 
   attr_reader :path
 
@@ -52,7 +60,12 @@ class Doc
     end
 
     def summary_of(content)
-      content.split(/\n{2,}/).map(&:strip).grep_v(NOT_A_PARAGRAPH).first.to_s.squish.truncate(SUMMARY_LENGTH)
+      paragraph = content.split(/\n{2,}/).map(&:strip).grep_v(NOT_A_PARAGRAPH).first
+      strip_markdown(paragraph).truncate(SUMMARY_LENGTH)
+    end
+
+    def strip_markdown(markdown)
+      PLAIN_TEXT.render(markdown.to_s).squish
     end
 
     def slug_of(path)
@@ -82,6 +95,9 @@ class Doc
   end
 
   def title
+    guide_label_key = GUIDE_LABEL_KEYS[path]
+    return I18n.t("docs.guides.#{guide_label_key}") if guide_label_key
+
     content[/^#\s+(.+)$/, 1].to_s.strip.presence || slug
   end
 
@@ -91,6 +107,10 @@ class Doc
 
   def html
     @html ||= MARKDOWN.render(content)
+  end
+
+  def body_text
+    @body_text ||= self.class.strip_markdown(content)
   end
 
   def headings

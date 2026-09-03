@@ -18,8 +18,8 @@ module DocsHelper
     docs.flat_map do |doc|
       page = doc_path(doc.slug)
 
-      [ { title: doc.title, heading: nil, summary: doc.summary, path: page } ] +
-        doc.headings.map { |heading| { title: doc.title, heading: heading[:text], summary: "", path: "#{page}#{heading[:anchor]}" } }
+      [ { title: doc.title, heading: nil, summary: doc.summary, body: doc.body_text, path: page } ] +
+        doc.headings.map { |heading| { title: doc.title, heading: heading[:text], summary: "", body: "", path: "#{page}#{heading[:anchor]}" } }
     end
   end
 end

@@ -236,7 +236,7 @@ console1984 protects and audits the Rails console in production. Every console s
 
 ## Superadmin access
 
-Every developer-only panel — `/errors`, `/onlylogs`, `/admin/feedbacks`, the `/jobs` Solid Queue dashboard, the `/madmin` resource browser, and the `/docs` documentation site — is gated by a single HTTP basic-auth credential pair, independent of the app's own session-based login, through the `SuperadminAuthentication` concern (`app/controllers/concerns/superadmin_authentication.rb`). A controller only needs `include SuperadminAuthentication`; the concern's `included` hook registers the `before_action`. Credentials resolve credentials-first then ENV, read live on every request (so tests can flip ENV per example):
+Every developer-only panel — `/errors`, `/onlylogs`, `/admin/feedbacks`, the `/jobs` Solid Queue dashboard, the `/madmin` resource browser, the `/models` RubyLLM model list, `/railspress/admin` and the `/docs` documentation site — is gated by a single HTTP basic-auth credential pair, independent of the app's own session-based login, through the `SuperadminAuthentication` concern (`app/controllers/concerns/superadmin_authentication.rb`). A controller only needs `include SuperadminAuthentication`; the concern's `included` hook registers the `before_action`. Credentials resolve credentials-first then ENV, read live on every request (so tests can flip ENV per example):
 
 - `Rails.application.credentials.dig(:superadmin, :username)` / `:password`, falling back to `ENV["SUPERADMIN_USER"]` / `ENV["SUPERADMIN_PASSWORD"]`
 
@@ -314,7 +314,7 @@ module RailspressAdminAuth
 end
 ```
 
-Two integration notes: a narrow Bullet safelist in `config/environments/test.rb` covers `Railspress::Post => :taggings` (a `has_many :through` false positive — the join table is loaded to serve `.tags` but never accessed directly); and `superadmin_authentication.rb` and `railspress_admin_auth.rb` are excluded from the coverage gate (`skip` in `test/test_helper.rb`) because the RailsPress engine includes them into its admin controller at boot (`config.to_prepare`), which the parallel test runner's coverage can't attribute — their behavior is still verified by the five superadmin panels' integration tests. (Also note: RailsPress 1.4.4 declares an `excerpt` field but ships no `excerpt` column, so `Railspress::Post#excerpt` doesn't exist.)
+Two integration notes: a narrow Bullet safelist in `config/environments/test.rb` covers `Railspress::Post => :taggings` (a `has_many :through` false positive — the join table is loaded to serve `.tags` but never accessed directly); and `superadmin_authentication.rb` and `railspress_admin_auth.rb` are excluded from the coverage gate (`skip` in `test/test_helper.rb`) because the RailsPress engine includes them into its admin controller at boot (`config.to_prepare`), which the parallel test runner's coverage can't attribute — their behavior is still verified by each superadmin panel's integration tests. (Also note: RailsPress 1.4.4 declares an `excerpt` field but ships no `excerpt` column, so `Railspress::Post#excerpt` doesn't exist.)
 
 ## Background jobs
 

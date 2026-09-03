@@ -47,6 +47,19 @@ class DocsTest < ApplicationSystemTestCase
     assert_selector "article.docs h1", text: "Superadmin panels"
   end
 
+  test "the search also matches a page's body text and navigates to it" do
+    visit docs_url
+
+    click_button t("layouts.docs.search")
+    fill_in "docs-search-input", with: "tombstoned"
+
+    assert_selector "dialog[open] a", text: "AI chat"
+
+    find("#docs-search-input").send_keys(:enter)
+
+    assert_selector "article.docs h1", text: "AI chat"
+  end
+
   test "a page shows its sidebar, its table of contents and links to the pages it names" do
     visit doc_url("CLAUDE")
 

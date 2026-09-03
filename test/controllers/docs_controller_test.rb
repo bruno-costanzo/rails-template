@@ -57,6 +57,16 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_includes index.map { |entry| entry["path"] }, doc_path("architecture/superadmin-panels")
   end
 
+  test "the search index carries each page's plain body text" do
+    get docs_url, headers: superadmin_headers
+
+    index = JSON.parse(css_select("script[type='application/json']").first.text)
+    entry = index.find { |candidate| candidate["path"] == doc_path("architecture/superadmin-panels") }
+
+    assert_includes entry["body"], "secure_compare"
+    assert_not_includes entry["body"], "`"
+  end
+
   test "a page renders its markdown, its sidebar and its table of contents" do
     get doc_url("CLAUDE"), headers: superadmin_headers
 

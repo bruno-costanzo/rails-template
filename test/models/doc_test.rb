@@ -45,6 +45,12 @@ class DocTest < ActiveSupport::TestCase
     assert_match(/gated by ONE shared HTTP basic-auth credential pair/, doc.summary)
   end
 
+  test "the guides get distinct titles instead of their shared heading" do
+    assert_equal I18n.t("docs.guides.readme"), Doc.find("README").title
+    assert_equal I18n.t("docs.guides.agent_guide"), Doc.find("CLAUDE").title
+    assert_not_equal Doc.find("README").title, Doc.find("CLAUDE").title
+  end
+
   test "summary is empty when the page is nothing but a heading" do
     assert_equal "", Doc.summary_of("# Only a heading\n")
   end
@@ -53,6 +59,17 @@ class DocTest < ActiveSupport::TestCase
     content = "# Title\n\n- a list\n\n> a quote\n\n```\ncode\n```\n\nThe\nfirst\nparagraph.\n"
 
     assert_equal "The first paragraph.", Doc.summary_of(content)
+  end
+
+  test "summary strips inline markdown: backticks, links and emphasis" do
+    content = "# Title\n\nRun `bin/rename <name>` then read the **guide** or [the docs](docs/architecture/auth.md).\n"
+
+    summary = Doc.summary_of(content)
+
+    assert_not_includes summary, "`"
+    assert_not_includes summary, "**"
+    assert_not_includes summary, "["
+    assert_includes summary, "Run bin/rename <name> then read the guide"
   end
 
   test "html renders the markdown" do

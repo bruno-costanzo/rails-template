@@ -83,6 +83,9 @@ en:
       expired: That export has expired for your security. Request a new one.
       pending: Your export isn't ready yet. We'll email you when it is.
   docs:
+    guides:
+      agent_guide: Agent guide
+      readme: README
     index:
       hero_agents: Agent guide
       hero_body: Everything there is to know about operating this application and

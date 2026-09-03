@@ -31,30 +31,50 @@ export default class extends Controller {
 
   filter() {
     const query = this.inputTarget.value.trim().toLowerCase()
-    const matches = this.entries.filter(entry => this.haystack(entry).includes(query)).slice(0, LIMIT)
+    const primary = []
+    const secondary = []
 
-    this.render(matches)
+    for (const entry of this.entries) {
+      if (this.headingHaystack(entry).includes(query)) {
+        primary.push({ entry, snippet: null })
+      } else if ((entry.body || "").toLowerCase().includes(query)) {
+        secondary.push({ entry, snippet: this.snippet(entry.body, query) })
+      }
+    }
+
+    this.render([ ...primary, ...secondary ].slice(0, LIMIT))
   }
 
   render(matches) {
-    this.resultsTarget.replaceChildren(...matches.map((entry, position) => this.item(entry, position)))
+    this.resultsTarget.replaceChildren(...matches.map((match, position) => this.item(match, position)))
     this.emptyTarget.classList.toggle("hidden", matches.length > 0)
     this.select(0)
   }
 
-  item(entry, position) {
+  item({ entry, snippet }, position) {
     const link = document.createElement("a")
     link.href = entry.path
     link.className = "flex flex-col items-start gap-0.5"
     link.dataset.position = position
     link.append(this.line(entry.heading || entry.title, "truncate w-full"))
 
-    const detail = entry.heading ? entry.title : entry.summary
+    const detail = snippet || (entry.heading ? entry.title : entry.summary)
     if (detail) link.append(this.line(detail, "truncate w-full text-xs text-base-content/60"))
 
     const item = document.createElement("li")
     item.append(link)
     return item
+  }
+
+  snippet(body, query) {
+    const haystack = body.toLowerCase()
+    const index = haystack.indexOf(query)
+    if (index === -1) return body.slice(0, 80)
+
+    const start = Math.max(0, index - 30)
+    const end = Math.min(body.length, index + query.length + 30)
+
+    return `${start > 0 ? "…" : ""}${body.slice(start, end).trim()}${end < body.length ? "…" : ""}`
   }
 
   line(text, className) {
@@ -97,7 +117,7 @@ export default class extends Controller {
     return Array.from(this.resultsTarget.querySelectorAll("a"))
   }
 
-  haystack(entry) {
+  headingHaystack(entry) {
     return `${entry.title} ${entry.heading || ""} ${entry.summary || ""}`.toLowerCase()
   }
 }

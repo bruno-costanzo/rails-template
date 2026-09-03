@@ -84,6 +84,9 @@ es:
       pending: Tu exportación todavía no está lista. Te avisaremos por correo cuando
         lo esté.
   docs:
+    guides:
+      agent_guide: Guía para agentes
+      readme: Guía de operación
     index:
       hero_agents: Guía para agentes
       hero_body: Todo lo que hay que saber para operar esta aplicación y para trabajar
