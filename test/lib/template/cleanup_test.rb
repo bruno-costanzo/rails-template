@@ -42,6 +42,8 @@ class Template::CleanupTest < ActiveSupport::TestCase
       assert_not_includes readme, "SMOKE_PORT"
       assert_not_includes readme, "and a `bin/smoke-rename` step"
       assert_not_includes readme, "## Updating this template"
+      assert_not_includes readme, "## Starting a new app"
+      assert_not_includes readme, "bin/spawn my_app"
       assert_includes readme, "## Testing"
       assert_includes readme, "## Porting template improvements"
     end
@@ -69,6 +71,7 @@ class Template::CleanupTest < ActiveSupport::TestCase
 
     assert_match Template::Cleanup::INTRO_SECTION, readme
     assert_match Template::Cleanup::TEMPLATE_SECTION, readme
+    assert_match Template::Cleanup::STARTING_SECTION, readme
     assert_includes readme, Template::Cleanup::CI_CLAUSE
     Template::Cleanup::SMOKE_MARKERS.each { |marker| assert_includes readme, marker }
   end
@@ -172,6 +175,10 @@ class Template::CleanupTest < ActiveSupport::TestCase
         ## What is this
 
         Demo is a Rails starter template you clone and rename.
+
+        ## Starting a new app
+
+        From inside this template's own directory: `bin/spawn my_app`.
 
         ## Testing
 

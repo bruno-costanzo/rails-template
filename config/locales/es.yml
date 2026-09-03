@@ -4,7 +4,7 @@ es:
     destroy:
       notice: Cerraste esa sesión.
     index:
-      confirm: "¿Confirmás?"
+      confirm: "¿Confirmas?"
       meta_title: Sesiones activas
       revoke: Cerrar sesión
       revoke_others: Cerrar las demás
@@ -146,14 +146,14 @@ es:
   email_confirmations_mailer:
     change:
       expiration: Este enlace caduca en %{duration}.
-      lead: 'Confirmá tu nueva dirección de correo:'
+      lead: 'Confirma tu nueva dirección de correo:'
       link_text: confirmar tu nuevo correo
-      subject: Confirmá tu nuevo correo
+      subject: Confirma tu nuevo correo
     confirm:
       expiration: Este enlace caducará en %{duration}.
       lead: 'Confirma tu correo electrónico para activar tu cuenta:'
       link_text: confirmar tu correo electrónico
-      retention: Si no confirmás tu correo dentro de %{duration}, vamos a eliminar
+      retention: Si no confirmas tu correo dentro de %{duration}, vamos a eliminar
         la cuenta.
       subject: Confirma tu correo
   feedbacks:
@@ -176,7 +176,7 @@ es:
       pages: Páginas
       search: Buscar
       search_label: Buscar en la documentación
-      search_placeholder: Buscá una página o una sección
+      search_placeholder: Busca una página o una sección
       theme_dark: Tema oscuro
       theme_light: Tema claro
       title: Documentación
@@ -184,7 +184,7 @@ es:
     assistant:
       role: Asistente
     composer:
-      exhausted: Llegaste al límite de %{count} mensajes por hoy. Volvé mañana para
+      exhausted: Llegaste al límite de %{count} mensajes por hoy. Vuelve mañana para
         seguir la conversación.
       remaining:
         one: Te queda %{count} mensaje por hoy.
@@ -192,7 +192,7 @@ es:
     error:
       title: Error
     failure:
-      body: No pudimos generar la respuesta. Probá de nuevo.
+      body: No pudimos generar la respuesta. Prueba de nuevo.
     form:
       content_label: Mensaje
       content_placeholder: Mensaje...
@@ -250,7 +250,7 @@ es:
         title: Herramientas de IA
       - body: Kamal la publica en cualquier servidor, con persistencia en SQLite.
         title: Deploy en un comando
-      headline: Construí tu próxima idea más rápido
+      headline: Construye tu próxima idea más rápido
       meta_description: Un template de Rails con IA incluida desde el primer día
       meta_title: Inicio
       start: Empezar
@@ -285,7 +285,7 @@ es:
       confirmation_hint_html: Escribe %{phrase} para confirmar.
       confirmation_label: Frase de confirmación
       current_email: Tu correo actual es %{email}.
-      current_password_hint: Para cambiar tu correo o tu contraseña, ingresá tu contraseña
+      current_password_hint: Para cambiar tu correo o tu contraseña, ingresa tu contraseña
         actual.
       danger_zone: Zona de peligro
       delete_account: Eliminar mi cuenta
@@ -296,11 +296,11 @@ es:
       export_title: Tus datos
       meta_title: Perfil
       new_email_label: Nuevo correo electrónico
-      new_password_confirmation_label: Repetí la nueva contraseña
+      new_password_confirmation_label: Repite la nueva contraseña
       new_password_label: Nueva contraseña
       password_label: Tu contraseña
-      pending_email: Te enviamos un correo a %{email}. Guardá de nuevo para reenviarlo,
-        o vaciá el campo para cancelar el cambio.
+      pending_email: Te enviamos un correo a %{email}. Guarda de nuevo para reenviarlo,
+        o vacía el campo para cancelar el cambio.
       save: Guardar
       security_title: Correo y contraseña
       title: Tu perfil
@@ -360,10 +360,10 @@ es:
   support_chats:
     composer:
       label: Tu mensaje
-      placeholder: Escribí tu mensaje…
+      placeholder: Escribe tu mensaje…
       send: Enviar
     index:
-      intro: Contanos qué necesitás y te ayudamos.
+      intro: Cuéntanos qué necesitas y te ayudamos.
       previous: Conversaciones anteriores
       start: Nueva consulta
       untitled: Consulta sin mensajes
@@ -374,7 +374,7 @@ es:
         other: "%{count} fotos adjuntas"
     show:
       back: Volver
-      closed: Esta conversación se cerró. Si necesitás algo más, abrí una nueva.
+      closed: Esta conversación se cerró. Si necesitas algo más, abre una nueva.
       pending: Escribiendo una respuesta
       start_another: Nueva consulta
     widget:

@@ -6,6 +6,7 @@ module Template
     CI_CLAUSE = ", and a `bin/smoke-rename` step"
     INTRO_SECTION = /^## What is this\n\n.*?(?=\n## )/m
     TEMPLATE_SECTION = /^## Updating this template\n\n.*?\n\n(?=## )/m
+    STARTING_SECTION = /^## Starting a new app\n\n.*?\n\n(?=## )/m
     CLAUDE_INTRO = /^Rails starter template\.[^\n]*\n/
     CLAUDE_COMMANDS = /^- `bin\/(?:rename|smoke-rename|spawn|children)(?![\w-])[^\n]*\n(?:[ \t]+[^\n]*\n)*/
     CLAUDE_CI_CLAUSE = ", `bin/smoke-rename`"
@@ -51,6 +52,7 @@ module Template
       content = content.sub(INTRO_SECTION, "## What is this\n\n#{intro}\n")
       content = content.sub(CI_CLAUSE, "")
       content = content.sub(TEMPLATE_SECTION, "")
+      content = content.sub(STARTING_SECTION, "")
       content.split("\n\n").reject { |paragraph| describes_removed_tooling?(paragraph) }.join("\n\n")
     end
 

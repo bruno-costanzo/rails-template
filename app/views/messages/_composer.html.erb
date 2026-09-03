@@ -1,5 +1,5 @@
 <% remaining = Current.user.messages_remaining_today %>
-<div id="composer" class="flex-1">
+<div id="composer_<%= chat.id %>" class="flex-1">
   <% if remaining.zero? %>
     <p class="text-sm opacity-70"><%= t(".exhausted", count: User::DAILY_MESSAGE_LIMIT) %></p>
   <% elsif chat.support? %>

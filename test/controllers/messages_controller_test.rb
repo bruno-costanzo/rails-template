@@ -103,6 +103,16 @@ class MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_match I18n.t("messages.composer.exhausted", count: User::DAILY_MESSAGE_LIMIT), @response.body
   end
 
+  test "the turbo stream response targets only this chat's own composer" do
+    sign_in_as users(:one)
+    chat = users(:one).chats.create!(model: "gpt-4o-mini")
+
+    post chat_messages_url(chat), params: { message: { content: "Hi" } }, as: :turbo_stream
+
+    assert_response :success
+    assert_match "target=\"composer_#{chat.id}\"", @response.body
+  end
+
   test "a support reply re-renders the composer without the daily message counter" do
     sign_in_as users(:one)
     chat = users(:one).chats.create!(support: true)

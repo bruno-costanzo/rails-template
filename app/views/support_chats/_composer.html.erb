@@ -1,4 +1,4 @@
-<%= form_with(model: message, url: [ chat, message ], id: "new_message",
+<%= form_with(model: message, url: [ chat, message ], id: "new_message_#{chat.id}",
       class: "flex items-end gap-2",
       data: { controller: "composer", action: "turbo:submit-end->support-conversation#awaiting" }) do |form| %>
   <%= form.label :content, t(".label"), class: "sr-only" %>

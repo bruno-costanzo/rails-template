@@ -19,7 +19,7 @@ class SupportChatTest < ApplicationSystemTestCase
 
     within "dialog.modal" do
       click_button t("support_chats.index.start")
-      assert_selector "#new_message"
+      assert_selector "[id^='new_message_']"
     end
 
     chat = users(:one).chats.support.sole
@@ -42,6 +42,26 @@ class SupportChatTest < ApplicationSystemTestCase
     end
   end
 
+  test "sending a message from the support widget leaves the chat page's own composer untouched" do
+    chat = users(:one).chats.create!(model: "gpt-4o-mini")
+    sign_in_via_browser(users(:one))
+    stub_openai_chat_stream(chunks: [ "Thanks for reaching out, let's sort this out together." ])
+
+    visit chat_url(chat)
+    assert_selector "#composer_#{chat.id} input[type=submit]"
+
+    click_button t("support_chats.widget.support")
+    within "dialog.modal" do
+      click_button t("support_chats.index.start")
+      fill_in t("support_chats.composer.label"), with: "The chat page loads slowly for me"
+      click_button t("support_chats.composer.send")
+
+      assert_text "Thanks for reaching out, let's sort this out together."
+    end
+
+    assert_selector "#composer_#{chat.id} input[type=submit]"
+  end
+
   test "a failed reply shows a human-friendly failure and leaves no pending spinner" do
     sign_in_via_browser(users(:one))
 
@@ -50,7 +70,7 @@ class SupportChatTest < ApplicationSystemTestCase
     click_button t("support_chats.widget.support")
     within "dialog.modal" do
       click_button t("support_chats.index.start")
-      assert_selector "#new_message"
+      assert_selector "[id^='new_message_']"
     end
 
     without_raising_server_errors do
@@ -74,7 +94,7 @@ class SupportChatTest < ApplicationSystemTestCase
     click_button t("support_chats.widget.support")
     within "dialog.modal" do
       click_link "Mi factura salio mal"
-      assert_selector "#new_message"
+      assert_selector "[id^='new_message_']"
       assert_text "Mi factura salio mal"
     end
   end

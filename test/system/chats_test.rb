@@ -1,6 +1,14 @@
 require "application_system_test_case"
 
 class ChatsTest < ApplicationSystemTestCase
+  test "visits the new chat page" do
+    sign_in_via_browser(users(:one))
+
+    visit new_chat_url
+
+    assert_text t("chats.new.title")
+  end
+
   test "sending a message streams the assistant's reply into the chat" do
     chat = users(:one).chats.create!(model: "gpt-4o-mini")
     sign_in_via_browser(users(:one))

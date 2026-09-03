@@ -2,7 +2,7 @@
   <%= turbo_stream.append "chat_#{@chat.id}_messages" do %>
     <%= render @user_message %>
   <% end %>
-  <%= turbo_stream.replace "composer" do %>
+  <%= turbo_stream.replace "composer_#{@chat.id}" do %>
     <%= render "messages/composer", chat: @chat, message: @chat.messages.build %>
   <% end %>
 <% end %>
