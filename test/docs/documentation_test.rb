@@ -77,7 +77,7 @@ class DocumentationTest < ActiveSupport::TestCase
   end
 
   def cross_referenced_pages(doc)
-    doc.read.scan(CROSS_REFERENCE).reject { |name| CROSS_REFERENCE_WHITELIST.include?(name) }.uniq
+    unfenced(doc.read).scan(CROSS_REFERENCE).reject { |name| CROSS_REFERENCE_WHITELIST.include?(name) }.uniq
   end
 
   def unfenced(content)
