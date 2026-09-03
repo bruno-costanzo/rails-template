@@ -80,6 +80,27 @@ class Template::CleanupTest < ActiveSupport::TestCase
     assert_match Template::Cleanup::CLAUDE_COMMANDS, claude
     assert_includes claude, Template::Cleanup::CLAUDE_CI_CLAUSE
     assert_includes claude, Template::Cleanup::CLAUDE_STEP_COUNT
+    assert_equal 4, claude.scan(Template::Cleanup::CLAUDE_COMMANDS).size,
+      "expected exactly the four template-only command bullets (bin/rename, bin/smoke-rename, bin/spawn, bin/children); " \
+      "renaming one without updating CLAUDE_COMMANDS would leave a dead command bullet in every child app"
+  end
+
+  test "drops the smoke step from the bin/ci bullet even when an earlier line mentions bin/smoke-rename first" do
+    in_fixture_tree do |dir|
+      claude_path = File.join(dir, "CLAUDE.md")
+      content = File.read(claude_path)
+      decoy = "- `bin/setup` — install and prepare everything, then runs `bin/rails test`, `bin/smoke-rename`, and boots the app.\n"
+      content = content.sub("## Commands\n", "## Commands\n#{decoy}")
+      File.write(claude_path, content)
+
+      Template::Cleanup.new(root: dir, app_name: "Demo").run
+
+      claude = File.read(claude_path)
+      ci_bullet = claude.lines.find { |line| line.include?("bin/ci") }
+      assert_includes claude, "six steps"
+      assert_not_includes ci_bullet, "bin/smoke-rename",
+        "the bin/ci bullet must drop its own smoke-rename mention, not an earlier decoy line"
+    end
   end
 
   test "this template's own ci script still carries the step the cleanup removes" do

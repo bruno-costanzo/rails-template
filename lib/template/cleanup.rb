@@ -10,6 +10,7 @@ module Template
     CLAUDE_COMMANDS = /^- `bin\/(?:rename|smoke-rename|spawn|children)(?![\w-])[^\n]*\n(?:[ \t]+[^\n]*\n)*/
     CLAUDE_CI_CLAUSE = ", `bin/smoke-rename`"
     CLAUDE_STEP_COUNT = "seven steps"
+    CLAUDE_CI_BULLET_LINE = /^.*#{Regexp.escape(CLAUDE_STEP_COUNT)}.*\n/
     TEMPLATE_URL = "https://github.com/bruno-costanzo/rails-template"
     TEMPLATE_SLUG = "rails-template"
 
@@ -55,7 +56,7 @@ module Template
 
     def clean_claude(content)
       content = content.sub(CLAUDE_INTRO, claude_intro)
-      content = content.sub(CLAUDE_CI_CLAUSE, "").sub(CLAUDE_STEP_COUNT, "six steps")
+      content = content.sub(CLAUDE_CI_BULLET_LINE) { |line| line.sub(CLAUDE_CI_CLAUSE, "").sub(CLAUDE_STEP_COUNT, "six steps") }
       content.gsub(CLAUDE_COMMANDS, "")
     end
 

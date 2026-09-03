@@ -51,8 +51,9 @@ All Ruby/Rails commands run under `mise exec ruby@4.0.6 -- <command>` in non-mis
 - 100% line and branch coverage is enforced by SimpleCov; `bin/rails test` fails below 100%. Write the test first; never delete a failing coverage gate.
   `simplecov-console` prints the sub-100% files with their uncovered lines and branches on every run. Exclusions use `skip`, not the deprecated `add_filter`.
 - N+1 queries fail tests: `Bullet.raise = true` in `config/environments/test.rb`, in every kind of test. Fix real ones with `includes`/`preload`/counter cache; safelist only a verified false positive, as narrowly as possible.
-- Accessibility failures fail tests: `ApplicationSystemTestCase#visit` audits every page with axe-core against WCAG 2.1 A/AA in BOTH colour schemes (`test/test_helpers/accessibility_helper.rb`).
+- Accessibility failures fail tests: `ApplicationSystemTestCase#visit` calls `assert_accessible` (`test/test_helpers/accessibility_helper.rb`), which audits axe-core against WCAG 2.1 A/AA in BOTH colour schemes, forced via the CDP `Emulation.setEmulatedMedia` command.
   Both is required, not thorough: headless Chrome's default scheme differs per machine. Fix the violation; never widen the ruleset.
+- `axe-core-api` is installed only for its vendored `axe.min.js`; its own runner is Selenium-only, so `axe-core-capybara` is deliberately absent.
 - User-facing business rules have exactly one owner: the code that enforces them. A rule the person needs to know — a grace period, a cancellation window, an eligibility threshold — is a constant (or a method) on the model that applies it.
   The sentence they read is generated from that value through i18n interpolation. Never restate the value as a literal in copy:
 

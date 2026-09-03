@@ -316,7 +316,7 @@ Development uses production's cable adapter for the same reason: `config/cable.y
 
 Note that Solid Queue logs to `log/development.log`, not to stdout, so your terminal stays quiet even while the supervisor works.
 
-This requires the queue and cable tables to exist outside production, so `config/database.yml` gives **development and test** their own `queue` database (`storage/development_queue.sqlite3`, `storage/test_queue.sqlite3`, migrated from `db/queue_migrate`), and `config/environments/development.rb` and `test.rb` set `config.solid_queue.connects_to`. `bin/setup` and `bin/rails db:prepare` create both.
+This requires the queue and cable tables to exist outside production, so `config/database.yml` gives **development and test** their own `queue` database (`storage/development_queue.sqlite3`, `storage/test_queue.sqlite3`, loaded from `db/queue_schema.rb`), and `config/environments/development.rb` and `test.rb` set `config.solid_queue.connects_to`. `bin/setup` and `bin/rails db:prepare` create both.
 
 Development also sets `config.active_job.queue_adapter = :solid_queue`; **the test environment deliberately does not**. Tests keep Rails' `:test` adapter (and system tests use `:inline`), so the suite's job behaviour is unchanged — the queue database is there only so code that reads Solid Queue's own tables, like the health check, can be tested against real rows.
 

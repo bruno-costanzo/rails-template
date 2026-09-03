@@ -5,12 +5,25 @@ class DocumentationTest < ActiveSupport::TestCase
   MAP_ENTRY = /→ `([^`]+\.md)`/
   BACKTICKED = /`([^`]+)`/
   CITED_PATH = %r{\A(?:app|config|lib|test|bin|db)/[A-Za-z0-9_.*/-]+\z}
+  CROSS_REFERENCE = /\b[a-z][a-z-]*\.md\b/
+  CROSS_REFERENCE_WHITELIST = %w[README.md CLAUDE.md].freeze
 
   test "every page the subsystem map points at exists, and every page is in the map" do
     assert_empty mapped_pages - architecture_pages,
       "CLAUDE.md's subsystem map points at pages that are missing from docs/architecture/"
     assert_empty architecture_pages - mapped_pages,
       "pages in docs/architecture/ that no line of CLAUDE.md's subsystem map points at"
+  end
+
+  test "every cross-reference between architecture pages names a page that exists" do
+    offenders = Dir.glob(ARCHITECTURE.join("*.md")).sort.flat_map do |page|
+      path = Pathname.new(page)
+      cross_referenced_pages(path).reject { |name| architecture_pages.include?(name) }.map do |name|
+        "#{path.relative_path_from(Rails.root)} references #{name}"
+      end
+    end
+
+    assert_empty offenders, "docs/architecture pages reference other pages that do not exist there"
   end
 
   test "no line of CLAUDE.md is longer than an index entry should be" do
@@ -57,10 +70,18 @@ class DocumentationTest < ActiveSupport::TestCase
   end
 
   def cited_paths(doc)
-    doc.read.scan(BACKTICKED).flatten.flat_map { |span| span.split(/\s+/) }
+    unfenced(doc.read).scan(BACKTICKED).flatten.flat_map { |span| span.split(/\s+/) }
        .reject { |token| token.include?("<") }
        .select { |token| token.match?(CITED_PATH) }
        .uniq
+  end
+
+  def cross_referenced_pages(doc)
+    doc.read.scan(CROSS_REFERENCE).reject { |name| CROSS_REFERENCE_WHITELIST.include?(name) }.uniq
+  end
+
+  def unfenced(content)
+    content.gsub(/```.*?```/m, "")
   end
 
   def exists?(path)
