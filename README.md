@@ -663,6 +663,8 @@ Deploys use [Kamal](https://kamal-deploy.org). Before your first deploy, edit `c
 
 `RAILS_MASTER_KEY` and `OPENAI_API_KEY` are injected as secrets via `.kamal/secrets` (which reads `config/master.key` and the `OPENAI_API_KEY` environment variable — never commit real secrets into that file). A persistent storage volume (`storage/` mounted at `/rails/storage`) is mandatory: it holds the SQLite database files and any locally-stored Active Storage uploads, so losing it means losing data.
 
+The `env:` block also declares `APP_HOST` (clear) plus `SUPERADMIN_USER`, `SUPERADMIN_PASSWORD`, `SMTP_USER_NAME`, and `SMTP_PASSWORD` (secret) — a first deploy must set the real domain in `config/deploy.yml` and uncomment those four in `.kamal/secrets`, or mailer links point at `example.com`, no email sends, and every developer panel answers `401`.
+
 ```bash
 kamal setup
 ```
