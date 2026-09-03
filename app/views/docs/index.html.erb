@@ -1,0 +1,34 @@
+<% content_for :title, t(".title") %>
+
+<div class="hero border-b border-base-300 bg-base-200">
+  <div class="hero-content flex-col py-20 text-center">
+    <div class="max-w-2xl">
+      <p class="mb-3 text-sm font-semibold uppercase tracking-widest text-base-content/70"><%= t(".hero_eyebrow") %></p>
+      <h1 class="text-5xl font-bold"><%= t(".hero_title") %></h1>
+      <p class="py-6 text-lg text-base-content/70"><%= t(".hero_body") %></p>
+      <div class="flex flex-wrap justify-center gap-3">
+        <%= link_to t(".hero_readme"), doc_path("README"), class: "btn btn-primary" %>
+        <%= link_to t(".hero_agents"), doc_path("CLAUDE"), class: "btn btn-outline" %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mx-auto w-full max-w-6xl px-6 py-14">
+  <% @docs.group_by(&:section).each do |section, pages| %>
+    <h2 class="mb-6 text-2xl font-bold"><%= doc_section_title(section) %></h2>
+    <div class="mb-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+      <% pages.each do |doc| %>
+        <%= link_to doc_path(doc.slug), class: "card border border-base-300 bg-base-100 transition hover:border-primary hover:shadow-md" do %>
+          <div class="card-body gap-2">
+            <h3 class="card-title items-start gap-2 text-base">
+              <%= lucide_icon doc_icon(doc), class: "size-5 shrink-0 text-primary" %>
+              <%= doc.title %>
+            </h3>
+            <p class="line-clamp-3 text-sm text-base-content/70"><%= doc.summary %></p>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

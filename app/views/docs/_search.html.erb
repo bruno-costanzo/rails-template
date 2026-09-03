@@ -1,0 +1,26 @@
+<dialog class="modal modal-top sm:modal-middle" data-docs-search-target="dialog" aria-label="<%= t("layouts.docs.search") %>">
+  <div class="modal-box max-w-2xl p-0">
+    <div class="flex items-center gap-3 border-b border-base-300 px-4">
+      <%= lucide_icon "search", class: "size-5 shrink-0 text-base-content/60" %>
+      <label for="docs-search-input" class="sr-only"><%= t("layouts.docs.search_label") %></label>
+      <input id="docs-search-input" type="search" autocomplete="off"
+             class="input input-ghost w-full border-0 px-0 focus:outline-none"
+             placeholder="<%= t("layouts.docs.search_placeholder") %>"
+             data-docs-search-target="input"
+             data-action="input->docs-search#filter keydown->docs-search#walk">
+      <kbd class="kbd kbd-sm hidden sm:inline-flex">esc</kbd>
+    </div>
+
+    <ul class="menu max-h-96 w-full flex-nowrap overflow-y-auto p-2" data-docs-search-target="results"></ul>
+
+    <p class="hidden px-4 pb-4 text-sm text-base-content/60" data-docs-search-target="empty">
+      <%= t("layouts.docs.no_results") %>
+    </p>
+  </div>
+
+  <form method="dialog" class="modal-backdrop">
+    <button><%= t("layouts.docs.close") %></button>
+  </form>
+
+  <script type="application/json" data-docs-search-target="index"><%= raw json_escape(docs_search_index(@docs).to_json) %></script>
+</dialog>

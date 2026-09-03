@@ -236,7 +236,7 @@ console1984 protects and audits the Rails console in production. Every console s
 
 ## Superadmin access
 
-Every developer-only panel — `/errors`, `/onlylogs`, `/admin/feedbacks`, the `/jobs` Solid Queue dashboard, and the `/madmin` resource browser — is gated by a single HTTP basic-auth credential pair, independent of the app's own session-based login, through the `SuperadminAuthentication` concern (`app/controllers/concerns/superadmin_authentication.rb`). A controller only needs `include SuperadminAuthentication`; the concern's `included` hook registers the `before_action`. Credentials resolve credentials-first then ENV, read live on every request (so tests can flip ENV per example):
+Every developer-only panel — `/errors`, `/onlylogs`, `/admin/feedbacks`, the `/jobs` Solid Queue dashboard, the `/madmin` resource browser, and the `/docs` documentation site — is gated by a single HTTP basic-auth credential pair, independent of the app's own session-based login, through the `SuperadminAuthentication` concern (`app/controllers/concerns/superadmin_authentication.rb`). A controller only needs `include SuperadminAuthentication`; the concern's `included` hook registers the `before_action`. Credentials resolve credentials-first then ENV, read live on every request (so tests can flip ENV per example):
 
 - `Rails.application.credentials.dig(:superadmin, :username)` / `:password`, falling back to `ENV["SUPERADMIN_USER"]` / `ENV["SUPERADMIN_PASSWORD"]`
 
@@ -267,6 +267,14 @@ bin/rails g madmin:resource Widget
 Then trim the generated route/resource/controller the same way if the generator pulls in extras you don't want exposed. (This ordering is why a "create the model, get the dashboard for free" hook isn't wired: right after `rails g model` the table hasn't been migrated yet, so the resource generator would fail.)
 
 Two integration points with the template's conventions: madmin's generated files are excluded from the 100%-coverage gate (`skip "app/madmin"` / `skip "app/controllers/madmin"` in `test/test_helper.rb`), since they're generated boilerplate; and `Madmin::ApplicationController` disables Bullet for the duration of each madmin request (`around_action :without_bullet if defined?(Bullet)`), because madmin's index views intentionally lazy-load associations and would otherwise trip the strict N+1 gate — acceptable for a dev-only panel over bounded data.
+
+### Documentation site (/docs)
+
+`/docs` serves this repo's own documentation from inside the running app: the two guides (`README.md` and `CLAUDE.md`) plus every page under `docs/architecture/`, rendered from Markdown by [Redcarpet](https://github.com/vmg/redcarpet) with a landing page, a sidebar, a per-page table of contents, a light/dark control and a ⌘K search that filters a client-side index. It's gated by the same superadmin basic auth as the other panels (`DocsController` includes the concern and keeps `allow_unauthenticated_access`), `robots.txt` disallows it, and its layout sends `noindex`. The `Dockerfile` already copies `docs/` into the image, so it works in production too.
+
+`Doc` (`app/models/doc.rb`) is a plain object over those files. Its safety property is worth knowing: `Doc.find` resolves a slug by matching it against the list `Doc.all` returns, never by joining the parameter onto a root path — so `/docs` is a reader of a fixed set of pages, not an arbitrary file reader, and traversal is impossible by construction rather than by sanitizing the input. A slug that isn't listed is a `404`.
+
+Two details that would be easy to get wrong: the heading anchors used by the table of contents come from Redcarpet's own `HTML_TOC` renderer rather than a hand-rolled slugifier, because both renderers compute the anchor with the same C function and anything else drifts; and the search index is embedded as a `<script type="application/json">` data island, because the CSP is nonce-based and strict for scripts — an inline script assigning the index to a variable would be blocked and the search would fail silently. See `docs/architecture/docs-site.md`.
 
 ## Blog & content (RailsPress)
 

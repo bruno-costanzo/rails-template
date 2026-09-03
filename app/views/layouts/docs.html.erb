@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="<%= I18n.locale %>">
+  <head>
+    <title><%= yield(:title).presence || t("layouts.docs.title") %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="robots" content="noindex">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="min-h-screen bg-base-100" data-controller="docs-search">
+    <%= render "docs/topbar", sidebar: content_for?(:sidebar) %>
+
+    <% if content_for?(:sidebar) %>
+      <div class="drawer lg:drawer-open">
+        <input id="docs-drawer" type="checkbox" class="drawer-toggle">
+        <div class="drawer-content">
+          <main><%= yield %></main>
+        </div>
+        <div class="drawer-side z-20">
+          <label for="docs-drawer" class="drawer-overlay">
+            <span class="sr-only"><%= t("layouts.docs.close_menu") %></span>
+          </label>
+          <%= yield :sidebar %>
+        </div>
+      </div>
+    <% else %>
+      <main><%= yield %></main>
+    <% end %>
+
+    <%= render "docs/search" %>
+  </body>
+</html>

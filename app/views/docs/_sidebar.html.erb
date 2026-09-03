@@ -1,0 +1,16 @@
+<nav class="min-h-full w-72 border-r border-base-300 bg-base-200 p-4" aria-label="<%= t("layouts.docs.pages") %>">
+  <% docs.group_by(&:section).each do |section, pages| %>
+    <ul class="menu menu-sm w-full">
+      <li class="px-4 pb-1 pt-3 text-xs font-semibold uppercase tracking-wider text-base-content/70">
+        <%= doc_section_title(section) %>
+      </li>
+      <% pages.each do |page| %>
+        <li>
+          <%= link_to page.title, doc_path(page.slug),
+                class: class_names("truncate", "menu-active font-semibold" => page.slug == current.slug),
+                aria: { current: ("page" if page.slug == current.slug) } %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</nav>

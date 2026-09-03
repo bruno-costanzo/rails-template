@@ -83,6 +83,20 @@ es:
       expired: Esa exportación caducó por tu seguridad. Solicita una nueva.
       pending: Tu exportación todavía no está lista. Te avisaremos por correo cuando
         lo esté.
+  docs:
+    index:
+      hero_agents: Guía para agentes
+      hero_body: Todo lo que hay que saber para operar esta aplicación y para trabajar
+        dentro de ella, servido desde el mismo repositorio.
+      hero_eyebrow: Documentación
+      hero_readme: Leer el README
+      hero_title: La documentación, adentro de la aplicación
+      title: Documentación
+    sections:
+      architecture: Arquitectura
+      guide: Guías
+    show:
+      on_this_page: En esta página
   documents:
     create:
       notice: Documento creado
@@ -149,6 +163,20 @@ es:
       submit: Enviar comentarios
       title: Comentarios
     rate_limit: Inténtalo de nuevo más tarde.
+  layouts:
+    docs:
+      brand: Documentación
+      close: Cerrar
+      close_menu: Cerrar el menú
+      no_results: No encontramos nada con ese texto.
+      open_menu: Abrir el menú
+      pages: Páginas
+      search: Buscar
+      search_label: Buscar en la documentación
+      search_placeholder: Buscá una página o una sección
+      theme_dark: Tema oscuro
+      theme_light: Tema claro
+      title: Documentación
   messages:
     assistant:
       role: Asistente

@@ -97,7 +97,8 @@ verified against a library's source, and not knowing it is how they break.
 - **Semantic search** — the embedding callback is guarded by the SOURCE having changed, or it re-enqueues itself forever. → `semantic-search.md`
 - **Rich text** — on Rails 8.1 Lexxy monkey-patches `rich_text_area`; re-check `Lexxy.supports_editor_adapter?` after every upgrade. → `rich-text.md`
 - **Console auditing** — console1984 depends on Active Record encryption; a new app must generate its own credentials. → `console-auditing.md`
-- **Superadmin panels** — one concern gates seven surfaces. **Deny-by-default**: unconfigured means 401 everywhere, never open. → `superadmin-panels.md`
+- **Superadmin panels** — one concern gates eight surfaces. **Deny-by-default**: unconfigured means 401 everywhere, never open. → `superadmin-panels.md`
+- **Documentation site** — `/docs` renders these pages with Redcarpet. `Doc.find` matches a listed slug, so traversal is impossible by construction. → `docs-site.md`
 - **Background jobs** — Solid Queue runs INSIDE Puma in development too, so `Procfile.dev` has no jobs line. No automatic retries: a failed job sits in the failed-executions table. → `background-jobs.md`
 - **Analytics** — capability only, zero events tracked. Two wiring details (`Ahoy.user_method`, the callback reorder) fail SILENTLY if touched. → `analytics.md`
 - **Health checks** — `/up` stays shallow (Kamal gates deploys on it), `/health` is the deep one. The supervisor reports `Supervisor(fork)`, never `Supervisor`: match with `LIKE`. → `health-checks.md`

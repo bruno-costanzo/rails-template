@@ -82,6 +82,20 @@ en:
     show:
       expired: That export has expired for your security. Request a new one.
       pending: Your export isn't ready yet. We'll email you when it is.
+  docs:
+    index:
+      hero_agents: Agent guide
+      hero_body: Everything there is to know about operating this application and
+        working inside it, served from the repository itself.
+      hero_eyebrow: Documentation
+      hero_readme: Read the README
+      hero_title: The documentation, inside the application
+      title: Documentation
+    sections:
+      architecture: Architecture
+      guide: Guides
+    show:
+      on_this_page: On this page
   documents:
     create:
       notice: Document created
@@ -147,6 +161,20 @@ en:
       submit: Send feedback
       title: Feedback
     rate_limit: Try again later.
+  layouts:
+    docs:
+      brand: Documentation
+      close: Close
+      close_menu: Close the menu
+      no_results: Nothing matches that text.
+      open_menu: Open the menu
+      pages: Pages
+      search: Search
+      search_label: Search the documentation
+      search_placeholder: Search for a page or a section
+      theme_dark: Dark theme
+      theme_light: Light theme
+      title: Documentation
   messages:
     assistant:
       role: Assistant

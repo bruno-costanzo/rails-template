@@ -27,6 +27,7 @@ class SitemapsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_equal "text/plain", response.media_type
     assert_includes response.body, "Sitemap: #{sitemap_url}"
+    assert_includes response.body, "Disallow: /docs"
     assert_includes response.body, "Disallow: /madmin"
     assert_includes response.body, "Disallow: /models"
   end

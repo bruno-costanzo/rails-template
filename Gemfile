@@ -121,5 +121,8 @@ gem "railspress-engine", "~> 1.4"
 
 gem "rubyzip", "~> 3.0"
 
+# Markdown rendering for the /docs site (already in the bundle through railspress-engine)
+gem "redcarpet", "~> 3.6"
+
 # First-party analytics: visits and events stored in this app's own database [https://github.com/ankane/ahoy]
 gem "ahoy_matey", "~> 5.4"

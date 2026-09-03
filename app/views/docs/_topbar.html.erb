@@ -1,0 +1,33 @@
+<header class="navbar sticky top-0 z-30 gap-2 border-b border-base-300 bg-base-100 px-4">
+  <div class="navbar-start gap-1">
+    <% if sidebar %>
+      <label for="docs-drawer" class="btn btn-square btn-ghost lg:hidden" aria-label="<%= t("layouts.docs.open_menu") %>">
+        <%= lucide_icon "menu", class: "size-5" %>
+      </label>
+    <% end %>
+    <%= link_to docs_path, class: "btn btn-ghost gap-2 text-lg font-semibold" do %>
+      <%= lucide_icon "book-open-text", class: "size-5 text-primary" %>
+      <%= t("layouts.docs.brand") %>
+    <% end %>
+  </div>
+
+  <div class="navbar-end gap-2">
+    <button type="button" class="btn btn-sm gap-2 border-base-300 bg-base-200 font-normal" data-action="docs-search#open">
+      <%= lucide_icon "search", class: "size-4" %>
+      <span class="hidden sm:inline"><%= t("layouts.docs.search") %></span>
+      <span class="hidden items-center gap-1 sm:flex">
+        <kbd class="kbd kbd-sm">⌘</kbd>
+        <kbd class="kbd kbd-sm">K</kbd>
+      </span>
+    </button>
+
+    <div class="join" data-controller="docs-theme">
+      <input type="radio" name="docs-theme" value="light" class="btn btn-sm join-item theme-controller"
+             aria-label="<%= t("layouts.docs.theme_light") %>"
+             data-docs-theme-target="option" data-action="docs-theme#remember">
+      <input type="radio" name="docs-theme" value="dark" class="btn btn-sm join-item theme-controller"
+             aria-label="<%= t("layouts.docs.theme_dark") %>"
+             data-docs-theme-target="option" data-action="docs-theme#remember">
+    </div>
+  </div>
+</header>

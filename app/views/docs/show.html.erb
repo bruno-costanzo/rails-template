@@ -1,0 +1,26 @@
+<% content_for :title, @doc.title %>
+<% content_for :sidebar do %>
+  <%= render "docs/sidebar", docs: @docs, current: @doc %>
+<% end %>
+
+<div class="mx-auto flex w-full max-w-6xl gap-12 px-6 py-10">
+  <div class="min-w-0 flex-1">
+    <p class="mb-2 text-sm text-base-content/60"><%= doc_section_title(@doc.section) %></p>
+    <article class="docs"><%= doc_body(@doc) %></article>
+  </div>
+
+  <% if @doc.headings.any? %>
+    <nav class="hidden w-56 shrink-0 xl:block" aria-label="<%= t(".on_this_page") %>">
+      <div class="sticky top-24">
+        <ul class="menu menu-sm w-full">
+          <li class="px-4 pb-1 text-xs font-semibold uppercase tracking-wider text-base-content/70">
+            <%= t(".on_this_page") %>
+          </li>
+          <% @doc.headings.each do |heading| %>
+            <li><%= link_to heading[:text], heading[:anchor], class: "truncate" %></li>
+          <% end %>
+        </ul>
+      </div>
+    </nav>
+  <% end %>
+</div>
