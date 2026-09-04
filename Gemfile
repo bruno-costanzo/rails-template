@@ -107,7 +107,7 @@ gem "letter_opener_web", "~> 3.0", group: :development
 
 gem "noticed", "~> 3.0"
 
-gem "bullet", "~> 8.1", groups: [ :development, :test ]
+gem "bullet", "~> 8.2", groups: [ :development, :test ]
 
 gem "onlylogs", "~> 0.7"
 
