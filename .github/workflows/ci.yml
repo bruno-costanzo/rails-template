@@ -16,10 +16,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
 
+      - name: Let Bundler read the charco_mobile repository
+        uses: webfactory/ssh-agent@v0.10.0
+        with:
+          ssh-private-key: ${{ secrets.CHARCO_MOBILE_DEPLOY_KEY }}
+
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
-        env:
-          BUNDLE_GITHUB__COM: x-access-token:${{ secrets.CHARCO_MOBILE_TOKEN }}
         with:
           bundler-cache: true
 

@@ -1,5 +1,5 @@
 GIT
-  remote: https://github.com/bruno-costanzo/charco_mobile.git
+  remote: git@github.com:bruno-costanzo/charco_mobile.git
   revision: 882d86bbe29cf6af38eb2b8c1211931b5ba284ea
   glob: gem/*.gemspec
   specs:

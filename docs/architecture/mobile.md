@@ -10,7 +10,7 @@ The app ships as native iOS and Android apps through the `charco_mobile` gem, pi
 - `app/views/shared/_flash.html.erb` — skips notices for the app, because the layout already turns them into a native toast. Alerts stay web banners on both, since they explain the page they appear on.
 - The `new` and `edit` pages of sessions, registrations, passwords, email confirmations, profiles, feedback, documents and chats start with `native_form_tag`, so the app skips them on the way back after a submission.
 - `config/ci.rb` — the `charco_mobile check` step parses every view and fails on a mistyped, duplicated or too-new signal.
-- `.github/workflows/ci.yml` — the gem lives in a private repository, so the Bundler step needs the `CHARCO_MOBILE_TOKEN` secret, a GitHub token that can read it.
+- `.github/workflows/ci.yml` — the gem lives in a private repository reached over SSH, so an ssh-agent step loads the `CHARCO_MOBILE_DEPLOY_KEY` secret before Bundler runs. The key is a read-only deploy key of that repository; every app born from here needs the same secret in its own repository, or its first CI run fails at `bundle install`.
 
 ## Gotchas
 
@@ -25,3 +25,7 @@ Every signal must render inside the body, never in the head, because the shell w
 The session cookie is already permanent (see `auth.md`), which is what keeps a native person signed in across launches; a change there to a session-scoped cookie signs every app user out on relaunch.
 
 Preview on a device with `bin/rails server` in one terminal and `bundle exec charco_mobile preview` in another: it tunnels the local server through Cloudflare and prints a QR code, and a middleware keeps the session cookie working through the tunnel's public suffix domain.
+
+## Turning it off
+
+Nothing runs in the browser, so an app that never ships to the stores loses nothing by keeping this in place. An app that wants it gone removes the gem from the `Gemfile`, deletes `config/charco_mobile.yml`, `test/integration/mobile_test.rb` and this page, drops the `charco_mobile` namespace from both locale files and from `config/i18n-tasks.yml`, the check step from `config/ci.rb`, the ssh-agent step from `.github/workflows/ci.yml`, the `native_*` lines from the layout, the flash partial and the form pages, and the entry in the subsystem map. `bin/i18n-tasks health` and `test/docs/documentation_test.rb` fail on anything left behind.

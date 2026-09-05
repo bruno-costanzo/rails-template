@@ -125,7 +125,7 @@ bin/rails server
 bundle exec charco_mobile preview
 ```
 
-`bundle exec charco_mobile check` parses every view and reports signals the apps would silently ignore; `bin/ci` runs it. The gem is a private repository, so GitHub Actions needs a `CHARCO_MOBILE_TOKEN` secret holding a token that can read it.
+`bundle exec charco_mobile check` parses every view and reports signals the apps would silently ignore; `bin/ci` runs it. The gem is a private repository reached over SSH, so GitHub Actions needs the `CHARCO_MOBILE_DEPLOY_KEY` secret: the read-only deploy key registered on that repository. A new app's repository needs the same secret before its first CI run.
 
 ### Email
 
