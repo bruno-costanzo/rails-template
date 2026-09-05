@@ -17,6 +17,7 @@ Rails starter template. This repo is both a working app and the template new app
 - Developer panels behind one shared basic auth: madmin `/madmin`, Mission Control `/jobs`, Solid Errors `/errors`, onlylogs `/onlylogs`
 - `railspress-engine` blog/CMS engine at `/railspress` (admin at `/railspress/admin`); the reader-facing `/blog` is this app's own `BlogController`
 - Bilingual UI via Rails i18n + `rails-i18n`: Spanish default, English fallback, locale from the browser's `Accept-Language` (no switcher)
+- `charco_mobile` (private GitHub gem) for native iOS and Android apps driven from the views: `config/charco_mobile.yml`, `native_*` helpers, `bundle exec charco_mobile check` in `bin/ci`
 - Minitest + fixtures + WebMock (tests NEVER hit the network), Capybara + cuprite for system tests, axe-core for accessibility, bullet for N+1, Kamal deploys
 
 ## Commands
@@ -25,7 +26,7 @@ Rails starter template. This repo is both a working app and the template new app
 - `bin/rails test test/models/user_test.rb` — one file; `…_test.rb:42` runs that line's case, `-n test_the_name` one by name.
   **Gotcha:** SimpleCov demands 100% over the whole project, so any subset fails the gate at the end even when the asserts pass. While iterating use `SKIP_COVERAGE=1`.
 - `bin/rails test:system` — Capybara + cuprite (headless Chrome over CDP), excluded from coverage, axe gate on every `visit`. `bin/rails test` does NOT include them.
-- `bin/ci` — the pre-commit gate; run it before every commit, it is exactly what CI runs. Rails' native CI runner, configured in `config/ci.rb` with seven steps: rubocop, brakeman, `bin/bundler-audit`, `i18n-tasks health`, `bin/rails test`, `bin/rails test:system`, `bin/smoke-rename`.
+- `bin/ci` — the pre-commit gate, exactly what CI runs. Rails' native CI runner, configured in `config/ci.rb` with eight steps: rubocop, brakeman, `bin/bundler-audit`, `i18n-tasks health`, `charco_mobile check`, `bin/rails test`, `bin/rails test:system`, `bin/smoke-rename`.
   **Gotcha:** two steps reach the network: `bin/bundler-audit` clones `rubysec/ruby-advisory-db` on first run and never refreshes it (no `--update`), and `bin/brakeman --ensure-latest` checks rubygems.org.
 - `bin/rename <name>` — turn the template into a new app. `Template::Renamer` rewrites the name through the tree; `Template::Cleanup` (`lib/template/cleanup.rb`) then drops any remote pointing at the template's repo and deletes the template-only tooling.
   That tooling is `bin/rename`, `bin/smoke-rename`, `bin/spawn`, `bin/children`, `children.yml`, `lib/template/`, `test/lib/template/`, `docs/superpowers/` and the smoke step in `config/ci.rb`.
@@ -116,3 +117,4 @@ verified against a library's source, and not knowing it is how they break.
 - **Deploy** — Kamal; UPPERCASE placeholders, and the `storage/` volume is mandatory (SQLite + Active Storage). → `deploy.md`
 - **Backups** — the restic accessory is ACTIVE: it refuses to boot until the repository and secrets are set. Deliberate. → `backups.md`
 - **Security headers / CSP** — nonce-based CSP active in every environment: scripts strict, styles inline. → `security-headers.md`
+- **Mobile apps** — `charco_mobile` signals in the layout and form pages; a mistyped signal is SILENTLY ignored, so `charco_mobile check` runs in CI. Tab titles live under `charco_mobile` in the locale files. → `mobile.md`

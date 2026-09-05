@@ -1,0 +1,36 @@
+# The native shells read this file, served as JSON at /native/config, when the
+# app launches. In development every request reads it again, so edit and
+# relaunch the app to see a change. Tab titles and error copy live in
+# config/locales under charco_mobile, so the device language picks them.
+
+app:
+  mode: normal
+
+appearance:
+  tint_color: "#570DF8"
+  background_color: { light: "#FFFFFF", dark: "#1D232A" }
+
+tabs:
+  - key: home
+    path: /
+    icons: { ios: house, android: home }
+  - key: chats
+    path: /chats
+    icons: { ios: bubble.left.and.bubble.right, android: chat }
+  - key: documents
+    path: /documents
+    icons: { ios: doc.text, android: description }
+  - key: notifications
+    path: /notifications
+    icons: { ios: bell, android: notifications }
+    badge: true
+  - key: profile
+    path: /profile/edit
+    icons: { ios: person, android: person }
+    auto_route: [/profile, /active_sessions, /feedback]
+
+errors:
+  offline:
+    icons: { ios: wifi.slash, android: wifi_off }
+  generic:
+    icons: { ios: exclamationmark.triangle, android: error_outline }

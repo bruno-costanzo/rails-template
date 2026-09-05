@@ -60,7 +60,7 @@ class Template::CleanupTest < ActiveSupport::TestCase
       assert_not_includes claude, "bin/smoke-rename"
       assert_not_includes claude, "bin/spawn"
       assert_not_includes claude, "bin/children"
-      assert_includes claude, "six steps"
+      assert_includes claude, "seven steps"
       assert_includes claude, "- `bin/setup`"
       assert_includes claude, "## Subsystem map"
     end
@@ -100,7 +100,7 @@ class Template::CleanupTest < ActiveSupport::TestCase
 
       claude = File.read(claude_path)
       ci_bullet = claude.lines.find { |line| line.include?("bin/ci") }
-      assert_includes claude, "six steps"
+      assert_includes claude, "seven steps"
       assert_not_includes ci_bullet, "bin/smoke-rename",
         "the bin/ci bullet must drop its own smoke-rename mention, not an earlier decoy line"
     end
@@ -158,7 +158,7 @@ class Template::CleanupTest < ActiveSupport::TestCase
 
         ## Commands
         - `bin/setup` — install and prepare everything.
-        - `bin/ci` — configured in `config/ci.rb` with seven steps: rubocop, `bin/rails test`, `bin/smoke-rename`.
+        - `bin/ci` — configured in `config/ci.rb` with eight steps: rubocop, `bin/rails test`, `bin/smoke-rename`.
         - `bin/rename <name>` — turn the template into a new app.
           It also deletes `lib/template/` and `test/lib/template/`.
         - `bin/smoke-rename` — export, rename, boot, serve.

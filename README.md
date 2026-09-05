@@ -114,6 +114,19 @@ OPENAI_API_KEY=sk-your-key-here
 
 The chat and embedding model names are also configurable, via `OPENAI_CHAT_MODEL` and `OPENAI_EMBEDDING_MODEL` (`config/initializers/ruby_llm.rb`), defaulting to `gpt-4o-mini` and `text-embedding-3-small`. Swapping the embedding model is not just an ENV change: `Document::EMBEDDING_DIMENSIONS = 1536` is tied to `text-embedding-3-small`'s output size, so a different embedding model needs a migration to match its dimension — plan for that before overriding it.
 
+### Mobile apps
+
+The app is born ready to ship as native iOS and Android apps through the [charco_mobile](https://github.com/bruno-costanzo/charco_mobile) gem. `config/charco_mobile.yml` declares the tab bar, the colors and the error screens; the views describe the rest with `native_*` helpers, and the native shells read it from every page. Nothing in Swift or Kotlin is written per app.
+
+To preview on a phone, run the server and the tunnel in two terminals, then scan the QR code with the preview app:
+
+```bash
+bin/rails server
+bundle exec charco_mobile preview
+```
+
+`bundle exec charco_mobile check` parses every view and reports signals the apps would silently ignore; `bin/ci` runs it. The gem is a private repository, so GitHub Actions needs a `CHARCO_MOBILE_TOKEN` secret holding a token that can read it.
+
 ### Email
 
 Signing up requires **email confirmation**. A new account is created unconfirmed and **cannot sign in until it confirms** — registration sends a confirmation link (`EmailConfirmationsMailer`) and redirects to the sign-in page with a "check your email" notice; `SessionsController#create` rejects sign-in until `user.confirmed?`. Clicking `GET /email_confirmations/:token` confirms the account (the token, from `User.generates_token_for :email_confirmation`, expires in a day and is tied to the address). There's a resend form at `/email_confirmations/new` (rate-limited, and it never reveals whether an address exists). This block-until-confirmed behavior is the strict default; to allow sign-in but keep the account marked unconfirmed instead, change the `user.confirmed?` guard in `SessionsController#create`.

@@ -38,6 +38,26 @@ es:
       title: Blog
     show:
       back: "← Volver al blog"
+  charco_mobile:
+    errors:
+      generic:
+        message: Intentá de nuevo en un momento.
+        title: Algo salió mal
+      offline:
+        message: Revisá tu conexión e intentá de nuevo.
+        title: Sin conexión
+      retry: Reintentar
+    tabs:
+      chats:
+        title: Chats
+      documents:
+        title: Documentos
+      home:
+        title: Inicio
+      notifications:
+        title: Notificaciones
+      profile:
+        title: Perfil
   chats:
     chat:
       created: 'Creado:'

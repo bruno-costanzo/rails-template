@@ -1,3 +1,4 @@
+<%= native_form_tag %>
 <%= form_with(model: chat, url: chats_path, class: "contents") do |form| %>
   <% if chat.errors.any? %>
     <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-md mt-3">

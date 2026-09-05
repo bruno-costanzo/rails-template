@@ -38,6 +38,26 @@ en:
       title: Blog
     show:
       back: "← Back to the blog"
+  charco_mobile:
+    errors:
+      generic:
+        message: Please try again in a moment.
+        title: Something went wrong
+      offline:
+        message: Check your connection and try again.
+        title: You're offline
+      retry: Retry
+    tabs:
+      chats:
+        title: Chats
+      documents:
+        title: Documents
+      home:
+        title: Home
+      notifications:
+        title: Notifications
+      profile:
+        title: Profile
   chats:
     chat:
       created: 'Created:'

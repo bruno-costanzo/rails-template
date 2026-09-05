@@ -1,5 +1,6 @@
 <div id="flash" class="toast toast-top toast-center">
   <% flash.each do |type, message| %>
+    <% next if native_app? && type == "notice" %>
     <div class="alert <%= type == "alert" ? "alert-error" : "alert-success" %>" data-controller="flash">
       <span><%= message %></span>
       <button type="button" class="btn btn-sm btn-circle btn-ghost" data-action="flash#dismiss" aria-label="<%= t("shared.flash.dismiss") %>">&times;</button>
