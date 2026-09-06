@@ -33,7 +33,7 @@
     <%= render "shared/navbar" unless native_app? %>
     <%= render "shared/flash" %>
     <%= render "shared/confirm_dialog" %>
-    <main class="container mx-auto px-5 flex <%= native_app? ? "native-inset" : "mt-28" %>">
+    <main class="container mx-auto px-5 flex flex-col <%= native_app? ? "native-inset" : "mt-28" %>">
       <%= yield %>
     </main>
 

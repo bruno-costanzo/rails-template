@@ -11,7 +11,7 @@
       <% @chats.each do |chat| %>
         <li class="list-row items-center">
           <%= render chat %>
-          <div class="flex gap-2">
+          <div class="flex gap-2 shrink-0 whitespace-nowrap">
             <%= link_to t(".show"), chat, class: "btn btn-ghost" %>
             <%= button_to t(".destroy"), chat, method: :delete, class: "btn btn-error", data: { turbo_confirm: t(".confirm") } %>
           </div>
