@@ -17,7 +17,7 @@ Rails starter template. This repo is both a working app and the template new app
 - Developer panels behind one shared basic auth: madmin `/madmin`, Mission Control `/jobs`, Solid Errors `/errors`, onlylogs `/onlylogs`
 - `railspress-engine` blog/CMS engine at `/railspress` (admin at `/railspress/admin`); the reader-facing `/blog` is this app's own `BlogController`
 - Bilingual UI via Rails i18n + `rails-i18n`: Spanish default, English fallback, locale from the browser's `Accept-Language` (no switcher)
-- `charco_mobile` (private GitHub gem) for native iOS and Android apps driven from the views: `config/charco_mobile.yml`, `native_*` helpers, `bundle exec charco_mobile check` in `bin/ci`
+- `charco_mobile` (private GitHub gem) for native iOS and Android apps driven from the views: `config/charco_mobile.yml`, `native_*` helpers, `bundle exec charco_mobile check` in `bin/ci`; `action_push_native` stores the apps' push tokens on `User#push_devices`
 - Minitest + fixtures + WebMock (tests NEVER hit the network), Capybara + cuprite for system tests, axe-core for accessibility, bullet for N+1, Kamal deploys
 
 ## Commands
@@ -117,4 +117,4 @@ verified against a library's source, and not knowing it is how they break.
 - **Deploy** — Kamal; UPPERCASE placeholders, and the `storage/` volume is mandatory (SQLite + Active Storage). → `deploy.md`
 - **Backups** — the restic accessory is ACTIVE: it refuses to boot until the repository and secrets are set. Deliberate. → `backups.md`
 - **Security headers / CSP** — nonce-based CSP active in every environment: scripts strict, styles inline. → `security-headers.md`
-- **Mobile apps** — `charco_mobile` signals in the layout and form pages; a mistyped signal is SILENTLY ignored, so `charco_mobile check` runs in CI. Tab titles live under `charco_mobile` in the locale files. → `mobile.md`
+- **Mobile apps** — `charco_mobile` signals in the layout and form pages; a mistyped signal is SILENTLY ignored, so `charco_mobile check` runs in CI. Push tokens land on `User#push_devices`; `config/push.yml` needs real credentials before anything is delivered. → `mobile.md`

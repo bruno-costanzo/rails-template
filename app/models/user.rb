@@ -5,6 +5,7 @@ class User < ApplicationRecord
 
   has_secure_password
   has_many :sessions, dependent: :destroy
+  has_many :push_devices, as: :owner, class_name: "ApplicationPushDevice", dependent: :destroy
   has_many :chats, dependent: :destroy
   has_many :messages, through: :chats
   has_many :documents, dependent: :destroy

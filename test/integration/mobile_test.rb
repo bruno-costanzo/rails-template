@@ -116,3 +116,35 @@ class MobileChatsTest < ActionDispatch::IntegrationTest
     assert_select "li##{dom_id(chat, :row)}"
   end
 end
+
+class MobilePushTest < ActionDispatch::IntegrationTest
+  include SessionTestHelper
+
+  test "a signed-in page asks for push permission and the app registers its device" do
+    sign_in_as users(:one)
+    get root_url, headers: MobileTest::NATIVE
+    assert_select "[data-native-push]"
+
+    post "/native/push/devices", params: { token: "abc", platform: "apple", name: "iPhone" }, headers: MobileTest::NATIVE
+    assert_response :no_content
+
+    device = users(:one).push_devices.sole
+    assert_equal [ "abc", "apple", "iPhone" ], [ device.token, device.platform, device.name ]
+  end
+
+  test "a signed-out page never asks and the endpoint redirects to sign in" do
+    get root_url, headers: MobileTest::NATIVE
+    assert_select "[data-native-push]", false
+
+    post "/native/push/devices", params: { token: "abc", platform: "apple" }, headers: MobileTest::NATIVE
+    assert_redirected_to new_session_url
+  end
+
+  test "devices leave with the account and land in the data export" do
+    user = users(:one)
+    user.push_devices.create!(token: "abc", platform: "apple")
+    assert_difference -> { ApplicationPushDevice.count }, -1 do
+      user.destroy
+    end
+  end
+end

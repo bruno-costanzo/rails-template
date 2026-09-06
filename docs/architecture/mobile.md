@@ -11,6 +11,8 @@ The app ships as native iOS and Android apps through the `charco_mobile` gem, pi
 - `app/views/shared/_native_navbar.html.erb` — the native navigation bar every page gets in the app: the page title (from `content_for :title` or the meta tags), a sign-in button when signed out, and when signed in a menu with profile, sessions, feedback and sign out. Sign out clicks a hidden `button_to` the partial keeps in the DOM, since the web navbar with the real one is not rendered in the app.
 - The `new` and `edit` pages of sessions, registrations, passwords, email confirmations, profiles, feedback, documents and chats start with `native_form_tag`, so the app skips them on the way back after a submission.
 - `app/views/chats/index.html.erb` — the chat list is the reference page for the richer signals: a floating action button to the new-chat form and a native menu per row anchored to the row's element, with the web buttons the menu clicks kept in the DOM under `native-hidden`. The support launcher moves to the left corner in the app (`app/assets/tailwind/application.css`) so the button never covers it.
+- `app/models/user.rb`, `app/models/application_push_device.rb`, `app/models/application_push_notification.rb`, `app/jobs/application_push_notification_job.rb`, `config/push.yml` — push notifications through `action_push_native`. The layout renders `native_push_tag` for signed-in people; the app asks for permission once and posts its token to `/native/push/devices`, which the gem resolves to `Current.user` through `config/initializers/charco_mobile.rb` and stores on the person's `push_devices`. `config/push.yml` still carries placeholders for the Apple team id, the APNs topic and the Firebase project id; delivery needs the credentials it points at in `bin/rails credentials:edit`.
+- `app/notifiers/delivery_methods/push_native.rb` — the noticed delivery method that sends a notifier's title, body, path and badge to every device of the recipient. No notifier uses it yet; `test/notifiers/delivery_methods/push_native_test.rb` shows the `deliver_by :push_native, class: "DeliveryMethods::PushNative"` shape.
 - `config/ci.rb` — the `charco_mobile check` step parses every view and fails on a mistyped, duplicated or too-new signal.
 - `.github/workflows/ci.yml` — the gem lives in a private repository reached over SSH, so an ssh-agent step loads the `CHARCO_MOBILE_DEPLOY_KEY` secret before Bundler runs. The key is a read-only deploy key of that repository; every app born from here needs the same secret in its own repository, or its first CI run fails at `bundle install`.
 
@@ -23,6 +25,8 @@ The tab bar and the badge render only while someone is signed in, so a signed-ou
 The identity tag renders on every page, signed out included: it is the absence or the change of the value that resets the app on sign-out, and a page that skipped the tag would keep a signed-out person's screens alive.
 
 Every signal must render inside the body, never in the head, because the shell watches the body for them.
+
+Push devices are `dependent: :destroy` on the person, so deleting the account removes the tokens and the data export includes them, token and all.
 
 The session cookie is already permanent (see `auth.md`), which is what keeps a native person signed in across launches; a change there to a session-scoped cookie signs every app user out on relaunch.
 
