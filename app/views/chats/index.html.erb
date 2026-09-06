@@ -1,4 +1,5 @@
 <% content_for :title, t(".title") %>
+<%= native_fab_tag icons: { ios: "plus", android: "add" }, href: new_chat_path, color: :tint %>
 
 <div class="p-6 max-w-3xl mx-auto">
   <div class="flex justify-between items-center mb-6">
@@ -9,12 +10,16 @@
   <% if @chats.any? %>
     <ul id="chats" class="list bg-base-100 rounded-box shadow">
       <% @chats.each do |chat| %>
-        <li class="list-row items-center">
+        <li class="list-row items-center" id="<%= dom_id(chat, :row) %>">
           <%= render chat %>
-          <div class="flex gap-2 shrink-0 whitespace-nowrap">
-            <%= link_to t(".show"), chat, class: "btn btn-ghost" %>
-            <%= button_to t(".destroy"), chat, method: :delete, class: "btn btn-error", data: { turbo_confirm: t(".confirm") } %>
+          <div class="flex gap-2 shrink-0 whitespace-nowrap native-hidden">
+            <%= link_to t(".show"), chat, class: "btn btn-ghost", id: dom_id(chat, :show) %>
+            <%= button_to t(".destroy"), chat, method: :delete, class: "btn btn-error", id: dom_id(chat, :destroy), data: { turbo_confirm: t(".confirm") } %>
           </div>
+          <%= native_menu_tag anchor: "##{dom_id(chat, :row)}" do |menu| %>
+            <%= menu.item t(".show"), href: chat_path(chat), icons: { ios: "bubble.left.and.bubble.right", android: "chat" } %>
+            <%= menu.item t(".destroy"), click: "##{dom_id(chat, :destroy)}", icons: { ios: "trash", android: "delete" }, destructive: true %>
+          <% end %>
         </li>
       <% end %>
     </ul>

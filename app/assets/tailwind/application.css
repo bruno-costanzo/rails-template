@@ -111,3 +111,8 @@
     margin: 2rem 0;
   }
 }
+
+[data-native-app] .support-launcher {
+  right: auto;
+  left: 1rem;
+}

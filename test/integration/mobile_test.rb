@@ -99,3 +99,20 @@ class MobileNavbarTest < ActionDispatch::IntegrationTest
     assert_select "form.native-hidden button#native-sign-out.native-hidden"
   end
 end
+
+class MobileChatsTest < ActionDispatch::IntegrationTest
+  include SessionTestHelper
+
+  test "the chat list offers a floating button and a native menu per row" do
+    sign_in_as users(:one)
+    chat = users(:one).chats.create!
+    get chats_url, headers: MobileTest::NATIVE
+
+    assert_select "[data-native-fab][data-native-icon='plus'][data-native-href='#{new_chat_path}'][data-native-color='tint']"
+    assert_select "[data-native-menu][data-native-anchor='##{dom_id(chat, :row)}']" do
+      assert_select "[data-native-menu-item][data-native-href='#{chat_path(chat)}']"
+      assert_select "[data-native-menu-item][data-native-click='##{dom_id(chat, :destroy)}'][data-native-destructive='true']"
+    end
+    assert_select "li##{dom_id(chat, :row)}"
+  end
+end
