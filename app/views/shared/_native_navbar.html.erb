@@ -1,0 +1,16 @@
+<% title = content_for?(:title) ? content_for(:title) : meta_tags[:title] %>
+<%= native_navbar_tag(title) do |navbar| %>
+  <% if authenticated? %>
+    <%= navbar.button title: t("shared.navbar.more"), icons: { ios: "ellipsis.circle", android: "more_horiz" } do |menu| %>
+      <%= menu.item t("shared.navbar.profile"), href: edit_profile_path, icons: { ios: "person", android: "person" } %>
+      <%= menu.item t("shared.navbar.sessions"), href: active_sessions_path, icons: { ios: "key", android: "devices" } %>
+      <%= menu.item t("shared.navbar.feedback"), href: new_feedback_path, icons: { ios: "bubble.left", android: "feedback" } %>
+      <%= menu.item t("shared.navbar.sign_out"), click: "#native-sign-out", icons: { ios: "rectangle.portrait.and.arrow.right", android: "logout" }, destructive: true %>
+    <% end %>
+  <% else %>
+    <%= navbar.button title: t("shared.navbar.sign_in"), href: new_session_path %>
+  <% end %>
+<% end %>
+<% if authenticated? %>
+  <%= button_to t("shared.navbar.sign_out"), session_path, method: :delete, id: "native-sign-out", class: "native-hidden", form_class: "native-hidden" %>
+<% end %>

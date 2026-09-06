@@ -29,6 +29,7 @@
     <%= native_tabs_tag if authenticated? %>
     <%= native_badge_tag unread_notifications_count if authenticated? %>
     <%= native_toast_tag flash[:notice] if native_app? %>
+    <%= render "shared/native_navbar" if native_app? %>
     <%= render "shared/navbar" unless native_app? %>
     <%= render "shared/flash" %>
     <%= render "shared/confirm_dialog" %>

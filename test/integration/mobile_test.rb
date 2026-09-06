@@ -69,3 +69,33 @@ class MobileTest < ActionDispatch::IntegrationTest
     assert_equal I18n.t("charco_mobile.errors.retry", locale: :es), response.parsed_body.dig("errors", "retry", "es")
   end
 end
+
+class MobileNavbarTest < ActionDispatch::IntegrationTest
+  include SessionTestHelper
+
+  NATIVE = MobileTest::NATIVE
+
+  test "a browser never sees the native navigation bar" do
+    get root_url
+    assert_select "[data-native-navbar]", false
+    assert_select "#native-sign-out", false
+  end
+
+  test "a signed-out page titles the bar and offers sign in" do
+    get root_url, headers: NATIVE
+    assert_select "[data-native-navbar='#{I18n.t("pages.home.meta_title")}']"
+    assert_select "[data-native-button][data-native-title='#{I18n.t("shared.navbar.sign_in")}'][data-native-href='#{new_session_path}']"
+    assert_select "[data-native-menu-item]", false
+  end
+
+  test "a signed-in page carries the menu and the hidden sign-out button it clicks" do
+    sign_in_as users(:one)
+    get chats_url, headers: NATIVE
+    assert_select "[data-native-navbar='#{I18n.t("chats.index.title")}']"
+    assert_select "[data-native-button][data-native-title='#{I18n.t("shared.navbar.more")}'][data-native-icon='ellipsis.circle']" do
+      assert_select "[data-native-menu-item]", 4
+      assert_select "[data-native-menu-item][data-native-click='#native-sign-out'][data-native-destructive='true']"
+    end
+    assert_select "form.native-hidden button#native-sign-out.native-hidden"
+  end
+end
