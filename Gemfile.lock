@@ -1,10 +1,10 @@
 GIT
   remote: git@github.com:bruno-costanzo/charco_mobile.git
-  revision: 1076948cca3240b65e37736f023a1c3d11494693
+  revision: 7a6d586179c5156b7d4d9718f8abd744bead0c0b
   branch: main
   glob: gem/*.gemspec
   specs:
-    charco_mobile (0.1.0)
+    charco_mobile (0.2.0)
       herb (~> 0.10)
       rails (>= 8.0)
       rqrcode (~> 3.0)
@@ -665,7 +665,7 @@ CHECKSUMS
   bundler-audit (0.9.3) sha256=81c8766c71e47d0d28a0f98c7eed028539f21a6ea3cd8f685eb6f42333c9b4e9
   capybara (3.40.0) sha256=42dba720578ea1ca65fd7a41d163dd368502c191804558f6e0f71b391054aeef
   cgi (0.5.2) sha256=61ca30298171190fd4fa0d8018e57ada456eae9b7a2b78526debf7f0a0e6f8bb
-  charco_mobile (0.1.0)
+  charco_mobile (0.2.0)
   childprocess (5.1.0) sha256=9a8d484be2fd4096a0e90a0cd3e449a05bc3aa33f8ac9e4d6dcef6ac1455b6ec
   chunky_png (1.4.0) sha256=89d5b31b55c0cf4da3cf89a2b4ebc3178d8abe8cbaf116a1dba95668502fdcfe
   concurrent-ruby (1.3.8) sha256=b2f1be836e968ccc78ccfce277ea79c72a88633f22306782c16ff23fb415d1e1

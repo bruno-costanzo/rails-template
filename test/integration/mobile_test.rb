@@ -180,6 +180,36 @@ class MobilePushTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_session_url
   end
 
+  test "a token another person registered on the same phone moves to whoever signs in" do
+    users(:two).push_devices.create!(token: "abc", platform: "apple", name: "iPhone")
+    sign_in_as users(:one)
+
+    post "/native/push/devices", params: { token: "abc", platform: "apple", name: "iPhone" }, headers: MobileTest::NATIVE
+    assert_response :no_content
+
+    assert_equal users(:one), ApplicationPushDevice.sole.owner
+    assert_empty users(:two).push_devices.reload
+  end
+
+  test "a platform Action Push Native cannot deliver to is refused and stores nothing" do
+    sign_in_as users(:one)
+
+    post "/native/push/devices", params: { token: "abc", platform: "ios" }, headers: MobileTest::NATIVE
+    assert_response :unprocessable_content
+    assert_equal 0, ApplicationPushDevice.count
+  end
+
+  test "after signing out the app deletes its token with nobody signed in, past the sign-in gate" do
+    users(:one).push_devices.create!(token: "abc", platform: "apple")
+
+    delete "/native/push/devices/abc", headers: MobileTest::NATIVE
+    assert_response :no_content
+    assert_equal 0, ApplicationPushDevice.count
+
+    delete "/native/push/devices/abc", headers: MobileTest::NATIVE
+    assert_response :no_content
+  end
+
   test "devices leave with the account and land in the data export" do
     user = users(:one)
     user.push_devices.create!(token: "abc", platform: "apple")
