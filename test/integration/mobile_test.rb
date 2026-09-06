@@ -114,6 +114,9 @@ class MobileChatsTest < ActionDispatch::IntegrationTest
       assert_select "[data-native-menu-item][data-native-click='##{dom_id(chat, :destroy)}'][data-native-destructive='true']"
     end
     assert_select "li##{dom_id(chat, :row)}"
+
+    get chat_url(chat), headers: MobileTest::NATIVE
+    assert_select "[data-native-keyboard-toolbar='false']"
   end
 end
 

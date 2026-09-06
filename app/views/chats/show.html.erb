@@ -1,3 +1,4 @@
+<%= native_keyboard_tag(toolbar: false) %>
 <% content_for :title, t(".title") %>
 
 <%= turbo_stream_from "chat_#{@chat.id}" %>
