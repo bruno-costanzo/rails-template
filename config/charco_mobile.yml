@@ -34,3 +34,7 @@ errors:
     icons: { ios: wifi.slash, android: wifi_off }
   generic:
     icons: { ios: exclamationmark.triangle, android: error_outline }
+
+security:
+  biometric_lock: true
+  lock_after: 60

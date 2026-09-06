@@ -47,6 +47,11 @@ es:
         message: Revisá tu conexión e intentá de nuevo.
         title: Sin conexión
       retry: Reintentar
+    security:
+      lock:
+        reason: Desbloqueá para seguir
+        title: Bloqueada
+        unlock: Desbloquear
     tabs:
       chats:
         title: Chats

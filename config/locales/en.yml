@@ -47,6 +47,11 @@ en:
         message: Check your connection and try again.
         title: You're offline
       retry: Retry
+    security:
+      lock:
+        reason: Unlock to keep going
+        title: Locked
+        unlock: Unlock
     tabs:
       chats:
         title: Chats

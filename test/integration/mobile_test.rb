@@ -67,6 +67,8 @@ class MobileTest < ActionDispatch::IntegrationTest
     assert_equal "normal", response.parsed_body.dig("app", "mode")
     assert_equal "/", response.parsed_body.dig("app", "entry_path")
     assert_equal I18n.t("charco_mobile.errors.retry", locale: :es), response.parsed_body.dig("errors", "retry", "es")
+    assert_equal true, response.parsed_body.dig("security", "biometric_lock")
+    assert_equal I18n.t("charco_mobile.security.lock.unlock", locale: :es), response.parsed_body.dig("security", "copy", "es", "unlock")
   end
 end
 

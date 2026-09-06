@@ -31,6 +31,8 @@ Push devices are `dependent: :destroy` on the person, so deleting the account re
 
 The session cookie is already permanent (see `auth.md`), which is what keeps a native person signed in across launches; a change there to a session-scoped cookie signs every app user out on relaunch.
 
+`security.biometric_lock` in `config/charco_mobile.yml` covers the app and asks for Face ID, Touch ID, a fingerprint or the device passcode when a signed-in person comes back after `lock_after` seconds in the background, and on every cold start. It is armed by the identity signal, so nobody is asked while signed out, and a device with no passcode is never locked. The prompt's copy lives under `charco_mobile.security.lock` in both locale files.
+
 Preview on a device with `bin/rails server` in one terminal and `bundle exec charco_mobile preview` in another: it tunnels the local server through Cloudflare and prints a QR code, and a middleware keeps the session cookie working through the tunnel's public suffix domain.
 
 ## Turning it off

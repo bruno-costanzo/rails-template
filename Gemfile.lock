@@ -1,6 +1,6 @@
 GIT
   remote: git@github.com:bruno-costanzo/charco_mobile.git
-  revision: 0767a396f5a947c1d5ab102c4ad4b10d32402975
+  revision: 2a8d835b491a62757b559fc48ab9df7e81a6510f
   branch: main
   glob: gem/*.gemspec
   specs:
