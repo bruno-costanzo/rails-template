@@ -47,6 +47,13 @@ es:
         message: Revisá tu conexión e intentá de nuevo.
         title: Sin conexión
       retry: Reintentar
+    scanner:
+      confirm: Usar
+      denied: Permití el acceso a la cámara en Ajustes para escanear.
+      manual: Escribirlo
+      placeholder: Código
+      title: Escanear
+      unavailable: Este dispositivo no tiene cámara.
     security:
       lock:
         reason: Desbloqueá para seguir
@@ -140,6 +147,7 @@ es:
     index:
       empty: No se encontraron documentos.
       new_document: Nuevo documento
+      scan: Escanear
       search: Buscar
       search_placeholder: Búsqueda semántica…
       title: Documentos

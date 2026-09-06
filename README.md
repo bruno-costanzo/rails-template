@@ -65,7 +65,7 @@ bin/dev
 
 `bin/dev` runs two processes side by side (see `Procfile.dev`): the Rails server and the Tailwind watcher. The Solid Queue supervisor runs inside Puma, so it comes up with the server — see [Background jobs](#background-jobs), and note that the queue logs to `log/development.log`, not to your terminal.
 
-`db:prepare` seeds the database only the first time it creates it, so a fresh clone signs in with `dev@example.com` / `password`. On an existing checkout — the database already exists — run `bin/rails db:seed` to get that user.
+`db:prepare` seeds the database only the first time it creates it, so a fresh clone signs in with `dev@example.com` / `password`. On an existing checkout — the database already exists — run `bin/rails db:seed` to get that user; the same seed loads RubyLLM's model registry into the `models` table, which the AI chat and semantic search need once the table is no longer empty.
 
 ## Starting a new app
 

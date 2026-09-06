@@ -4,4 +4,8 @@
 
 Re-embedding is driven by an `after_save_commit` callback guarded by `embedding_source_changed?`, which asks whether the title or the rich-text body changed. Guarding on the source rather than firing on every save is what stops the loop: the job writes the embedding back with `update!`, which commits again, and an unguarded callback would enqueue itself forever.
 
+RubyLLM resolves the embedding model against its model registry, and `config/initializers/ruby_llm.rb` leaves `model_registry_class` at its default, `Model` (`app/models/model.rb`). At boot the gem reads the registry from the `models` table whenever that table has at least one row and falls back to its bundled JSON only when the table is empty. The first chat writes a single `gpt-4o-mini` row, so from then on the registry holds exactly one model and `Document.semantic_search` raises `RubyLLM::ModelNotFoundError` for `text-embedding-3-small`. The test suite never sees it because its table stays empty.
+
+`db/seeds.rb` is what keeps the table complete: it loads the bundled JSON into the in-memory registry, writes every model into the table with the gem's own idempotent `Model.save_to_database`, then reloads the registry from the table so the seeding process holds exactly what a fresh boot would read. `bin/setup` seeds on first creation; an existing checkout runs `bin/rails db:seed`. `test/db/seeds_test.rb` reproduces the one-row table and proves the seed repairs it.
+
 `Document::EMBEDDING_DIMENSIONS` is tied to the embedding model. Changing `OPENAI_EMBEDDING_MODEL` to one with a different output size means a migration, which is why the variable is documented in `.env.example` and nowhere else.

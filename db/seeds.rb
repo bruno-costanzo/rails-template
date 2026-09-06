@@ -8,6 +8,10 @@
 #     MovieGenre.find_or_create_by!(name: genre_name)
 #   end
 
+RubyLLM.models.load_from_json!
+Model.save_to_database
+RubyLLM.models.load_from_database!
+
 if Rails.env.development?
   User.find_or_create_by!(email_address: "dev@example.com") do |user|
     user.name = "Dev User"

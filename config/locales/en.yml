@@ -47,6 +47,13 @@ en:
         message: Check your connection and try again.
         title: You're offline
       retry: Retry
+    scanner:
+      confirm: Use
+      denied: Allow camera access in Settings to scan.
+      manual: Type it
+      placeholder: Code
+      title: Scan
+      unavailable: No camera on this device.
     security:
       lock:
         reason: Unlock to keep going
@@ -139,6 +146,7 @@ en:
     index:
       empty: No documents found.
       new_document: New document
+      scan: Scan
       search: Search
       search_placeholder: Semantic search…
       title: Documents

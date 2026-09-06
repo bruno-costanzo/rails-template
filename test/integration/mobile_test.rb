@@ -69,6 +69,17 @@ class MobileTest < ActionDispatch::IntegrationTest
     assert_equal I18n.t("charco_mobile.errors.retry", locale: :es), response.parsed_body.dig("errors", "retry", "es")
     assert_equal true, response.parsed_body.dig("security", "biometric_lock")
     assert_equal I18n.t("charco_mobile.security.lock.unlock", locale: :es), response.parsed_body.dig("security", "copy", "es", "unlock")
+    assert_equal I18n.t("charco_mobile.scanner.title", locale: :es), response.parsed_body.dig("scanner", "copy", "es", "title")
+    assert_equal I18n.t("charco_mobile.scanner.denied", locale: :en), response.parsed_body.dig("scanner", "copy", "en", "denied")
+  end
+
+  test "the document search offers a scan button that fills the query and submits, only in the app" do
+    sign_in_as users(:one)
+    get documents_url, headers: NATIVE
+
+    button = css_select("form[action='#{documents_path}'] button#scan.native-only").first
+    assert_equal I18n.t("documents.index.scan"), button.text
+    assert_equal({ "target" => "#q", "submit" => true }, JSON.parse(button["data-native-scan"]))
   end
 end
 

@@ -8,6 +8,7 @@
 
   <%= form_with url: documents_path, method: :get, class: "join w-full mb-6" do |form| %>
     <%= form.text_field :q, value: params[:q], placeholder: t(".search_placeholder"), class: "input input-bordered join-item w-full" %>
+    <%= native_scan_button_tag t(".scan"), target: "#q", submit: true, id: "scan", class: "btn join-item native-only" %>
     <%= form.submit t(".search"), class: "btn btn-primary join-item" %>
   <% end %>
 
