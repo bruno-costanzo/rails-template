@@ -74,6 +74,18 @@ class MobileTest < ActionDispatch::IntegrationTest
     assert_equal I18n.t("charco_mobile.scanner.denied", locale: :en), response.parsed_body.dig("scanner", "copy", "en", "denied")
   end
 
+  test "the config document carries the splash color and an empty navbar" do
+    get "/native/config"
+
+    appearance = response.parsed_body["appearance"]
+    assert_equal "#FFFFFF", appearance.dig("splash", "background_color", "light")
+    assert_equal appearance.dig("background_color", "dark"), appearance.dig("splash", "background_color", "dark")
+    assert_nil appearance.dig("splash", "image")
+    assert appearance.key?("navbar")
+    assert appearance["navbar"].key?("status_bar")
+    assert_nil appearance.dig("navbar", "status_bar")
+  end
+
   test "the document search offers a scan button that fills the query and submits, only in the app" do
     sign_in_as users(:one)
     get documents_url, headers: NATIVE

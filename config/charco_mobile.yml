@@ -9,6 +9,8 @@ app:
 appearance:
   tint_color: "#570DF8"
   background_color: { light: "#FFFFFF", dark: "#1D232A" }
+  splash:
+    background_color: { light: "#FFFFFF", dark: "#1D232A" }
 
 tabs:
   - key: home
