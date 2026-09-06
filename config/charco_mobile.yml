@@ -20,6 +20,7 @@ tabs:
   - key: documents
     path: /documents
     icons: { ios: doc.text, android: description }
+    search: true
   - key: notifications
     path: /notifications
     icons: { ios: bell, android: notifications }

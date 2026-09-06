@@ -64,6 +64,7 @@ class MobileTest < ActionDispatch::IntegrationTest
     assert_equal({ "es" => I18n.t("charco_mobile.tabs.home.title", locale: :es), "en" => I18n.t("charco_mobile.tabs.home.title", locale: :en) }, tabs.first["titles"])
     assert_equal "house", tabs.first["icon"]
     assert_equal [ "/profile", "/active_sessions", "/feedback" ], tabs.last["auto_route"]
+    assert_equal true, tabs.find { |tab| tab["key"] == "documents" }["search"]
     assert_equal "normal", response.parsed_body.dig("app", "mode")
     assert_equal "/", response.parsed_body.dig("app", "entry_path")
     assert_equal I18n.t("charco_mobile.errors.retry", locale: :es), response.parsed_body.dig("errors", "retry", "es")
@@ -77,9 +78,20 @@ class MobileTest < ActionDispatch::IntegrationTest
     sign_in_as users(:one)
     get documents_url, headers: NATIVE
 
-    button = css_select("form[action='#{documents_path}'] button#scan.native-only").first
+    button = css_select("button#scan.native-only").first
     assert_equal I18n.t("documents.index.scan"), button.text
     assert_equal({ "target" => "#q", "submit" => true }, JSON.parse(button["data-native-scan"]))
+    assert_select "form button#scan", false
+  end
+
+  test "the document search moves into the native search field, which mirrors the hidden web form" do
+    sign_in_as users(:one)
+    stub_openai_embedding(vector: Array.new(Document::EMBEDDING_DIMENSIONS, 0.0))
+    get documents_url(q: "ada"), headers: NATIVE
+
+    assert_select "[data-native-search='#q'][data-native-placeholder='#{I18n.t("documents.index.search_placeholder")}']"
+    assert_select "[data-native-search][data-native-submit]", false
+    assert_select "form.native-hidden[action='#{documents_path}'] input#q[value='ada']"
   end
 end
 
