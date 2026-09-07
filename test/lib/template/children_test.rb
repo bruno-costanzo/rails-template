@@ -137,7 +137,7 @@ class Template::ChildrenTest < ActiveSupport::TestCase
 
   def in_git_root
     in_tmp_root do |root|
-      system("git", "-C", root.to_s, "init", "--quiet", exception: true)
+      system("git", "-C", root.to_s, "-c", "gc.auto=0", "-c", "maintenance.auto=false", "init", "--quiet", exception: true)
       File.write(root.join("first.txt"), "first")
       system("git", "-C", root.to_s, "add", "-A", exception: true)
       system("git", "-C", root.to_s, "commit", "--quiet", "-m", "First commit", exception: true)

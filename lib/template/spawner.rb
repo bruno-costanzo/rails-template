@@ -19,6 +19,7 @@ module Template
 
       clone
       detach_from_template
+      bundle
       rename
       commit
       register
@@ -33,6 +34,14 @@ module Template
 
     def detach_from_template
       system("git", "-C", @dest.to_s, "remote", "remove", "origin", exception: true)
+    end
+
+    def bundle
+      return unless @dest.join("Gemfile").exist?
+
+      Bundler.with_unbundled_env do
+        system("bundle", "install", chdir: @dest.to_s, exception: true)
+      end
     end
 
     def rename

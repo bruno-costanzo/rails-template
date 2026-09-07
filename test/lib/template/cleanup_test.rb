@@ -112,7 +112,7 @@ class Template::CleanupTest < ActiveSupport::TestCase
 
   test "cuts the git link to the template so a stray push cannot reach it" do
     in_fixture_tree do |dir|
-      system("git", "-C", dir, "init", "--quiet")
+      system("git", "-C", dir, "-c", "gc.auto=0", "-c", "maintenance.auto=false", "init", "--quiet")
       system("git", "-C", dir, "remote", "add", "template", "git@github.com:bruno-costanzo/rails-template.git")
       system("git", "-C", dir, "remote", "add", "origin", "git@github.com:someone/demo.git")
 

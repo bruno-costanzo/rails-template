@@ -2,6 +2,19 @@ require "test_helper"
 require "tmpdir"
 
 class Template::SpawnerTest < ActiveSupport::TestCase
+  class RecordingSpawner < Template::Spawner
+    def steps = @steps ||= []
+
+    private
+
+    def bundle = steps << "bundle"
+
+    def rename
+      steps << "rename"
+      File.write(@dest.join("renamed-#{@name}"), "")
+    end
+  end
+
   include GitIdentityHelper
 
   setup { stub_git_identity }
@@ -51,6 +64,16 @@ class Template::SpawnerTest < ActiveSupport::TestCase
       output, = capture_io { Template::Spawner.new(root: root, name: "demo").run }
 
       assert_includes output, "gh repo create demo --private --source=. --remote=origin --push"
+    end
+  end
+
+  test "bundles the clone before renaming it, which is what materializes a git-sourced gem" do
+    in_template do |root|
+      spawner = RecordingSpawner.new(root: root, name: "demo")
+      spawner.run
+
+      assert_equal %w[bundle rename], spawner.steps,
+        "the clone carries no local override, so the gem the lock names has to be fetched before bin/rename loads it"
     end
   end
 
@@ -129,7 +152,7 @@ class Template::SpawnerTest < ActiveSupport::TestCase
         File.write(File.join(Dir.pwd, "renamed-#{name}"), "")
       RUBY
       FileUtils.chmod("+x", root.join("bin", "rename"))
-      system("git", "-C", root.to_s, "init", "--quiet", exception: true)
+      system("git", "-C", root.to_s, "-c", "gc.auto=0", "-c", "maintenance.auto=false", "init", "--quiet", exception: true)
       system("git", "-C", root.to_s, "add", "-A", exception: true)
       system("git", "-C", root.to_s, "commit", "--quiet", "-m", "Initial commit", exception: true)
       yield root
