@@ -19,6 +19,7 @@ The app ships as native iOS and Android apps through the `charco_mobile` gem, pi
 - `app/views/chats/show.html.erb` — turns the iOS keyboard toolbar off with `native_keyboard_tag(toolbar: false)`, since the composer is the page's only field and the previous, next and done buttons would only take space.
 - `config/ci.rb` — the `charco_mobile check` step parses every view and fails on a mistyped, duplicated or too-new signal.
 - `.github/workflows/ci.yml` — the gem lives in a private repository reached over SSH, so an ssh-agent step loads the `CHARCO_MOBILE_DEPLOY_KEY` secret before Bundler runs. The key is a read-only deploy key of that repository; every app born from here needs the same secret in its own repository, or its first CI run fails at `bundle install`.
+- The secret reaches that step through the job's `env` rather than `with` alone, because a step condition can read the `env` context and never the `secrets` one. The condition is what keeps an app whose repository has no such secret from failing on the step itself: `webfactory/ssh-agent` treats an empty key as a fatal error, so without the guard the run dies there instead of at the line that explains the problem. `test/ci/workflow_test.rb` holds that shape in place.
 
 ## Gotchas
 

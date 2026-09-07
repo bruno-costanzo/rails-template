@@ -9,6 +9,9 @@ jobs:
   ci:
     runs-on: ubuntu-latest
 
+    env:
+      CHARCO_MOBILE_DEPLOY_KEY: ${{ secrets.CHARCO_MOBILE_DEPLOY_KEY }}
+
     steps:
       - name: Install packages
         run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libvips
@@ -17,9 +20,10 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Let Bundler read the charco_mobile repository
+        if: env.CHARCO_MOBILE_DEPLOY_KEY != ''
         uses: webfactory/ssh-agent@v0.10.0
         with:
-          ssh-private-key: ${{ secrets.CHARCO_MOBILE_DEPLOY_KEY }}
+          ssh-private-key: ${{ env.CHARCO_MOBILE_DEPLOY_KEY }}
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
