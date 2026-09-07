@@ -83,7 +83,7 @@ A doc is updated **in the same commit** as the behaviour it describes. A change 
 Style: present tense, current state only. No history, no session narrative, no "previously" or "now". No code blocks — point at the file instead. One gotcha per paragraph, stated as a consequence rather than a warning.
 Never write the app's name inside `docs/` — the renamer does not rewrite it, so it would survive into every app born from here.
 
-`test/docs/documentation_test.rb` is the mechanical half: every page the map points at exists and every page is in the map, no line here exceeds 300 characters, and every file path any doc cites in backticks still exists.
+`test/docs/documentation_test.rb` is the mechanical half: every page the map points at exists and every page is in the map, no line here exceeds 300 characters, and every file path any doc cites in backticks still exists, and is tracked: a spawned app is a clone, so an ignored file is absent there.
 That last one is what makes "up to date" verifiable — a renamed file with a stale doc turns CI red.
 
 ## Subsystem map
