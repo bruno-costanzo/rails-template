@@ -74,7 +74,6 @@ es:
     chat:
       created: 'Creado:'
       messages: 'Mensajes:'
-      model: 'Modelo:'
     create:
       notice: El chat se creó correctamente.
     destroy:

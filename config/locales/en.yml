@@ -74,7 +74,6 @@ en:
     chat:
       created: 'Created:'
       messages: 'Messages:'
-      model: 'Model:'
     create:
       notice: Chat was successfully created.
     destroy:

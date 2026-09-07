@@ -19,7 +19,7 @@ class MobileTest < ActionDispatch::IntegrationTest
     get root_url
 
     assert_select ".navbar"
-    assert_select "main.mt-28"
+    assert_select "main.mt-6"
     assert_select "[data-native-identity='']"
   end
 
