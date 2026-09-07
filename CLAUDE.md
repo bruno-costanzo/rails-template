@@ -35,7 +35,7 @@ Rails starter template. This repo is both a working app and the template new app
 - `bin/smoke-rename` — the core promise end to end: export the tracked tree, rename it, assert no old-name reference survives, boot it, run the copy's unit suite, then serve the public pages over HTTP.
   Loading is not serving: `zeitwerk:check` catches a leftover constant but not a broken route or view.
   **Gotcha:** it exports tracked changes only, so a brand-new file must be `git add`ed before the smoke can see it.
-- `bin/spawn <name> [--github]` — clone into `../<name>`, rename, detach, commit, register in `children.yml`. `--github` also creates and pushes a private repo.
+- `bin/spawn <name> [--github]` — clone into `../<name>`, rename, detach, commit, register in `children.yml`. `--github` also creates and pushes a private repo, and sets its `CHARCO_MOBILE_DEPLOY_KEY` secret from `CHARCO_MOBILE_DEPLOY_KEY_PATH`, or prints the command when that is unset.
 - `bin/children [synced <name> [sha]]` — report each child's pending template commits with a ready cherry-pick command, or record a child as synced.
 
 All Ruby/Rails commands run under `mise exec ruby@4.0.6 -- <command>` in non-mise-shimmed shells (e.g. `mise exec ruby@4.0.6 -- bin/rails test`).
