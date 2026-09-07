@@ -1,7 +1,7 @@
 <% content_for :title, t(".title") %>
 <%= native_fab_tag icons: { ios: "plus", android: "add" }, href: new_chat_path, color: :tint %>
 
-<div class="p-6 max-w-3xl mx-auto">
+<div class="p-6 max-w-3xl mx-auto w-full">
   <div class="flex justify-between items-center mb-6">
     <h1 class="font-bold text-4xl"><%= t(".title") %></h1>
     <%= link_to t(".new_chat"), new_chat_path, class: "btn btn-primary" %>

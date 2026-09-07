@@ -12,4 +12,6 @@ The accessibility gate decides the palette. `ApplicationSystemTestCase#visit` au
 
 The neutrals fail before the accent does. DaisyUI paints secondary text — form labels, `text-xs` captions — as `base-content` at reduced opacity, so the contrast that survives is what remains after the blend against `base-100`. A `base-100` slightly off white and a `base-content` slightly off black each look harmless and together drop that blended text below the threshold. Keep both extremes near the ends of the lightness range and carry the warmth in `base-200` and `base-300`, which reads the same and costs no contrast.
 
+A page box that centers itself under `main` needs `w-full` beside `max-w-*` and `mx-auto`. The layout's `main` is a flex column, and a flex item with an automatic inline margin loses the stretch that would otherwise give it the full width, so it shrinks to its content and the page renders as a narrow ribbon that still looks deliberate. The pages that already carry `w-full` are the ones this has already bitten.
+
 A theme change touches no view, which is what makes it safe to revert in one commit; a change that also edits markup no longer has that property.
