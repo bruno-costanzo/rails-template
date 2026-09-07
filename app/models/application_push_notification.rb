@@ -1,12 +1,7 @@
 class ApplicationPushNotification < ActionPushNative::Notification
-  # Set a custom job queue_name
-  # queue_as :realtime
+  def self.credentials?(config = ActionPushNative.config)
+    config.values.any? { |platform| platform[:encryption_key].present? }
+  end
 
-  # Controls whether push notifications are enabled (default: !Rails.env.test?)
-  # self.enabled = Rails.env.production?
-
-  # Define a custom callback to modify or abort the notification before it is sent
-  # before_delivery do |notification|
-  #   throw :abort if Notification.find(notification.context[:notification_id]).expired?
-  # end
+  self.enabled = credentials?
 end
