@@ -22,6 +22,20 @@ cleanup() {
 }
 trap cleanup EXIT
 
+run_quietly() {
+  local label="$1" dir="$2"
+  shift 2
+  local log
+  log="$(mktemp)"
+  if ! ( cd "$dir" && "$@" ) >"$log" 2>&1; then
+    echo "✗ $label failed:"
+    cat "$log"
+    rm -f "$log"
+    exit 1
+  fi
+  rm -f "$log"
+}
+
 echo "→ Exporting working tree"
 ref="$(git -C "$root" stash create || true)"
 git -C "$root" archive "${ref:-HEAD}" | tar -x -C "$tmp"
@@ -33,10 +47,10 @@ fi
 mkdir -p "$tmp/storage"
 
 echo "→ Renaming to '$name'"
-( cd "$tmp" && bin/rename "$name" >/dev/null )
+run_quietly "Renaming" "$tmp" bin/rename "$name"
 
 echo "→ Preparing the database (db:prepare)"
-( cd "$tmp" && bin/rails db:prepare >/dev/null )
+run_quietly "Preparing the database" "$tmp" bin/rails db:prepare
 
 echo "→ Checking for residual template references"
 residual="$(grep -rIl -e CharcoTemplate -e charco_template -e charco-template -e 'Charco Template' "$tmp" --exclude='*.mjs' || true)"
@@ -52,11 +66,11 @@ echo "→ Booting renamed app (zeitwerk:check)"
 echo "✓ Renamed app boots"
 
 echo "→ Running the renamed app's own suite"
-( cd "$tmp" && bin/rails db:test:prepare test >/dev/null )
+run_quietly "The renamed app's suite" "$tmp" bin/rails db:test:prepare test
 echo "✓ Renamed app's tests pass"
 
 echo "→ Building stylesheets"
-( cd "$tmp" && bin/rails tailwindcss:build >/dev/null )
+run_quietly "Building stylesheets" "$tmp" bin/rails tailwindcss:build
 
 echo "→ Serving requests on port $port"
 ( cd "$tmp" && exec bin/rails server -p "$port" ) >"$tmp/server.log" 2>&1 &
