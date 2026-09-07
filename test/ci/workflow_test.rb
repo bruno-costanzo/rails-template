@@ -21,6 +21,11 @@ class CiWorkflowTest < ActiveSupport::TestCase
       "a job-level environment hands the private key to every step of the run, including the ones that only need to know whether it exists"
   end
 
+  test "the workflow can be started by hand, the only way to retry a run after a secret is registered" do
+    assert_includes triggers.keys, "workflow_dispatch",
+      "without it a repository whose secret was just set can only be retried through an empty commit"
+  end
+
   test "no step condition reads the secrets context, which GitHub does not expose there" do
     conditions = steps.filter_map { |step| step["if"] }
 
@@ -32,6 +37,10 @@ class CiWorkflowTest < ActiveSupport::TestCase
 
   def workflow
     @workflow ||= YAML.safe_load(WORKFLOW.read)
+  end
+
+  def triggers
+    workflow[true]
   end
 
   def job
