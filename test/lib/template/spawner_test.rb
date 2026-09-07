@@ -77,6 +77,26 @@ class Template::SpawnerTest < ActiveSupport::TestCase
     end
   end
 
+  test "the bundle runs in the clone, against the clone's own Gemfile" do
+    in_template do |root|
+      File.write(root.join("Gemfile"), %(source "https://rubygems.org"\n))
+      system("git", "-C", root.to_s, "add", "-A", exception: true)
+      system("git", "-C", root.to_s, "commit", "--quiet", "-m", "Add a Gemfile", exception: true)
+
+      Template::Spawner.new(root: root, name: "demo").run
+
+      assert File.exist?(root.parent.join("demo", "Gemfile.lock"))
+    end
+  end
+
+  test "a clone with no Gemfile is left alone" do
+    in_template do |root|
+      Template::Spawner.new(root: root, name: "demo").run
+
+      assert_not File.exist?(root.parent.join("demo", "Gemfile.lock"))
+    end
+  end
+
   test "creates the GitHub repository when --github is passed" do
     in_template do |root|
       with_fake_gh do |calls|
